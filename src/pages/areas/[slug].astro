@@ -3,12 +3,11 @@ import { getCollection } from 'astro:content';
 import MainLayout from '../../layouts/MainLayout.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
 
-// helper to consistently derive an "area" key
 function getArea(d: any): string {
-  const a = (d?.area ?? '').toString().trim();
-  if (a) return a.toLowerCase();
-  const loc = (d?.location ?? '').toString();
-  const first = loc.split(',')[0]?.trim() ?? '';
+  const area = typeof d?.area === 'string' ? d.area.trim() : '';
+  if (area) return area.toLowerCase();
+  const loc = typeof d?.location === 'string' ? d.location : '';
+  const first = loc.split(',')[0]?.trim() || '';
   return first.toLowerCase();
 }
 
@@ -21,9 +20,9 @@ export async function getStaticPaths() {
   }));
 }
 
-const { area } = Astro.props;
+const { area } = Astro.props as { area: string };
 const listings = await getCollection('listings');
-const filtered = listings.filter((l) => getArea(l.data) === (area || '').toLowerCase());
+const filtered = listings.filter((l) => getArea(l.data) === area);
 ---
 
 <MainLayout title={`Properties in ${area}`} description={`Browse listings in ${area}.`}>
