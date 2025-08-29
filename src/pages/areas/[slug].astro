@@ -3,17 +3,20 @@ import { getCollection } from 'astro:content';
 import MainLayout from '../../layouts/MainLayout.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
 
-function getArea(d: any): string {
-  const area = typeof d?.area === 'string' ? d.area.trim() : '';
-  if (area) return area.toLowerCase();
-  const loc = typeof d?.location === 'string' ? d.location : '';
-  const first = loc.split(',')[0]?.trim() || '';
-  return first.toLowerCase();
-}
-
 export async function getStaticPaths() {
   const listings = await getCollection('listings');
-  const areas = Array.from(new Set(listings.map((l) => getArea(l.data)))).filter(Boolean);
+
+  const areas = Array.from(
+    new Set(
+      listings.map((l) => {
+        const d = l.data || {};
+        const rawArea = typeof d.area === 'string' ? d.area.trim() : '';
+        const fallback = typeof d.location === 'string' ? d.location.split(',')[0]?.trim() || '' : '';
+        return (rawArea || fallback).toLowerCase();
+      })
+    )
+  ).filter(Boolean);
+
   return areas.map((area) => ({
     params: { slug: area },
     props: { area },
@@ -22,7 +25,14 @@ export async function getStaticPaths() {
 
 const { area } = Astro.props as { area: string };
 const listings = await getCollection('listings');
-const filtered = listings.filter((l) => getArea(l.data) === area);
+
+const filtered = listings.filter((l) => {
+  const d = l.data || {};
+  const rawArea = typeof d.area === 'string' ? d.area.trim() : '';
+  const fallback = typeof d.location === 'string' ? d.location.split(',')[0]?.trim() || '' : '';
+  const normalized = (rawArea || fallback).toLowerCase();
+  return normalized === area;
+});
 ---
 
 <MainLayout title={`Properties in ${area}`} description={`Browse listings in ${area}.`}>
