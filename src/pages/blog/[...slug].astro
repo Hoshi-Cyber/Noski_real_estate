@@ -1,62 +1,49 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import PostLayout from '../../components/blog/PostLayout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 
-export const prerender = true;
-
-// 1) Build all blog post paths (no props)
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
   return posts.map((p) => ({
-    params: { slug: p.slug.split('/') }, // catch-all expects array
+    // REST param must be a string, not an array
+    params: { slug: p.slug },
+    props: { entry: p },
   }));
 }
 
-// 2) Resolve entry from params with guards
-const segments = (Astro.params.slug ?? []) as string[] | string;
-const slug = Array.isArray(segments) ? segments.join('/') : String(segments || '');
+const entry = (Astro.props?.entry as CollectionEntry<'blog'> | undefined) ?? null;
 
-const all = await getCollection('blog');
-const entry = all.find((p) => p.slug === slug);
-const notFound = !entry;
-
-let Content: any = null;
-let headings: any[] = [];
-
-if (!notFound) {
-  const rendered = await entry.render();
-  Content = rendered.Content;
-  headings = rendered.headings ?? [];
+// Defensive fallback (shouldn’t run if props are passed correctly)
+let resolved = entry;
+if (!resolved) {
+  const posts = await getCollection('blog');
+  const slug = String(Astro.params.slug || '');
+  resolved = posts.find((p) => p.slug === slug) ?? null;
 }
 
-// 3) TOC + related with guards
-const toc = headings
-  .filter((h) => h.depth === 2 || h.depth === 3)
-  .map((h) => ({ id: h.slug, text: h.text, level: h.depth === 3 ? 3 : 2 }));
+if (!resolved) {
+  throw new Error('Post not found');
+}
 
-const related = !notFound
-  ? all
-      .filter((p) => p.id !== entry.id && p.data.category === entry.data.category)
-      .slice(0, 4)
-  : [];
+const { Content, headings } = await resolved.render();
 
-const pageTitle = !notFound
-  ? `${entry.data.title} | Blog | Severino Realty`
-  : 'Post Not Found | Blog | Severino Realty';
+const toc =
+  (headings ?? [])
+    .filter((h) => h.depth === 2 || h.depth === 3)
+    .map((h) => ({ id: h.slug, text: h.text, level: h.depth === 3 ? 3 : 2 }));
 
-const pageDesc = !notFound ? (entry.data.description ?? '') : 'We could not find this article.';
+const all = await getCollection('blog');
+const related = all
+  .filter((p) => p.id !== resolved.id && p.data.category === resolved.data.category)
+  .slice(0, 4);
+
+const pageTitle = `${resolved.data.title} | Blog | Severino Realty`;
+const pageDesc = resolved.data.description ?? '';
 ---
 
 <MainLayout title={pageTitle} description={pageDesc}>
-  {notFound ? (
-    <section class="py-16 px-4 text-center max-w-3xl mx-auto">
-      <h1 class="text-3xl font-bold text-primary mb-4">Post Not Found</h1>
-      <a href="/blog" class="inline-block bg-cta text-white px-6 py-3 rounded-md">Browse Blog</a>
-    </section>
-  ) : (
-    <PostLayout entry={entry} headings={toc}>
-      <Content />
-    </PostLayout>
-  )}
+  <PostLayout entry={resolved} headings={toc} related={related}>
+    <Content />
+  </PostLayout>
 </MainLayout>
