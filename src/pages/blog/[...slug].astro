@@ -1,0 +1,37 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import PostLayout from '../../components/blog/PostLayout.astro';
+import { getCollection } from 'astro:content';
+
+// 1) Build all blog post paths
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((p) => ({
+    // rest params expect an array of segments
+    params: { slug: p.slug.split('/') },
+    props: { entry: p },
+  }));
+}
+
+// 2) Read the entry passed from getStaticPaths
+const entry = Astro.props.entry;
+const { Content, headings } = await entry.render();
+
+const toc = (headings ?? [])
+  .filter((h) => h.depth === 2 || h.depth === 3)
+  .map((h) => ({ id: h.slug, text: h.text, level: h.depth === 3 ? 3 : 2 }));
+
+const all = await getCollection('blog');
+const related = all
+  .filter((p) => p.id !== entry.id && p.data.category === entry.data.category)
+  .slice(0, 4);
+
+const pageTitle = `${entry.data.title} | Blog | Severino Realty`;
+const pageDesc = entry.data.description ?? '';
+---
+
+<MainLayout title={pageTitle} description={pageDesc}>
+  <PostLayout entry={entry} headings={toc} related={related}>
+    <Content />
+  </PostLayout>
+</MainLayout>

@@ -1,0 +1,129 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { resolveListingImage, buildListingHref } from '../lib/utils/paths';
+
+interface Props {
+  listing: CollectionEntry<'listings'>['data'] | CollectionEntry<'featured'>['data'];
+  slug: string;
+  href?: string;
+  compact?: boolean;
+}
+
+const { listing, slug, href, compact = false } = Astro.props as Props;
+
+const finalHref = href || buildListingHref(listing.availability, slug);
+const finalImg = resolveListingImage(
+  slug,
+  listing.imagesFolder,
+  listing.images,
+  listing.image
+);
+
+const srcset = `
+  ${finalImg}?w=480 480w,
+  ${finalImg}?w=768 768w,
+  ${finalImg}?w=1024 1024w
+`;
+
+const altText = listing.title && listing.location
+  ? `${listing.title} - ${listing.location}`
+  : listing.title || 'Property image';
+
+const statusColors: Record<string, string> = {
+  'for sale': 'bg-green-600',
+  'for rent': 'bg-blue-600',
+  'short-stays': 'bg-orange-500',
+  'short-stay': 'bg-orange-500'
+};
+const availSeg = (listing.availability || '').toLowerCase().replace(/\s+/g, '-');
+const statusClass = statusColors[availSeg] || 'bg-gray-500';
+
+const priceText =
+  typeof listing.price === 'number'
+    ? `KSh ${listing.price.toLocaleString()}`
+    : 'Price N/A';
+
+const imgAspect = compact ? 'aspect-[4/3]' : 'aspect-[16/9]';
+const titleSize = compact ? 'text-base' : 'text-lg';
+const pad = compact ? 'p-3' : 'p-4';
+const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
+---
+
+<article 
+  class="group border border-neutral-200 rounded-lg overflow-hidden shadow-sm bg-white transition 
+         hover:shadow-md focus-within:ring-2 focus-within:ring-primary"
+>
+  <a href={finalHref} class="block overflow-hidden focus:outline-none">
+    <figure class={`w-full ${imgAspect} relative`}>
+      {listing.availability && (
+        <span
+          class={`absolute top-2 left-2 ${statusClass} text-white text-xs font-medium px-2 py-1 rounded z-10`}
+          aria-label={`Status: ${listing.availability}`}
+        >
+          {listing.availability}
+        </span>
+      )}
+      <img
+        src={finalImg}
+        srcset={srcset}
+        sizes={
+          compact
+            ? "(min-width:1024px) 25vw, (min-width:640px) 50vw, 100vw"
+            : "(min-width:768px) 33vw, 100vw"
+        }
+        alt={altText}
+        class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
+        loading="lazy"
+        decoding="async"
+        width="768"
+        height="432"
+      />
+    </figure>
+  </a>
+
+  <div class={pad}>
+    <h3 class={`${titleSize} font-semibold text-primary mb-1`}>
+      <a 
+        href={finalHref} 
+        class="focus:outline-none focus:ring-2 focus:ring-primary rounded hover:text-primary-dark"
+      >
+        {listing.title || 'Untitled Property'}
+      </a>
+    </h3>
+
+    <p class="text-sm text-neutral-600 mb-2">
+      {listing.location || 'Unknown Location'}
+    </p>
+
+    <div class="text-sm text-neutral-900 font-semibold">{priceText}</div>
+
+    {(listing.bedrooms || listing.bathrooms) && (
+      <div class="mt-2 flex flex-wrap gap-2">
+        {listing.bedrooms && (
+          <span class="chip">{listing.bedrooms} {listing.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}</span>
+        )}
+        {listing.bathrooms && (
+          <span class="chip">{listing.bathrooms} {listing.bathrooms === 1 ? 'Bathroom' : 'Bathrooms'}</span>
+        )}
+      </div>
+    )}
+
+    <div class="mt-4">
+      <a
+        href={finalHref}
+        class={`inline-flex items-center rounded-md ${btnPad} text-sm font-medium text-white bg-primary shadow-sm 
+                hover:bg-primary-dark hover:-translate-y-0.5 transition-all duration-200 
+                focus:outline-none focus:ring-2 focus:ring-primary`}
+      >
+        View details
+      </a>
+    </div>
+  </div>
+</article>
+
+<style>
+.chip {
+  @apply inline-flex items-center gap-1 rounded-full border border-neutral-200 bg-neutral-50 
+         px-2.5 py-1 text-xs text-neutral-700;
+}
+</style>

@@ -1,0 +1,53 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+
+const faqs = [
+  {
+    question: 'What documents are required to buy property in Kenya?',
+    answer: 'You will need your national ID or passport, KRA PIN, a signed sale agreement, and Land Transfer forms. Your conveyancing lawyer will prepare and file the necessary paperwork.'
+  },
+  {
+    question: 'How much is stamp duty on property?',
+    answer: 'Stamp duty is currently 4% of the property’s value for urban properties and 2% for agricultural land. It is payable by the purchaser.'
+  },
+  {
+    question: 'Who pays agent commission in Kenya?',
+    answer: 'Real estate agents typically charge the seller or landlord a commission of between 1.25% and 2% of the sale price. For rentals, the commission is usually equivalent to one month’s rent.'
+  },
+  {
+    question: 'Can foreigners own property in Kenya?',
+    answer: 'Yes. Foreigners can own property on a leasehold basis but must obtain presidential consent to own agricultural land freehold. Leasehold terms are commonly 99 or 999 years.'
+  },
+  {
+    question: 'How long does property transfer take?',
+    answer: 'Assuming all documentation is in order and there are no disputes, a typical property transfer process takes between 30 and 90 days.'
+  }
+];
+
+// JSON-LD structured data for SEO
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(faq => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer
+    }
+  }))
+};
+---
+
+<MainLayout title="Frequently Asked Questions" description="Get answers to common questions about buying, selling, and renting property in Kenya.">
+  <section class="py-12 max-w-4xl mx-auto px-4">
+    <h1 class="text-3xl font-bold text-primary mb-6">Frequently Asked Questions</h1>
+    <FaqAccordion items={faqs} />
+  </section>
+
+  <!-- SEO: JSON-LD Schema Markup -->
+  <script type="application/ld+json">
+    {JSON.stringify(faqSchema)}
+  </script>
+</MainLayout>

@@ -1,0 +1,23 @@
+---
+const { entry } = Astro.props; // Astro Content entry
+if (!entry) throw new Error('PostListItem requires { entry }');
+
+const { title, heroImage, pubDate } = entry.data;
+const href = `/blog/${entry.slug}`;
+const when = pubDate ? new Date(pubDate) : null;
+---
+<a href={href} class="flex items-center gap-3 group">
+  <div class="w-20 h-20 rounded-md overflow-hidden bg-neutral-100 shrink-0">
+    {heroImage ? (
+      <img src={heroImage} alt={title} loading="lazy" decoding="async" class="w-full h-full object-cover" />
+    ) : null}
+  </div>
+  <div class="min-w-0">
+    <div class="text-sm font-medium text-primary line-clamp-2 group-hover:underline">{title}</div>
+    {when && (
+      <time datetime={when.toISOString()} class="text-xs text-neutral-500">
+        {when.toLocaleDateString('en-KE', { year:'numeric', month:'short', day:'2-digit' })}
+      </time>
+    )}
+  </div>
+</a>

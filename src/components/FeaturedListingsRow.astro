@@ -1,0 +1,98 @@
+---
+import PropertyCard from './PropertyCard.astro';
+import type { CollectionEntry } from 'astro:content';
+import { resolveListingImage, buildListingHref } from '../lib/utils/paths';
+
+const { items = [] }: { items: (CollectionEntry<'listings'> | CollectionEntry<'featured'>)[] } = Astro.props;
+const featured = items.slice(0, 4);
+---
+
+<section 
+  class="relative" 
+  role="region" 
+  aria-label="Featured listings" 
+  aria-live="polite"
+>
+  <!-- Desktop grid -->
+  <div class="hidden lg:grid grid-cols-4 gap-6">
+    {featured.map((item) => (
+      <PropertyCard
+        listing={{
+          ...item.data,
+          image: resolveListingImage(
+            item.slug,
+            item.data.imagesFolder,
+            item.data.images,
+            item.data.image
+          )
+        }}
+        slug={item.slug}
+        href={buildListingHref(item.data.availability, item.slug)}
+        compact={true}
+      />
+    ))}
+  </div>
+
+  <!-- Mobile/tablet horizontal scroll -->
+  <div 
+    id="featured-scroll" 
+    class="flex lg:hidden gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory px-1"
+  >
+    {featured.map((item) => (
+      <div class="shrink-0 basis-full sm:basis-1/2 md:basis-1/3 snap-start">
+        <PropertyCard
+          listing={{
+            ...item.data,
+            image: resolveListingImage(
+              item.slug,
+              item.data.imagesFolder,
+              item.data.images,
+              item.data.image
+            )
+          }}
+          slug={item.slug}
+          href={buildListingHref(item.data.availability, item.slug)}
+          compact={true}
+        />
+      </div>
+    ))}
+  </div>
+
+  <!-- Mobile swipe hint -->
+  <div 
+    id="swipe-hint" 
+    class="lg:hidden absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white to-transparent flex items-center justify-center text-neutral-400 pointer-events-none transition-opacity duration-500"
+  >
+    <span class="text-xs font-medium rotate-90">Swipe ›</span>
+  </div>
+</section>
+
+<script type="module" client:load>
+  const scrollEl = document.getElementById('featured-scroll');
+  const hintEl = document.getElementById('swipe-hint');
+
+  if (scrollEl) {
+    const hideHint = () => hintEl?.classList.add('opacity-0');
+    scrollEl.addEventListener('scroll', hideHint, { passive: true });
+    scrollEl.addEventListener('pointerdown', hideHint, { passive: true });
+
+    scrollEl.setAttribute('tabindex', '0');
+    scrollEl.addEventListener('keydown', (e) => {
+      const cardWidth = scrollEl.firstElementChild?.getBoundingClientRect().width || 0;
+      if (e.key === 'ArrowRight') scrollEl.scrollBy({ left: cardWidth, behavior: 'smooth' });
+      if (e.key === 'ArrowLeft') scrollEl.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+      if (e.key === 'Home') scrollEl.scrollTo({ left: 0, behavior: 'smooth' });
+      if (e.key === 'End') scrollEl.scrollTo({ left: scrollEl.scrollWidth, behavior: 'smooth' });
+    });
+  }
+</script>
+
+<style>
+#featured-scroll::-webkit-scrollbar {
+  display: none;
+}
+#featured-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

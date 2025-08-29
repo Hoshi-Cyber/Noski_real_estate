@@ -1,0 +1,49 @@
+---
+import BaseCard from '../BaseCard.astro';
+
+/** Guides hub: hero + 4 guide cards + CTA strip */
+const {
+  title = 'Guides',
+  intro = 'Step-by-step help for buying, selling, renting/landlord, and investment.',
+  cards = [
+    { title: 'Buying Guide', href: '/resources/guides/buying', desc: 'From search to ownership.', cta: 'Start →' },
+    { title: 'Selling Guide', href: '/resources/guides/selling', desc: 'Prep, pricing, marketing, closing.', cta: 'Start →' },
+    { title: 'Renting & Landlord', href: '/resources/guides/renting-landlord', desc: 'Screening, leases, compliance.', cta: 'Start →' },
+    { title: 'Investment', href: '/resources/guides/investment', desc: 'Yields, financing, exits.', cta: 'Start →' },
+  ],
+  cta = { text: 'Get free checklist', href: '#', note: 'PDF download' }
+} = Astro.props;
+---
+
+<section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
+  <!-- Header -->
+  <header class="mb-6 md:mb-8">
+    <h1 class="text-2xl md:text-3xl font-bold text-primary">{title}</h1>
+    <p class="mt-2 text-neutral-700">{intro}</p>
+  </header>
+
+  <!-- Guide Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    {cards.map(card => (
+      <BaseCard
+        title={card.title}
+        desc={card.desc}
+        href={card.href}
+        tag="Guide"
+        cta={card.cta}
+        variant="visual"
+      />
+    ))}
+  </div>
+
+  <!-- CTA Strip -->
+  <div class="mt-6 rounded-md border border-neutral-200 bg-neutral-50/80 p-4 flex items-center justify-between gap-3">
+    <div class="text-sm text-neutral-700">
+      <strong class="text-primary">{cta.text}</strong>
+      <span class="ml-2 text-neutral-500">{cta.note}</span>
+    </div>
+    <a href={cta.href} class="inline-flex items-center rounded-md px-3 py-2 bg-[color:var(--color-cta)] text-white text-sm font-medium hover:opacity-90 transition">
+      Download
+    </a>
+  </div>
+</section>

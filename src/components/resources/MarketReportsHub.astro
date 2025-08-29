@@ -1,0 +1,76 @@
+---
+import BaseCard from '../BaseCard.astro';
+import KpiCard from '../KpiCard.astro';
+
+const {
+  title = 'Market Reports',
+  intro = 'Local trends, quarterly reports, and area spotlights.',
+  kpis = [
+    { label: 'Median Price', value: '—' },
+    { label: 'Days on Market', value: '—' },
+    { label: 'Inventory', value: '—' },
+  ],
+  latest = {
+    title: 'Latest Quarterly Report',
+    desc: 'Fresh insights from the most recent quarter.',
+    href: '/resources/market-reports/quarterly',
+    img: '/images/placeholder.webp',
+    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+  },
+  archive = []
+} = Astro.props;
+---
+
+<section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
+  <!-- Header -->
+  <header class="mb-6 md:mb-8">
+    <h1 class="text-2xl md:text-3xl font-bold text-primary">{title}</h1>
+    <p class="mt-2 text-neutral-700">{intro}</p>
+  </header>
+
+  <!-- KPI Grid -->
+  <div class="grid grid-cols-3 gap-3 sm:max-w-2xl">
+    {kpis.map(k => (
+      <KpiCard label={k.label} value={k.value} />
+    ))}
+  </div>
+
+  <!-- Latest + Archive -->
+  <div class="mt-6 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+    <!-- Featured Latest Report -->
+    <BaseCard
+      title={latest.title}
+      desc={latest.desc}
+      img={latest.img}
+      href={latest.href}
+      date={latest.date}
+      tag="Market Report"
+      cta="Read report →"
+      variant="visual"
+    />
+
+    <!-- Archive Sidebar -->
+    <aside class="rounded-md ring-1 ring-neutral-200 bg-neutral-50/80 p-4">
+      <h4 class="font-semibold text-primary">Archive</h4>
+      <ul class="mt-3 space-y-3 text-sm">
+        {archive.length ? (
+          archive.map(a => (
+            <li>
+              <BaseCard
+                title={a.title}
+                href={a.href}
+                date={a.period}
+                tag="Past Report"
+                cta="View →"
+                variant="compact"
+                showImage={false}
+              />
+            </li>
+          ))
+        ) : (
+          <li class="text-neutral-500">No items yet.</li>
+        )}
+      </ul>
+    </aside>
+  </div>
+</section>

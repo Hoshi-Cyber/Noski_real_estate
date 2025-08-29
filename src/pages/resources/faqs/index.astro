@@ -1,0 +1,56 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+
+const title = 'FAQs | Severino Reality';
+const description = 'Quick answers grouped by Buying, Selling, Renting, and Short-Stay.';
+
+const groups = [
+  { name: 'Buying',     href: '/resources/faqs/buying',      count: 12 },
+  { name: 'Selling',    href: '/resources/faqs/selling',     count: 10 },
+  { name: 'Renting',    href: '/resources/faqs/renting',     count: 9  },
+  { name: 'Short-Stay', href: '/resources/faqs/short-stay',  count: 8  },
+];
+---
+<MainLayout {title} {description}>
+  <section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
+    <header class="mb-6 md:mb-8">
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">FAQs</h1>
+      <p class="mt-2 text-neutral-700">Find answers by category or search below.</p>
+      <div class="mt-4">
+        <input
+          id="faq-search"
+          type="search"
+          placeholder="Search FAQ categories"
+          class="w-full max-w-lg rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm"
+          aria-label="Search FAQ categories"
+        />
+      </div>
+    </header>
+
+    <div id="faq-groups" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {groups.map((g) => (
+        <a href={g.href} class="block rounded-md ring-1 ring-neutral-200 bg-white p-4 hover:bg-neutral-50 transition">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-primary">{g.name}</h3>
+            <span class="text-xs text-neutral-500">{g.count}</span>
+          </div>
+          <p class="text-sm text-neutral-600 mt-1">Browse {g.name} questions</p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <script type="module" client:load>
+    const q = document.getElementById('faq-search');
+    const container = document.getElementById('faq-groups');
+    if (q && container) {
+      q.addEventListener('input', () => {
+        const term = q.value.toLowerCase();
+        container.querySelectorAll('a').forEach((a) => {
+          const t = a.querySelector('h3')?.textContent?.toLowerCase() || '';
+          a.classList.toggle('hidden', term && !t.includes(term));
+        });
+      });
+    }
+  </script>
+</MainLayout>

@@ -1,0 +1,29 @@
+---
+// Contact form component configured for Netlify submissions.
+---
+<form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="space-y-4">
+  <!-- Hidden input for Netlify -->
+  <input type="hidden" name="form-name" value="contact" />
+  <p class="hidden">
+    <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
+  </p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <label class="block mb-1 text-sm font-medium text-primary" for="name">Name</label>
+      <input type="text" id="name" name="name" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+    </div>
+    <div>
+      <label class="block mb-1 text-sm font-medium text-primary" for="email">Email</label>
+      <input type="email" id="email" name="email" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+    </div>
+    <div class="sm:col-span-2">
+      <label class="block mb-1 text-sm font-medium text-primary" for="phone">Phone</label>
+      <input type="tel" id="phone" name="phone" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+    </div>
+    <div class="sm:col-span-2">
+      <label class="block mb-1 text-sm font-medium text-primary" for="message">Message</label>
+      <textarea id="message" name="message" rows="4" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta"></textarea>
+    </div>
+  </div>
+  <button type="submit" class="bg-cta text-white px-6 py-2 rounded-md font-medium hover:bg-accent transition-colors">Submit</button>
+</form>

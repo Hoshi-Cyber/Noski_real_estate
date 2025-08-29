@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Property Onboarding & Listing",
+  "description": "Kenya-specific master intake form for Sale, Rent, Short Stays, and Management.",
+  "type": "object"
+}

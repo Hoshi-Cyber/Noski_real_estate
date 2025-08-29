@@ -1,0 +1,24 @@
+---
+import BlogCard from '../BlogCard.astro';
+
+interface Props {
+  entries: any[];       // array of Astro Content blog entries
+  category?: string;    // optional filter category
+  currentSlug?: string; // exclude current
+  limit?: number;       // default 3
+}
+const { entries = [], category, currentSlug, limit = 3 } = Astro.props as Props;
+
+const items = entries
+  .filter(e => (category ? e.data?.category === category : true))
+  .filter(e => (currentSlug ? e.slug !== currentSlug : true))
+  .slice(0, limit);
+---
+{items.length > 0 && (
+  <section aria-label="Related posts" class="mt-8">
+    <h2 class="text-lg font-semibold text-primary mb-3">Related posts</h2>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {items.map(e => <BlogCard entry={e} />)}
+    </div>
+  </section>
+)}

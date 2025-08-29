@@ -1,0 +1,113 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+import CategoryPills from '../../components/blog/CategoryPills.astro';
+
+const meta = {
+  slug: 'short-stay-lifestyle',
+  label: 'Short-Stay & Lifestyle',
+  desc: 'Operate profitable short-lets and elevate guest experience.',
+};
+
+const getTS = (e:any) => {
+  const d = e?.data?.pubDate ?? e?.data?.date;
+  return d ? new Date(d).getTime() : 0;
+};
+
+const posts = (await getCollection('blog', ({ data }) =>
+  String(data.category || '').toLowerCase() === meta.slug
+)).sort((a,b)=>getTS(b)-getTS(a));
+
+const fmt = new Intl.DateTimeFormat('en-KE', { dateStyle: 'medium' });
+const ld = {
+  '@context':'https://schema.org',
+  '@type':'CollectionPage',
+  name: `${meta.label} | Blog | Severino Realty`,
+  about: meta.desc,
+  isPartOf: { '@type':'Blog', name:'Severino Realty Blog', url:'/blog' },
+};
+---
+<MainLayout title={`${meta.label} | Blog | Severino Realty`} description={meta.desc}>
+  <section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
+    <header class="mb-6 md:mb-8">
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">{meta.label}</h1>
+      <p class="mt-2 text-neutral-700">{meta.desc}</p>
+      <div class="mt-4"><CategoryPills active={meta.slug} /></div>
+
+      <div class="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+        <input id="blog-q" type="search" placeholder={`Search ${meta.label}`}
+               class="w-full sm:max-w-xs rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm" />
+        <label class="text-sm text-neutral-700 flex items-center gap-2">
+          <span>Sort</span>
+          <select id="blog-sort" class="rounded-md ring-1 ring-neutral-300 px-2 py-2 text-sm">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    {posts.length === 0 ? (
+      <p class="text-neutral-600">No posts yet in this category.</p>
+    ) : (
+      <div id="post-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map(p => {
+          const href = `/blog/${p.slug}`;
+          const d = p.data?.pubDate ?? p.data?.date;
+          const when = d ? fmt.format(new Date(d)) : '';
+          return (
+            <article class="rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden"
+                     data-title={(p.data?.title || '').toLowerCase()}>
+              {p.data?.heroImage && (
+                <a href={href} class="block">
+                  <img src={p.data.heroImage} alt={p.data.title} class="w-full h-40 object-cover" loading="lazy" decoding="async" />
+                </a>
+              )}
+              <div class="p-4">
+                <div class="text-xs text-neutral-500 flex items-center gap-2">
+                  <span>{meta.label}</span>
+                  {when && <span aria-hidden="true">•</span>}
+                  {when && <time datetime={new Date(d).toISOString()}>{when}</time>}
+                </div>
+                <h2 class="mt-1 font-semibold text-primary">
+                  <a href={href} class="hover:underline">{p.data.title}</a>
+                </h2>
+                <p class="mt-2 text-sm text-neutral-700 line-clamp-3">{p.data.description}</p>
+                <a href={href} class="mt-3 inline-block text-sm text-[color:var(--color-cta)] hover:underline">Read more</a>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    )}
+
+    <script type="application/ld+json">{JSON.stringify(ld)}</script>
+
+    <script type="module" client:load>
+      const q = document.getElementById('blog-q');
+      const sort = document.getElementById('blog-sort');
+      const grid = document.getElementById('post-grid');
+
+      function apply() {
+        if (!grid) return;
+        const term = (q?.value || '').toLowerCase();
+        const cards = Array.from(grid.querySelectorAll('article'));
+        cards.forEach(c => {
+          const t = c.dataset.title || '';
+          c.classList.toggle('hidden', term && !t.includes(t));
+        });
+        const visible = cards.filter(c => !c.classList.contains('hidden'));
+        const oldest = sort?.value === 'oldest';
+        visible.sort((a, b) => {
+          const ta = a.querySelector('time')?.getAttribute('datetime') || '';
+          const tb = b.querySelector('time')?.getAttribute('datetime') || '';
+          return oldest ? (ta > tb ? 1 : -1) : (ta < tb ? 1 : -1);
+        });
+        visible.forEach(c => grid.appendChild(c));
+      }
+
+      q?.addEventListener('input', apply);
+      sort?.addEventListener('change', apply);
+    </script>
+  </section>
+</MainLayout>

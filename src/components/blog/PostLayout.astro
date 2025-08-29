@@ -1,0 +1,119 @@
+---
+/** Props:
+ * - entry: CollectionEntry<"blog">
+ * - headings: Array<{ id: string; text: string; level: 2 | 3 }>
+ * - related: CollectionEntry<"blog">[]
+ */
+import BlogCard from './BlogCard.astro';
+
+const { entry, headings = [], related = [] } = Astro.props;
+
+const category = entry.data.category ?? "Blog";
+const date = new Date(entry.data.pubDate ?? entry.data.date ?? Date.now());
+
+const catHue =
+  category === "Buyer & Renter Tips" ? "text-blue-700 bg-blue-50" :
+  category === "Seller & Marketing Tips" ? "text-amber-700 bg-amber-50" :
+  category === "Short-Stay & Lifestyle" ? "text-emerald-700 bg-emerald-50" :
+  category === "Local Living Features" ? "text-purple-700 bg-purple-50" :
+  "text-slate-700 bg-slate-100";
+
+const hero = entry.data.heroImage ?? "/images/placeholders/hero-house-1.webp";
+---
+
+<!-- shell -->
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+  <!-- breadcrumb -->
+  <nav aria-label="Breadcrumb" class="mb-4 text-sm">
+    <a href="/blog" class="text-slate-500 hover:text-slate-700">Blog</a>
+    <span class="mx-2 text-slate-400">/</span>
+    <a href={`/blog/${(category || '').toLowerCase().replaceAll('&','and').replaceAll(/\s+/g,'-')}`}
+       class={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 ${catHue}`}>
+      {category}
+    </a>
+  </nav>
+
+  <!-- title + meta -->
+  <header class="max-w-3xl">
+    <h1 class="text-3xl/tight sm:text-4xl/tight font-semibold text-slate-900">
+      {entry.data.title}
+    </h1>
+    <p class="mt-2 text-slate-500">{date.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' })}</p>
+  </header>
+
+  <!-- hero -->
+  {hero && (
+    <div class="mt-6 rounded-xl overflow-hidden ring-1 ring-slate-200">
+      <img src={hero} alt={entry.data.title} class="w-full h-auto object-cover"/>
+    </div>
+  )}
+
+  <!-- main two-column -->
+  <div class="mt-10 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12">
+    <!-- article -->
+    <article class="mx-auto w-full max-w-3xl">
+      <slot />
+
+      <!-- CTA (light) -->
+      <div class="mt-10 rounded-lg border border-slate-200 p-5 bg-slate-50">
+        <h3 class="font-semibold text-slate-900">Need help with your next step?</h3>
+        <p class="mt-1 text-slate-600">Talk to Severino Realty for a quick walkthrough tailored to your case.</p>
+        <a href="/contact" class="mt-3 inline-flex items-center rounded-md bg-[color:var(--color-cta)] px-4 py-2 text-white hover:opacity-90 transition">
+          Contact us
+        </a>
+      </div>
+    </article>
+
+    <!-- sidebar -->
+    <aside class="lg:sticky lg:top-24 h-max">
+      <!-- TOC -->
+      {headings.length > 0 && (
+        <section class="rounded-lg border border-slate-200 p-5 bg-white">
+          <h2 class="text-sm font-semibold text-slate-900">On this page</h2>
+          <ul class="mt-3 space-y-2 text-sm">
+            {headings.map(h => (
+              <li class={h.level === 3 ? "pl-4" : ""}>
+                <a href={`#${h.id}`} class="text-slate-600 hover:text-slate-900">{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <!-- share -->
+      <section class="mt-6 rounded-lg border border-slate-200 p-5 bg-white">
+        <h2 class="text-sm font-semibold text-slate-900">Share</h2>
+        <div class="mt-3 flex gap-3 text-sm">
+          <a class="underline text-slate-600 hover:text-slate-900"
+             href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(entry.data.title)}&url=${encodeURIComponent(Astro.url.href)}`} target="_blank">X</a>
+          <a class="underline text-slate-600 hover:text-slate-900"
+             href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`} target="_blank">Facebook</a>
+          <a class="underline text-slate-600 hover:text-slate-900"
+             href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(Astro.url.href)}`} target="_blank">LinkedIn</a>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- related -->
+  {related.length > 0 && (
+    <section class="mt-14">
+      <h2 class="text-lg font-semibold text-slate-900">Related posts</h2>
+      <div class="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {related.slice(0,4).map(r => (
+          <BlogCard entry={r} />
+        ))}
+      </div>
+    </section>
+  )}
+</div>
+
+<style>
+  /* pleasant reading width */
+  article :global(p){margin-top:1rem;line-height:1.75}
+  article :global(h2){margin-top:2.5rem;margin-bottom:.75rem;font-size:1.25rem;font-weight:700}
+  article :global(h3){margin-top:1.75rem;margin-bottom:.25rem;font-weight:600}
+  article :global(ul){list-style:disc;padding-left:1.25rem}
+  article :global(ol){list-style:decimal;padding-left:1.25rem}
+  article :global(a){text-decoration:underline}
+</style>

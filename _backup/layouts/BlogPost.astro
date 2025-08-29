@@ -1,0 +1,114 @@
+---
+import MainLayout from './MainLayout.astro';
+
+const {
+  entry,            // the content entry
+  Content,          // rendered MD component
+  headings = [],    // [{depth, slug, text}]
+  related = [],     // array of other blog entries
+} = Astro.props;
+
+const d = entry.data;
+const title = d.title ?? 'Blog post';
+const description = d.description ?? '';
+const pub = d.pubDate ? new Date(d.pubDate) : null;
+
+const cat = d.category || '';
+const hero = d.heroImage || '/images/placeholders/hero-house-1.jpg';
+const author = d.author || 'Severino Realty';
+
+const fmt = new Intl.DateTimeFormat('en-KE', { dateStyle: 'long' });
+
+// JSON-LD
+const ld = {
+  '@context':'https://schema.org',
+  '@type':'Article',
+  headline: title,
+  datePublished: pub?.toISOString(),
+  author: [{ '@type':'Organization', name: author }],
+  image: hero,
+  articleSection: cat,
+  description,
+  mainEntityOfPage: Astro.url.href
+};
+---
+
+<MainLayout {title} {description}>
+  <article class="max-w-3xl mx-auto px-4 py-8 md:py-10">
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="text-sm text-neutral-600 mb-3">
+      <a href="/blog" class="hover:underline">Blog</a>
+      <span aria-hidden="true"> / </span>
+      <a href={`/blog/${(cat||'').toLowerCase().replace(/\s+/g,'-')}`} class="hover:underline">{cat}</a>
+    </nav>
+
+    <!-- Title & meta -->
+    <header class="mb-4">
+      <p class="text-sm text-[color:var(--color-cta)] font-medium">{cat}</p>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary leading-tight">{title}</h1>
+      {pub && <p class="mt-2 text-sm text-neutral-600">{fmt.format(pub)} • By {author}</p>}
+    </header>
+
+    <!-- Hero -->
+    <figure class="mb-6">
+      <img src={hero} alt={title} class="w-full h-auto rounded-lg shadow-sm" loading="eager" decoding="async" />
+      {d.heroCaption && <figcaption class="mt-2 text-xs text-neutral-500">{d.heroCaption}</figcaption>}
+    </figure>
+
+    <!-- Body + TOC -->
+    <div class="grid md:grid-cols-[1fr,280px] gap-8">
+      <div class="prose prose-neutral max-w-none">
+        <Content />
+      </div>
+
+      <!-- Sticky TOC (auto from headings) -->
+      {headings.length > 0 && (
+        <aside class="hidden md:block sticky top-24 h-fit rounded-lg border border-neutral-200 bg-white p-4">
+          <h2 class="text-sm font-semibold text-primary mb-2">On this page</h2>
+          <ul class="space-y-1 text-sm">
+            {headings
+              .filter(h => h.depth === 2 || h.depth === 3)
+              .map(h => (
+                <li class={`pl-${h.depth === 3 ? '3' : '0'}`}>
+                  <a href={`#${h.slug}`} class="hover:underline">{h.text}</a>
+                </li>
+              ))}
+          </ul>
+        </aside>
+      )}
+    </div>
+
+    <!-- Share -->
+    <section class="mt-10 border-t pt-6">
+      <h2 class="text-base font-semibold text-primary mb-3">Share</h2>
+      <div class="flex gap-3 text-sm">
+        <a class="px-3 py-2 rounded-md ring-1 ring-neutral-300" href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(Astro.url.href)}`} target="_blank" rel="noopener">X/Twitter</a>
+        <a class="px-3 py-2 rounded-md ring-1 ring-neutral-300" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`} target="_blank" rel="noopener">Facebook</a>
+        <a class="px-3 py-2 rounded-md ring-1 ring-neutral-300" href={`https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + Astro.url.href)}`} target="_blank" rel="noopener">WhatsApp</a>
+        <button class="px-3 py-2 rounded-md ring-1 ring-neutral-300" onClick={() => navigator.clipboard.writeText(Astro.url.href)}>Copy link</button>
+      </div>
+    </section>
+
+    <!-- Related posts -->
+    {related.length > 0 && (
+      <section class="mt-10">
+        <h2 class="text-lg font-semibold text-primary mb-4">Related reading</h2>
+        <ul class="grid gap-4 sm:grid-cols-2">
+          {related.slice(0,4).map((r) => (
+            <li class="rounded-lg border border-neutral-200 bg-white overflow-hidden">
+              <a href={`/blog/${r.slug}`} class="block">
+                {r.data.heroImage && <img src={r.data.heroImage} alt={r.data.title} class="w-full h-36 object-cover" loading="lazy" />}
+                <div class="p-3">
+                  <p class="text-xs text-neutral-500">{r.data.category}</p>
+                  <h3 class="font-medium text-primary line-clamp-2">{r.data.title}</h3>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <script type="application/ld+json">{JSON.stringify(ld)}</script>
+  </article>
+</MainLayout>

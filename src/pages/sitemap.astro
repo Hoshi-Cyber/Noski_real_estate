@@ -1,0 +1,43 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Sitemap" description="Navigate the Severino Realty microsite with ease.">
+  <section class="py-12 max-w-5xl mx-auto px-4">
+    <h1 class="text-3xl font-bold text-primary mb-4">Sitemap</h1>
+    <ul class="list-disc list-inside space-y-2 text-neutral-700">
+      <li><a href="/" class="text-cta hover:text-accent">Home</a></li>
+      <li><a href="/for-sale" class="text-cta hover:text-accent">For Sale</a></li>
+      <li><a href="/for-rent" class="text-cta hover:text-accent">For Rent</a></li>
+      <li><a href="/short-stays" class="text-cta hover:text-accent">Short Stays</a></li>
+      <li><a href="/list-property" class="text-cta hover:text-accent">List Your Property</a></li>
+      <li><a href="/blog" class="text-cta hover:text-accent">Blog</a></li>
+      <ul class="ml-6 list-inside space-y-1">
+        {[
+          'Buyer & Renter Guides',
+          'Market Insights',
+          'Seller Advice & Insights',
+          'Short-Stay & Investment Opportunities'
+        ].map(cat => {
+          const slug = cat
+            .toLowerCase()
+            .replace(/[’']/g, '')
+            .replace(/[\u2011\u2013\u2014]+/g, '-')
+            .replace(/[&]/g, 'and')
+            .replace(/["(),]/g, '')
+            .replace(/\s+/g, '-');
+          return (
+            <li class="list-disc">
+              <a href={`/blog/category/${slug}`} class="text-cta hover:text-accent">{cat}</a>
+            </li>
+          );
+        })}
+      </ul>
+      <li><a href="/resources" class="text-cta hover:text-accent">Resources</a></li>
+      <li><a href="/faq" class="text-cta hover:text-accent">FAQ</a></li>
+      <li><a href="/contact" class="text-cta hover:text-accent">Contact</a></li>
+      <li><a href="/privacy" class="text-cta hover:text-accent">Privacy Policy</a></li>
+      <li><a href="/terms" class="text-cta hover:text-accent">Terms & Conditions</a></li>
+    </ul>
+  </section>
+</MainLayout>

@@ -1,0 +1,23 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+import GuideDetail from '../../../../components/resources/GuideDetail.astro';
+
+const title = 'Selling Guide | Severino Reality';
+const description = 'Pricing, prep, marketing, offers, and closing with tight execution.';
+
+const steps = [
+  { id:'assess',  heading:'Property assessment & pricing strategy', bodyHtml:'<p>Define target buyer, comps, and pricing band. Decide between list-to-attract vs. list-to-negotiate.</p>' },
+  { id:'prep',    heading:'Preparation & staging', bodyHtml:'<p>Fix high-ROI issues, declutter, professional staging checklist, photography brief.</p>' },
+  { id:'launch',  heading:'Launch & marketing', bodyHtml:'<p>MLS + portals, paid boost, social reels, open houses, lead capture.</p>' },
+  { id:'offers',  heading:'Offers & negotiation', bodyHtml:'<p>Offer matrix, terms vs. price trade-offs, counter strategy, buyer qualification.</p>' },
+  { id:'close',   heading:'Escrow, legal, and closing', bodyHtml:'<p>Disclosures, inspections, repairs, walkthrough, settlement statement.</p>' },
+];
+
+---
+<MainLayout {title} {description}>
+  <GuideDetail {title}
+    summary="End-to-end playbook to sell at speed without leaving money on the table."
+    estReadMin={12}
+    checklistUrl="#"
+    {steps} />
+</MainLayout>

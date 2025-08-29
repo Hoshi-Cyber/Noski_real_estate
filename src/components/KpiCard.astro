@@ -1,0 +1,13 @@
+---
+export interface Props {
+  label: string;
+  value: string | number;
+}
+
+const { label, value } = Astro.props;
+---
+
+<div class="rounded-md ring-1 ring-neutral-200 bg-white shadow-sm p-4 text-center transition hover:shadow-md">
+  <div class="text-xs text-neutral-500">{label}</div>
+  <div class="text-lg font-semibold text-primary">{value}</div>
+</div>

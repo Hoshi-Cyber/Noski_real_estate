@@ -1,0 +1,24 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+import GuideDetail from '../../../../components/resources/GuideDetail.astro';
+
+const title = 'Renting & Landlord Guide | Severino Reality';
+const description = 'Acquisition-to-operations workflow for compliant and profitable rentals.';
+
+const steps = [
+  { id:'ready',   heading:'Unit readiness & pricing', bodyHtml:'<p>Turnover checklist, rent comps, yield target, concessions policy.</p>' },
+  { id:'market',  heading:'Marketing & tenant funnel', bodyHtml:'<p>Listings, photos, screening form, showing cadence, lead tracking.</p>' },
+  { id:'screen',  heading:'Screening & approval', bodyHtml:'<p>Criteria, verification, risk flags, fair-housing compliance.</p>' },
+  { id:'lease',   heading:'Lease & move-in', bodyHtml:'<p>Deposit, inventory & condition report, utilities, key handover.</p>' },
+  { id:'ops',     heading:'Operations & maintenance', bodyHtml:'<p>Rent collection, SLAs, vendor panel, preventive schedule.</p>' },
+  { id:'renewal', heading:'Renewals & vacancy control', bodyHtml:'<p>Notice timelines, increase policy, retention offers, re-list flow.</p>' },
+];
+
+---
+<MainLayout {title} {description}>
+  <GuideDetail {title}
+    summary="Simple operating system for stable tenancy, low vacancy, and fewer headaches."
+    estReadMin={14}
+    checklistUrl="#"
+    {steps} />
+</MainLayout>

@@ -1,0 +1,42 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import PostLayout from '../../components/blog/PostLayout.astro';
+import { getCollection } from 'astro:content';
+
+const parts = Array.isArray(Astro.params.slug) ? Astro.params.slug : [Astro.params.slug];
+const slug = parts.join('/');
+
+const all = await getCollection('blog');
+const post = all.find((p) => p.slug === slug);
+if (!post) throw new Error(`Post not found for slug: ${slug}`);
+
+// naive headings parser from MD body (## / ### only)
+const headings = (post.body || '')
+  .split('\n')
+  .filter((l) => /^#{2,3}\s+/.test(l))
+  .map((l) => {
+    const level = l.startsWith('###') ? 3 : 2;
+    const text = l.replace(/^#{2,3}\s+/, '').trim();
+    const id = text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-');
+    return { id, text, level };
+  });
+
+// 4 related in same category (exclude current)
+const related = all
+  .filter(
+    (p) =>
+      p.slug !== post.slug &&
+      p.data?.category?.toLowerCase?.() === post.data?.category?.toLowerCase?.()
+  )
+  .slice(0, 4);
+
+const title = post.data.title ?? 'Blog';
+const desc = post.data.description ?? '';
+---
+
+<MainLayout title={`${title} | Blog | Severino Realty`} description={desc}>
+  <PostLayout entry={post} headings={headings} related={related} />
+</MainLayout>

@@ -1,0 +1,82 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+
+const title = 'Renting FAQs | Severino Reality';
+const description = 'Common questions about renting and tenancy.';
+const guideUrl = '/resources/guides/renting-landlord';
+
+const faqs = [
+  { q:'Required documents for tenants?', aHtml:'<p>ID, employment/income proof, references, and prior landlord contacts.</p>' },
+  { q:'How is rent set?', aHtml:'<p>By comps, features, seasonality, and occupancy goals. Review quarterly.</p>' },
+  { q:'Deposit rules and returns?', aHtml:'<p>State your policy in the lease. Document condition to avoid disputes.</p>' },
+  { q:'Maintenance SLAs?', aHtml:'<p>Emergencies 24h, urgent 72h, routine 7–14 days. Communicate clearly.</p>' },
+  { q:'Late payment process?', aHtml:'<p>Grace period, notice, fees as per lease and local law. Keep written records.</p>' },
+  { q:'Pets and restrictions?', aHtml:'<p>Define pet policy, deposits/fees, and damage responsibilities in the lease.</p>' },
+];
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({ '@type':'Question', name:f.q, acceptedAnswer:{ '@type':'Answer', text:f.aHtml.replace(/<[^>]*>/g,'') } })),
+};
+---
+<MainLayout {title} {description}>
+  <section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
+    <header class="mb-6 md:mb-8">
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">Renting FAQs</h1>
+      <div class="mt-3 flex items-center gap-3">
+        <input id="faq-q" type="search" placeholder="Search Renting FAQs" class="w-full max-w-lg rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm" aria-label="Search Renting FAQs" />
+        <a href={guideUrl} class="rounded-md px-3 py-2 bg-[color:var(--color-cta)] text-white text-sm">Read full Guide</a>
+      </div>
+    </header>
+
+    <div id="faq-list" class="divide-y divide-neutral-200 rounded-md ring-1 ring-neutral-200 bg-white">
+      {faqs.map(f => (
+        <details class="group">
+          <summary class="list-none cursor-pointer px-4 py-3 flex items-center justify-between">
+            <span class="font-medium text-primary">{f.q}</span>
+            <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-neutral-700 prose max-w-none" set:html={f.aHtml}></div>
+        </details>
+      ))}
+    </div>
+
+    <script type="application/ld+json">{JSON.stringify(ld)}</script>
+  </section>
+
+  <script type="module" client:load>
+    const q = document.getElementById('faq-q');
+    const list = document.getElementById('faq-list');
+
+    // Filter
+    q?.addEventListener('input', () => {
+      const term = q.value.toLowerCase();
+      list.querySelectorAll('details').forEach(d => {
+        const t = d.querySelector('span')?.textContent?.toLowerCase() || '';
+        d.classList.toggle('hidden', term && !t.includes(term));
+      });
+    });
+
+    // One-open-only
+    function closeOthers(except){
+      list.querySelectorAll('details[open]').forEach(d => { if (d !== except) d.removeAttribute('open'); });
+    }
+    list?.addEventListener('toggle', (e) => {
+      const d = e.target;
+      if (d.tagName !== 'DETAILS') return;
+      if (d.open) closeOthers(d);
+    }, true);
+
+    // Hash open
+    const hash = decodeURIComponent(location.hash.slice(1));
+    if (hash && list) {
+      const match = [...list.querySelectorAll('details')].find(d =>
+        (d.querySelector('span')?.textContent || '').toLowerCase().includes(hash.toLowerCase())
+      );
+      if (match) { closeOthers(match); match.open = true; }
+    }
+  </script>
+</MainLayout>

@@ -1,0 +1,200 @@
+---
+import { getCollection } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+import PropertyCard from '../../components/PropertyCard.astro';
+import { parseSearchParams, filterListings } from '../../lib/search';
+
+// Helpers
+const areaOf = (loc = '') => (loc || '').split(',')[0].trim();
+const canonType = (t = '') => {
+  const v = t.trim().toLowerCase();
+  return (v === 'studio' || v === 'bedsitter') ? 'studio/bedsitter' : v;
+};
+const cardImg = (entry: any) => {
+  const folder = entry?.data?.imagesFolder || '';
+  return folder ? `${folder}/1.webp` : '/images/placeholder.webp';
+};
+
+// Fetch listings
+const all = await getCollection('listings');
+const preparedListings = all.map(e => ({
+  title: e.data.title,
+  availability: e.data.availability,
+  location: e.data.location,
+  area: areaOf(e.data.location),
+  price: e.data.price,
+  bedrooms: e.data.bedrooms,
+  slug: e.slug,
+  image: cardImg(e),
+  type: canonType(e.data.type),
+  raw: e
+}));
+
+// Parse + filter SSR
+const query = parseSearchParams(Astro.url.searchParams);
+const filteredListings = filterListings(preparedListings, query);
+
+// Facets
+const allLocations = Array.from(new Set(all.map(e => areaOf(e.data.location)).filter(Boolean))).sort();
+const allTypesCanon = Array.from(new Set(all.map(e => canonType(e.data.type)).filter(Boolean))).sort();
+
+// Pagination SSR
+const PAGE_SIZE = 12;
+const totalResults = filteredListings.length;
+const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
+const currentPage = Math.min(Math.max(query.page, 1), totalPages);
+const paginatedListings = filteredListings.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+// URL builder
+function pageUrl(page) {
+  const params = new URLSearchParams(Astro.url.searchParams);
+  if (page > 1) params.set('page', String(page));
+  else params.delete('page');
+  return `/listings?${params.toString()}`;
+}
+
+const btn = {
+  primary: 'inline-flex items-center rounded-md bg-emerald-600 text-white px-5 py-3 text-sm font-semibold shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2',
+  ghost: 'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-200'
+};
+---
+
+<MainLayout title="All Listings – Severino Realty">
+  <section class="py-10 max-w-7xl mx-auto px-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6 gap-3">
+      <h1 class="text-3xl font-bold text-primary">All Listings</h1>
+      <div class="hidden sm:flex gap-2">
+        <a href="/for-sale" class={btn.ghost}>For Sale</a>
+        <a href="/for-rent" class={btn.ghost}>For Rent</a>
+        <a href="/short-stays" class={btn.ghost}>Short Stays</a>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <select id="f-availability" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
+        <option value="">All Availability</option>
+        <option value="rent" selected={query.availability === 'rent'}>For Rent</option>
+        <option value="sale" selected={query.availability === 'sale'}>For Sale</option>
+        <option value="short" selected={query.availability === 'short'}>Short Stays</option>
+      </select>
+
+      <select id="f-location" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
+        <option value="">All Locations</option>
+        {allLocations.map(loc => (
+          <option value={loc.toLowerCase()} selected={query.q.toLowerCase() === loc.toLowerCase()}>{loc}</option>
+        ))}
+      </select>
+
+      <select id="f-bed" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
+        <option value="">Min Bedrooms</option>
+        {[1,2,3,4,5].map(b => (
+          <option value={b} selected={query.beds === b}>{b}+</option>
+        ))}
+      </select>
+
+      <select id="f-type" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
+        <option value="">All Property Types</option>
+        {allTypesCanon.map(t => (
+          <option value={t}>{t === 'studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g, c => c.toUpperCase())}</option>
+        ))}
+      </select>
+    </div>
+
+    <!-- Results -->
+    <div id="result-count" class="text-sm text-neutral-600 mb-3">
+      {totalResults} listing{totalResults !== 1 && 's'}
+    </div>
+
+    {totalResults === 0 ? (
+      <div id="empty" class="text-center text-neutral-600 mt-8">No listings match your filters.</div>
+    ) : (
+      <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {paginatedListings.map(l => (
+          <li class="card"
+            data-avail={l.availability.toLowerCase()}
+            data-loc={l.area.toLowerCase()}
+            data-beds={l.bedrooms || 0}
+            data-type={l.type}
+          >
+            <PropertyCard listing={l.raw.data} slug={l.slug} compact={false} image={l.image} />
+          </li>
+        ))}
+      </ul>
+    )}
+
+    <!-- Pagination -->
+    <div id="pager" class="mt-8 flex flex-wrap items-center justify-center gap-2">
+      {totalPages > 1 && Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+        <a href={pageUrl(p)} class={p === currentPage ? 'px-3 py-1.5 rounded-md bg-emerald-600 text-white text-sm font-semibold' : 'px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50'}>
+          {p}
+        </a>
+      ))}
+    </div>
+  </section>
+</MainLayout>
+
+<!-- Client-side enhancement -->
+<script is:inline>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => Array.from(document.querySelectorAll(s));
+  const fAvail = $('#f-availability');
+  const fLoc = $('#f-location');
+  const fBed = $('#f-bed');
+  const fType = $('#f-type');
+  const cards = $$('#cards .card');
+  const resultCount = $('#result-count');
+  const empty = $('#empty');
+  const pager = $('#pager');
+
+  const PAGE_SIZE = 12;
+
+  function applyFilters(page = 1) {
+    const vAvail = fAvail.value;
+    const vLoc = fLoc.value;
+    const vBed = parseInt(fBed.value || '0', 10) || 0;
+    const vType = fType.value;
+
+    let visible = [];
+    cards.forEach(card => {
+      const ok = (!vAvail || card.dataset.avail === vAvail)
+        && (!vLoc || card.dataset.loc === vLoc)
+        && ((parseInt(card.dataset.beds) || 0) >= vBed)
+        && (!vType || card.dataset.type === vType);
+      card.style.display = ok ? '' : 'none';
+      if (ok) visible.push(card);
+    });
+
+    resultCount.textContent = `${visible.length} listing${visible.length !== 1 ? 's' : ''}`;
+    empty && empty.classList.toggle('hidden', visible.length !== 0);
+
+    // Pagination (client)
+    const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+    if (page > totalPages) page = totalPages;
+    visible.forEach((c, i) => {
+      c.style.display = (i >= (page - 1) * PAGE_SIZE && i < page * PAGE_SIZE) ? '' : 'none';
+    });
+
+    pager.innerHTML = '';
+    if (totalPages > 1) {
+      for (let p = 1; p <= totalPages; p++) {
+        const btn = document.createElement('button');
+        btn.textContent = p;
+        btn.className = p === page
+          ? 'px-3 py-1.5 rounded-md bg-emerald-600 text-white text-sm font-semibold'
+          : 'px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50';
+        btn.onclick = () => applyFilters(p);
+        pager.appendChild(btn);
+      }
+    }
+  }
+
+  [fAvail, fLoc, fBed, fType].forEach(el =>
+    el.addEventListener('change', () => applyFilters(1))
+  );
+
+  applyFilters();
+})();
+</script>

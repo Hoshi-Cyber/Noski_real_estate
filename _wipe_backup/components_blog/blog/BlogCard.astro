@@ -1,0 +1,41 @@
+---
+// BlogCard.astro
+// Works with an Astro Content *entry* from getCollection('blog')
+const { entry } = Astro.props; // required
+
+if (!entry) throw new Error('BlogCard requires { entry }.');
+
+const href = `/blog/${entry.slug}`;
+const { title, description, pubDate, category, heroImage } = entry.data;
+const when = pubDate ? new Date(pubDate) : null;
+const whenText = when ? when.toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+---
+<article class="rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+  <a href={href} class="block" aria-label={`Read: ${title}`}>
+    {heroImage ? (
+      <img
+        src={heroImage}
+        alt={title}
+        loading="lazy"
+        decoding="async"
+        class="w-full h-44 object-cover"
+      />
+    ) : (
+      <div class="w-full h-44 bg-neutral-100 flex items-center justify-center text-neutral-400 text-sm">
+        No image
+      </div>
+    )}
+    <div class="p-4">
+      <div class="text-xs text-neutral-500 flex items-center gap-2">
+        {category && <span class="inline-flex items-center rounded-full px-2 py-0.5 ring-1 ring-neutral-300">{category}</span>}
+        {whenText && <span aria-hidden="true">•</span>}
+        {whenText && <time datetime={when?.toISOString()}>{whenText}</time>}
+      </div>
+
+      <h3 class="mt-1 font-semibold text-primary line-clamp-2">{title}</h3>
+      {description && <p class="mt-2 text-sm text-neutral-700 line-clamp-3">{description}</p>}
+
+      <span class="mt-3 inline-block text-sm text-[color:var(--color-cta)] hover:underline">Read more</span>
+    </div>
+  </a>
+</article>

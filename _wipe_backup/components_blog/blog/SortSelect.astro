@@ -1,0 +1,18 @@
+---
+const { value = 'newest' } = Astro.props as { value?: 'newest'|'oldest' };
+---
+<label class="inline-flex items-center gap-2 text-sm">
+  <span class="text-neutral-600">Sort</span>
+  <select id="blog-sort" class="rounded-md ring-1 ring-neutral-300 px-2 py-1"
+          value={value} aria-label="Sort posts">
+    <option value="newest">Newest</option>
+    <option value="oldest">Oldest</option>
+  </select>
+</label>
+
+<script type="module" client:load>
+  const s = document.getElementById('blog-sort');
+  s?.addEventListener('change', () => {
+    s.dispatchEvent(new CustomEvent('sort-change', { bubbles: true, detail: { value: s.value } }));
+  });
+</script>

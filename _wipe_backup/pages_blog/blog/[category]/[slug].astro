@@ -1,0 +1,38 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+
+// Build all /blog/:category/:slug paths from the blog collection
+export async function getStaticPaths() {
+  const entries = await getCollection('blog');
+  return entries
+    .map((entry) => {
+      // entry.slug includes subfolders, e.g. "buyer-renter-tips/stamp-duty-kenya-explained"
+      const parts = entry.slug.split('/');
+      if (parts.length < 2) return null; // ignore non-nested posts
+      const category = parts[0];
+      const slug = parts.slice(1).join('/'); // supports deeper nesting if needed
+      return { params: { category, slug }, props: { entry } };
+    })
+    .filter(Boolean);
+}
+
+const { entry } = Astro.props;
+const { title, description, heroImage, pubDate, category } = entry.data;
+const iso = pubDate ? new Date(pubDate).toISOString() : undefined;
+const when = iso ? new Date(iso).toLocaleDateString('en-KE', { dateStyle: 'medium' }) : '';
+const { Content } = await entry.render();
+---
+
+<MainLayout title={`${title} | Blog | Severino Realty`} description={description}>
+  <article class="max-w-3xl mx-auto px-4 py-8 prose prose-neutral">
+    <header class="mb-6">
+      {category && <p class="text-sm text-neutral-500">{category}</p>}
+      <h1 class="!mb-2">{title}</h1>
+      {iso && <time datetime={iso} class="text-sm text-neutral-500">{when}</time>}
+      {heroImage && <img src={heroImage} alt={title} class="mt-4 rounded-lg" loading="lazy" decoding="async" />}
+    </header>
+
+    <Content />
+  </article>
+</MainLayout>

@@ -1,0 +1,24 @@
+---
+const { active = '' } = Astro.props;
+
+// fixed 4 categories (order matters)
+const CATS = [
+  { slug: 'buyer-renter-tips',     label: 'Buyer & Renter Tips' },
+  { slug: 'seller-marketing-tips', label: 'Seller & Marketing Tips' },
+  { slug: 'short-stay-lifestyle',  label: 'Short-Stay & Lifestyle' },
+  { slug: 'local-living-features', label: 'Local Living Features' },
+];
+---
+<nav class="flex flex-wrap gap-2" aria-label="Categories">
+  {CATS.map(c => (
+    <a
+      href={`/blog/${c.slug}`}
+      aria-current={active === c.slug ? 'page' : 'false'}
+      class={`rounded-full px-3 py-1 text-sm ring-1 ring-neutral-300 hover:bg-neutral-50 ${
+        active === c.slug ? 'bg-neutral-100 text-primary' : ''
+      }`}
+    >
+      {c.label}
+    </a>
+  ))}
+</nav>

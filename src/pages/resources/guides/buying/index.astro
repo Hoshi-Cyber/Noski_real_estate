@@ -1,0 +1,15 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+import GuideDetail from '../../../../components/resources/GuideDetail.astro';
+const title = 'Buying Guide | Severino Reality';
+const description = 'Step-by-step buying process, costs, timelines, and checklists.';
+const steps = [
+  { id:'finance', heading:'Financing & Pre-approval', bodyHtml:'<p>…</p>' },
+  { id:'search', heading:'Property Search', bodyHtml:'<p>…</p>' },
+  { id:'offer', heading:'Offer & Negotiation', bodyHtml:'<p>…</p>' },
+  { id:'close', heading:'Closing & Handover', bodyHtml:'<p>…</p>' },
+];
+---
+<MainLayout {title} {description}>
+  <GuideDetail {title} summary="From search to ownership." estReadMin={10} checklistUrl="#" {steps} />
+</MainLayout>

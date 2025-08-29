@@ -1,0 +1,175 @@
+---
+import { Image } from 'astro:assets';
+
+export interface Props {
+  entry: any; // ContentEntry<'blog'>
+  headings?: { id: string; text: string; level: 2 | 3 }[];
+  related?: any[];
+}
+const { entry, headings = [], related = [] } = Astro.props;
+
+const fm = entry.data ?? {};
+const published =
+  (fm.pubDate && new Date(fm.pubDate)) || new Date();
+
+const prettyDate = published.toLocaleDateString('en-KE', {
+  year: 'numeric',
+  month: 'short',
+  day: '2-digit',
+});
+
+const hero = fm.heroImage ?? '/images/placeholders/hero-house-1.webp';
+const category = fm.category ?? 'Blog';
+const keywords = Array.isArray(fm.seoKeywords) ? fm.seoKeywords.join(', ') : '';
+---
+
+<article class="post-wrap">
+  <!-- Header -->
+  <header class="post-header">
+    <div class="cat">{category}</div>
+    <h1 class="title">{fm.title}</h1>
+    <div class="meta">{prettyDate}</div>
+  </header>
+
+  <!-- Hero -->
+  <figure class="hero">
+    <img src={hero} alt={fm.title} loading="eager" />
+  </figure>
+
+  <div class="grid">
+    <!-- MAIN -->
+    <main id="content" class="content">
+      {fm.description && <p class="dek">{fm.description}</p>}
+
+      {headings.length > 4 && (
+        <section class="toc-mobile" aria-label="Table of contents">
+          <h2>On this page</h2>
+          <ol>
+            {headings.map((h) => (
+              <li class={`lvl-${h.level}`}>
+                <a href={`#${h.id}`}>{h.text}</a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      <slot />
+    </main>
+
+    <!-- ASIDE / TOC -->
+    {headings.length > 0 && (
+      <aside class="toc" aria-label="Table of contents">
+        <div class="toc-card">
+          <h3>On this page</h3>
+          <ol>
+            {headings.map((h) => (
+              <li class={`lvl-${h.level}`}>
+                <a href={`#${h.id}`}>{h.text}</a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </aside>
+    )}
+  </div>
+
+  <!-- RELATED -->
+  {related.length > 0 && (
+    <section class="related">
+      <div class="related-head">
+        <h2>Related reading</h2>
+        <a href="/blog" class="view-all">View all</a>
+      </div>
+      <div class="cards">
+        {related.slice(0, 4).map((p) => {
+          const d = p.data ?? {};
+          const img = d.heroImage ?? '/images/placeholders/hero-house-1.webp';
+          const when =
+            (d.pubDate && new Date(d.pubDate)) || new Date();
+          const dateStr = when.toLocaleDateString('en-KE', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+          });
+          return (
+            <a class="card" href={`/blog/${p.slug}`}>
+              <img src={img} alt={d.title} loading="lazy" />
+              <div class="card-body">
+                <div class="card-cat">{d.category ?? 'Blog'}</div>
+                <h3 class="card-title">{d.title}</h3>
+                {d.description && <p class="card-desc">{d.description}</p>}
+                <div class="card-meta">{dateStr}</div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  )}
+</article>
+
+<style>
+:root{
+  --sr-blue:#0e2a47;
+  --sr-teal:#1bb7a5;
+  --sr-sand:#f3f5f7;
+  --sr-ink:#0b1724;
+}
+.post-wrap{max-width:1100px;margin-inline:auto;padding:2rem 1rem;}
+.post-header{padding:0 0 1rem 0;border-left:6px solid var(--sr-teal);margin-bottom:1rem;}
+.post-header .cat{font-size:.9rem;color:var(--sr-teal);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.post-header .title{font-size:clamp(1.6rem,2.2vw,2.25rem);line-height:1.2;margin:.2rem 0 .3rem;color:var(--sr-ink)}
+.post-header .meta{color:#6b7280;font-size:.95rem}
+
+.hero{margin:0 0 1.25rem 0}
+.hero img{width:100%;height:auto;border-radius:14px;display:block}
+
+.grid{display:grid;grid-template-columns:1fr;gap:2rem}
+@media(min-width:1024px){
+  .grid{grid-template-columns:minmax(0,1fr) 300px}
+}
+.content{max-width:720px}
+.dek{font-size:1.05rem;color:#3f4a59;margin:.25rem 0 1.2rem 0}
+
+.content :where(h2,h3){scroll-margin-top:92px}
+.content h2{font-size:1.35rem;margin:1.6rem 0 .6rem;color:var(--sr-blue)}
+.content h3{font-size:1.1rem;margin:1.1rem 0 .4rem;color:var(--sr-ink)}
+.content p{line-height:1.75}
+.content blockquote{border-left:4px solid var(--sr-teal);padding:.6rem 1rem;margin:1rem 0;background:var(--sr-sand);border-radius:10px}
+
+.toc{display:none}
+@media(min-width:1024px){ .toc{display:block} }
+.toc-card{position:sticky;top:96px;border:1px solid #e5e7eb;border-radius:14px;padding:1rem;background:#fff}
+.toc-card h3{font-size:1rem;margin:0 0 .4rem 0;color:var(--sr-blue)}
+.toc-card ol{list-style:none;padding:0;margin:0}
+.toc-card li{margin:.35rem 0}
+.toc-card li.lvl-3{margin-left:.75rem;opacity:.85}
+.toc-card a{text-decoration:none;color:#374151}
+.toc-card a:hover{color:var(--sr-blue)}
+
+.toc-mobile{border:1px dashed #e5e7eb;border-radius:12px;padding:.9rem;background:#fff;margin:1rem 0}
+.toc-mobile h2{font-size:1rem;margin:0 0 .4rem 0;color:var(--sr-blue)}
+.toc-mobile ol{list-style:none;padding:0;margin:0}
+.toc-mobile li{margin:.35rem 0}
+.toc-mobile li.lvl-3{margin-left:.75rem;opacity:.85}
+
+.related{margin:2.2rem 0 0}
+.related-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem}
+.related-head h2{font-size:1.15rem;color:var(--sr-blue);margin:0}
+.view-all{font-size:.95rem;color:var(--sr-teal);text-decoration:none}
+.view-all:hover{text-decoration:underline}
+
+.cards{display:grid;grid-template-columns:1fr;gap:1rem}
+@media(min-width:640px){ .cards{grid-template-columns:repeat(2,1fr)} }
+@media(min-width:1024px){ .cards{grid-template-columns:repeat(4,1fr)} }
+
+.card{display:flex;flex-direction:column;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;background:#fff;text-decoration:none}
+.card img{width:100%;height:132px;object-fit:cover}
+.card-body{padding:.75rem .85rem}
+.card-cat{font-size:.8rem;color:var(--sr-teal);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem}
+.card-title{font-size:1rem;color:var(--sr-ink);margin:0 0 .2rem 0}
+.card-desc{font-size:.9rem;color:#475569;margin:0 0 .45rem 0}
+.card-meta{font-size:.85rem;color:#6b7280}
+.card:hover{box-shadow:0 6px 22px rgba(0,0,0,.06);transform:translateY(-1px);transition:.2s}
+</style>

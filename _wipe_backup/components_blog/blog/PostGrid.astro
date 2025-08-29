@@ -1,0 +1,13 @@
+---
+interface Props {
+  colsSm?: number; // default 2
+  colsLg?: number; // default 3
+  gap?: string;    // tailwind gap class, default 'gap-6'
+  class?: string;
+}
+const { colsSm = 2, colsLg = 3, gap = 'gap-6', class: cls = '' } = Astro.props as Props;
+
+const smCols = `sm:grid-cols-${colsSm}`;
+const lgCols = `lg:grid-cols-${colsLg}`;
+---
+<div class={`grid ${gap} ${smCols} ${lgCols} ${cls}`}><slot /></div>

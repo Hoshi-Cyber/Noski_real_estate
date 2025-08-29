@@ -1,0 +1,60 @@
+---
+import KpiCard from '../KpiCard.astro';
+import ChartCard from '../ChartCard.astro';
+
+/** Market subpage: KPI tiles + inline chart + CTA */
+const {
+  title,
+  metrics = /** [{ name, value }] */ [],
+  chart = /** { points: [{x,y}] } */ { points: [] },
+  downloadUrl = ''
+} = Astro.props;
+---
+
+<section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
+  <!-- Header -->
+  <header class="mb-6 md:mb-8 flex items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">{title}</h1>
+    </div>
+    {downloadUrl && (
+      <a
+        href={downloadUrl}
+        class="rounded-md px-4 py-2 bg-[color:var(--color-cta)] text-white text-sm font-medium shadow-sm hover:opacity-90 transition"
+      >
+        Download PDF
+      </a>
+    )}
+  </header>
+
+  <!-- KPI Grid + Chart -->
+  <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+    <!-- KPI Tiles -->
+    <div class="grid grid-cols-2 sm:grid-cols-1 gap-3">
+      {metrics.map(m => (
+        <KpiCard label={m.name} value={m.value} />
+      ))}
+    </div>
+
+    <!-- Chart -->
+    <ChartCard
+      points={chart.points}
+      caption="Market trend (simplified). Replace with advanced charting if needed."
+      height="h-48"
+    />
+  </div>
+
+  <!-- CTA Banner -->
+  <div class="mt-10 rounded-xl bg-[color:var(--color-primary)] text-white px-6 py-8 text-center shadow-md">
+    <h2 class="text-xl font-semibold">Want deeper insights?</h2>
+    <p class="mt-2 text-sm text-neutral-100">
+      Request a tailored valuation or full report for your property.
+    </p>
+    <a
+      href="/contact"
+      class="inline-block mt-4 px-5 py-2 rounded-md bg-[color:var(--color-cta)] text-white font-medium shadow hover:opacity-90 transition"
+    >
+      Request Valuation →
+    </a>
+  </div>
+</section>

@@ -1,0 +1,37 @@
+---
+const { url = Astro.url.href, title = 'Read this post' } = Astro.props as { url?: string; title?: string };
+---
+<div class="flex items-center gap-2 text-sm">
+  <span class="text-neutral-600 mr-1">Share:</span>
+  <button class="px-2 py-1 rounded ring-1 ring-neutral-300" id="btn-copy">Copy</button>
+  <a class="px-2 py-1 rounded ring-1 ring-neutral-300"
+     href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`}
+     target="_blank" rel="noopener">X</a>
+  <a class="px-2 py-1 rounded ring-1 ring-neutral-300"
+     href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`}
+     target="_blank" rel="noopener">FB</a>
+  <a class="px-2 py-1 rounded ring-1 ring-neutral-300"
+     href={`https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + url)}`}
+     target="_blank" rel="noopener">WhatsApp</a>
+  <button class="px-2 py-1 rounded ring-1 ring-neutral-300" id="btn-share">Share…</button>
+</div>
+
+<script type="module" client:load>
+  const url = {url: '{url}', title: '{title}'};
+  const btnCopy = document.getElementById('btn-copy');
+  const btnShare = document.getElementById('btn-share');
+
+  btnCopy?.addEventListener('click', async () => {
+    await navigator.clipboard?.writeText(window.location.href);
+    btnCopy.textContent = 'Copied!';
+    setTimeout(()=>btnCopy.textContent='Copy', 1200);
+  });
+
+  btnShare?.addEventListener('click', async () => {
+    if (navigator.share) {
+      try { await navigator.share({ title: url.title, url: window.location.href }); } catch {}
+    } else {
+      btnCopy?.click();
+    }
+  });
+</script>

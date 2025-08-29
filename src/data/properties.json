@@ -1,0 +1,498 @@
+[
+  {
+    "slug": "karen-luxury-villa-sale",
+    "title": "Luxury 4BR Villa in Karen",
+    "price": 220000,
+    "location": "Karen, Nairobi",
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "type": "Villa",
+    "availability": "For Sale",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Large Garden",
+      "Gated Community",
+      "Detached Staff Quarters",
+      "Fireplace"
+    ],
+    "description": "Set on half an acre of manicured grounds, this elegant four‑bedroom villa offers luxury living in the exclusive Karen neighbourhood. The property features a flowing open‑plan layout with high ceilings, a gourmet kitchen and expansive patios overlooking a landscaped garden."
+  },
+  {
+    "slug": "lavington-modern-apartment-sale",
+    "title": "Modern 3BR Apartment in Lavington",
+    "price": 185000,
+    "location": "Lavington, Nairobi",
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "type": "Apartment",
+    "availability": "For Sale",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "24/7 Security",
+      "Elevator",
+      "Backup Generator",
+      "Swimming Pool"
+    ],
+    "description": "This bright and airy three‑bedroom apartment offers contemporary living in the heart of Lavington. An open‑plan kitchen flows into the lounge and dining area which opens onto a spacious balcony with city views. Residents enjoy a communal pool, gym and secure parking."
+  },
+  {
+    "slug": "kilimani-spacious-house-sale",
+    "title": "Spacious 4BR House in Kilimani",
+    "price": 200000,
+    "location": "Kilimani, Nairobi",
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "type": "House",
+    "availability": "For Sale",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Private Garden",
+      "Borehole Water",
+      "Master Ensuite",
+      "DSQ"
+    ],
+    "description": "Situated in the sought‑after Kilimani neighbourhood, this four‑bedroom home boasts a generous garden, spacious kitchen and bright living spaces. The master bedroom is en‑suite with a walk‑in closet, while two additional bedrooms share a Jack‑and‑Jill bathroom."
+  },
+  {
+    "slug": "kiambu-farm-land-sale",
+    "title": "5‑Acre Farm Land in Kiambu",
+    "price": 90000,
+    "location": "Kiambu County",
+    "bedrooms": 0,
+    "bathrooms": 0,
+    "type": "Land",
+    "availability": "For Sale",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Fertile Soil",
+      "Access Road",
+      "Water & Electricity Nearby"
+    ],
+    "description": "A rare opportunity to acquire fertile agricultural land just 25 minutes from Nairobi CBD. The gently sloping parcel is ideal for mixed farming or subdivision and sits close to a main road with access to utilities."
+  },
+  {
+    "slug": "westlands-penthouse-sale",
+    "title": "Luxury 2BR Penthouse in Westlands",
+    "price": 350000,
+    "location": "Westlands, Nairobi",
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "type": "Apartment",
+    "availability": "For Sale",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Roof Deck",
+      "Gym",
+      "High‑speed Lifts",
+      "Backup Power"
+    ],
+    "description": "Perched on the top floor, this two‑bedroom penthouse enjoys panoramic city views from its wrap‑around terrace. Finished to a high standard with German appliances, marble countertops and hardwood flooring throughout. Residents enjoy a rooftop gym and entertainment area."
+  },
+  {
+    "slug": "ngong-commercial-block-sale",
+    "title": "Multi‑Storey Commercial Block in Ngong",
+    "price": 500000,
+    "location": "Ngong Road, Nairobi",
+    "bedrooms": 0,
+    "bathrooms": 4,
+    "type": "Commercial",
+    "availability": "For Sale",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Parking Lot",
+      "High Foot Traffic",
+      "Three‑Phase Power",
+      "Lift"
+    ],
+    "description": "This newly constructed commercial building spans four floors and offers flexible office and retail space along the busy Ngong Road corridor. The property includes ample parking, a backup generator and a lift serving all floors."
+  },
+  {
+    "slug": "eastleigh-bedsitter-complex-sale",
+    "title": "Bedsitter Complex in Eastleigh",
+    "price": 75000,
+    "location": "Eastleigh, Nairobi",
+    "bedrooms": 20,
+    "bathrooms": 20,
+    "type": "Bedsitter/Studio",
+    "availability": "For Sale",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "High Rental Yield",
+      "Secure Compound",
+      "Borehole Water"
+    ],
+    "description": "An income‑generating complex of twenty self‑contained bedsitters, each with its own kitchenette and bathroom. Located near Eastleigh Mall, this property offers steady rental returns and strong demand from tenants."
+  },
+  {
+    "slug": "mombasa-beachfront-villa-sale",
+    "title": "Beachfront 5BR Villa in Mombasa",
+    "price": 480000,
+    "location": "Nyali, Mombasa",
+    "bedrooms": 5,
+    "bathrooms": 5,
+    "type": "Villa",
+    "availability": "For Sale",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Ocean Views",
+      "Swimming Pool",
+      "Private Beach Access",
+      "Guest Wing"
+    ],
+    "description": "Wake up to the sound of waves in this stunning five‑bedroom villa set on the white sands of Nyali beach. Designed for indoor‑outdoor living, the home features a pool, gazebo and lush tropical gardens. Ideal as a family retreat or holiday rental."
+  },
+  {
+    "slug": "kilimani-3br-apartment-rent",
+    "title": "Furnished 3BR Apartment in Kilimani",
+    "price": 120000,
+    "location": "Kilimani, Nairobi",
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "type": "Apartment",
+    "availability": "For Rent",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Fully Furnished",
+      "Elevator",
+      "24/7 Security",
+      "Swimming Pool"
+    ],
+    "description": "Move right into this tastefully furnished three‑bedroom unit located within walking distance of Yaya Centre. Enjoy a bright living area, modern kitchen, balcony and access to a pool and gym. Rent includes service charge."
+  },
+  {
+    "slug": "westlands-2br-house-rent",
+    "title": "Charming 2BR House in Westlands",
+    "price": 80000,
+    "location": "Westlands, Nairobi",
+    "bedrooms": 2,
+    "bathrooms": 1,
+    "type": "House",
+    "availability": "For Rent",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Private Garden",
+      "Covered Parking",
+      "DSQ",
+      "Secure Neighborhood"
+    ],
+    "description": "This cosy two‑bedroom home sits on a quiet cul‑de‑sac in Westlands. Featuring a mature garden, spacious kitchen and carport, it’s perfect for a small family or young professionals."
+  },
+  {
+    "slug": "south-b-bedsitter-rent",
+    "title": "Affordable Bedsitter in South B",
+    "price": 25000,
+    "location": "South B, Nairobi",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "type": "Bedsitter/Studio",
+    "availability": "For Rent",
+    "images": [
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Wi‑Fi Included",
+      "Water & Electricity",
+      "Security"
+    ],
+    "description": "Compact yet comfortable, this self‑contained studio comes with its own kitchenette and bathroom. Located near shopping and public transport, it’s ideal for students or young professionals."
+  },
+  {
+    "slug": "upperhill-commercial-space-rent",
+    "title": "Office Space in Upper Hill",
+    "price": 150000,
+    "location": "Upper Hill, Nairobi",
+    "bedrooms": 0,
+    "bathrooms": 2,
+    "type": "Commercial",
+    "availability": "For Rent",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "High‑Speed Internet",
+      "Lift",
+      "Backup Generator",
+      "Parking"
+    ],
+    "description": "Set your business up for success in this modern office suite located in Nairobi’s financial district. The space features a reception area, open‑plan workstation and boardroom with large windows providing natural light."
+  },
+  {
+    "slug": "parklands-1br-apartment-rent",
+    "title": "Cozy 1BR Apartment in Parklands",
+    "price": 60000,
+    "location": "Parklands, Nairobi",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "type": "Apartment",
+    "availability": "For Rent",
+    "images": [
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Balcony",
+      "24/7 Security",
+      "Lift",
+      "Parking"
+    ],
+    "description": "A sunny one‑bedroom unit with an open kitchen, balcony and built‑in wardrobes. Ideal for single professionals looking for a central yet quiet address."
+  },
+  {
+    "slug": "rongai-family-house-rent",
+    "title": "Family 3BR House in Ongata Rongai",
+    "price": 70000,
+    "location": "Ongata Rongai, Kajiado",
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "type": "House",
+    "availability": "For Rent",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Front & Back Yard",
+      "Water Tank",
+      "Perimeter Wall",
+      "Solar Water Heater"
+    ],
+    "description": "This three‑bedroom bungalow in Rongai comes with a spacious compound, modern kitchen and ample parking. It’s just minutes from shopping centres, schools and major roads."
+  },
+  {
+    "slug": "nyali-beach-apartment-rent",
+    "title": "Seafront 2BR Apartment in Nyali",
+    "price": 100000,
+    "location": "Nyali, Mombasa",
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "type": "Apartment",
+    "availability": "For Rent",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Ocean View",
+      "Swimming Pool",
+      "Gym",
+      "24/7 Security"
+    ],
+    "description": "Enjoy resort‑style living in this furnished two‑bedroom apartment overlooking the Indian Ocean. Residents have access to a pool, gym and secure parking."
+  },
+  {
+    "slug": "kisumu-bungalow-rent",
+    "title": "3BR Bungalow in Kisumu",
+    "price": 65000,
+    "location": "Milimani, Kisumu",
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "type": "House",
+    "availability": "For Rent",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Lake View",
+      "Large Garden",
+      "DSQ",
+      "Carport"
+    ],
+    "description": "This charming lake‑view bungalow offers peaceful living just minutes from Kisumu CBD. The home features a lush garden, spacious bedrooms and a detached staff quarter."
+  },
+  {
+    "slug": "nairobi-safari-airbnb",
+    "title": "Safari‑Themed 1BR Airbnb, Nairobi",
+    "price": 6000,
+    "location": "Lang’ata, Nairobi",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "type": "Apartment",
+    "availability": "Short Stays",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Wi‑Fi",
+      "Self Check‑In",
+      "Close to Nairobi National Park"
+    ],
+    "description": "Experience the spirit of Kenya in this safari‑themed apartment located just minutes from the national park. The cosy unit offers a fully equipped kitchen, queen‑sized bed and unique decor celebrating local wildlife."
+  },
+  {
+    "slug": "karen-cottage-stay",
+    "title": "Rustic 2BR Cottage in Karen",
+    "price": 8000,
+    "location": "Karen, Nairobi",
+    "bedrooms": 2,
+    "bathrooms": 1,
+    "type": "House",
+    "availability": "Short Stays",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Fireplace",
+      "Private Garden",
+      "Caretaker on Site"
+    ],
+    "description": "Tucked away in the leafy suburb of Karen, this cosy cottage offers a peaceful retreat with rustic charm. Ideal for weekend getaways or longer stays, the cottage features a fireplace, large verandah and manicured gardens."
+  },
+  {
+    "slug": "nanyuki-ranch-villa-stay",
+    "title": "Ranch‑Style 3BR Villa in Nanyuki",
+    "price": 10000,
+    "location": "Nanyuki, Laikipia",
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "type": "Villa",
+    "availability": "Short Stays",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Outdoor Fireplace",
+      "Horse Riding Trails",
+      "Game Viewing"
+    ],
+    "description": "Nestled on the slopes of Mount Kenya, this ranch‑style villa offers sweeping views, cosy interiors and easy access to wildlife conservancies. Perfect for family retreats and adventure seekers alike."
+  },
+  {
+    "slug": "mombasa-beach-cabana-stay",
+    "title": "Beach Cabana – 1BR in Diani",
+    "price": 7000,
+    "location": "Diani Beach, Kwale",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "type": "House",
+    "availability": "Short Stays",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Beach Access",
+      "Hammock",
+      "Outdoor Shower"
+    ],
+    "description": "Escape to paradise in this charming cabana just steps from the warm waters of the Indian Ocean. Enjoy lazy afternoons in a hammock or explore nearby beach bars and restaurants."
+  },
+  {
+    "slug": "diani-luxury-apartment-stay",
+    "title": "Luxury 2BR Apartment, Diani",
+    "price": 9000,
+    "location": "Diani Beach, Kwale",
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "type": "Apartment",
+    "availability": "Short Stays",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Air Conditioning",
+      "Infinity Pool",
+      "Gym",
+      "Beachfront"
+    ],
+    "description": "Indulge yourself in this luxury apartment overlooking the turquoise waters of Diani. The property offers an infinity pool, gym and direct access to the white sand beach."
+  },
+  {
+    "slug": "naivasha-lakehouse-stay",
+    "title": "4BR Lakehouse Retreat, Naivasha",
+    "price": 11000,
+    "location": "Lake Naivasha, Nakuru",
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "type": "House",
+    "availability": "Short Stays",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Lakefront Deck",
+      "Boating Dock",
+      "Bonfire Pit",
+      "Chef Service"
+    ],
+    "description": "Relax in a private lakehouse with panoramic views of Lake Naivasha. This spacious retreat comes with its own dock, bonfire pit and optional chef services for a truly indulgent stay."
+  },
+  {
+    "slug": "thika-studio-stay",
+    "title": "Modern Studio in Thika",
+    "price": 4000,
+    "location": "Thika, Kiambu",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "type": "Bedsitter/Studio",
+    "availability": "Short Stays",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Free Parking",
+      "Cable TV",
+      "Kitchenette"
+    ],
+    "description": "Conveniently located near Thika Road, this stylish studio is perfect for travellers or business guests seeking a comfortable stay with easy access to Nairobi."
+  },
+  {
+    "slug": "westlands-serviced-offices-stay",
+    "title": "Serviced Offices – Westlands",
+    "price": 12000,
+    "location": "Westlands, Nairobi",
+    "bedrooms": 0,
+    "bathrooms": 2,
+    "type": "Commercial",
+    "availability": "Short Stays",
+    "images": [
+      "/images/placeholder.webp",
+      "/images/placeholder.webp"
+    ],
+    "amenities": [
+      "Boardroom Access",
+      "High‑Speed Internet",
+      "Coffee Lounge",
+      "Reception Services"
+    ],
+    "description": "Book fully serviced office space by the day in the heart of Westlands. Amenities include a staffed reception, meeting rooms, fast internet and complimentary coffee."
+  }
+]

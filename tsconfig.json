@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ES2020",              // Modern JS target
+    "lib": ["ES2020", "DOM"],        // Include browser APIs + modern JS features
+    "module": "ESNext",              // Keep modern module syntax
+    "moduleResolution": "Node",      // For Node/NPM imports
+
+    /* TypeScript Behavior */
+    "strict": true,                  // Enable all strict type checks
+    "skipLibCheck": true,            // Skip type checks on libraries
+    "esModuleInterop": true,         // Default import support for CommonJS
+    "forceConsistentCasingInFileNames": true,
+
+    /* Astro-specific settings */
+    "jsx": "react-jsx",              // Needed for Astro + React
+    "jsxImportSource": "react",
+
+    /* Paths (optional) */
+    "baseUrl": ".",                  
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": [
+    "src",
+    "astro.config.mjs",
+    "env.d.ts"
+  ]
+}

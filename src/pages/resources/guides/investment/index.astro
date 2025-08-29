@@ -1,0 +1,24 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+import GuideDetail from '../../../../components/resources/GuideDetail.astro';
+
+const title = 'Investment Guide | Severino Reality';
+const description = 'Criteria, underwriting, financing, asset management, and exit planning.';
+
+const steps = [
+  { id:'thesis',  heading:'Investment thesis & box', bodyHtml:'<p>Target submarkets, asset type, risk band, min yield thresholds.</p>' },
+  { id:'source',  heading:'Deal sourcing & screening', bodyHtml:'<p>Broker network, off-market, pipeline hygiene, fast kill criteria.</p>' },
+  { id:'model',   heading:'Underwriting & diligence', bodyHtml:'<p>Rent roll, T12, capex plan, DSCR, sensitivity table.</p>' },
+  { id:'finance', heading:'Finance structure', bodyHtml:'<p>Debt options, LTV/LTC, amortization, covenants, refinance triggers.</p>' },
+  { id:'operate', heading:'Asset management', bodyHtml:'<p>KPI dashboard, variance reviews, value-add execution, PM oversight.</p>' },
+  { id:'exit',    heading:'Hold/exit & tax', bodyHtml:'<p>IRR gates, sale prep, 1031 alternatives, timing windows.</p>' },
+];
+
+---
+<MainLayout {title} {description}>
+  <GuideDetail {title}
+    summary="From sourcing to exit with disciplined underwriting and operating control."
+    estReadMin={16}
+    checklistUrl="#"
+    {steps} />
+</MainLayout>

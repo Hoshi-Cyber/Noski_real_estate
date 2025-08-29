@@ -1,0 +1,120 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+
+const title = 'Local Area Spotlights | Severino Reality';
+const description = 'Neighborhood-by-neighborhood pricing, speed, and supply with quick links to listings.';
+
+const areas = [
+  { slug:'westlands',  name:'Westlands',   price:'—', dom:'—', inventory:'—', blurb:'Mixed-use hub with strong rental demand.', href:'/listings?area=westlands' },
+  { slug:'kilimani',   name:'Kilimani',    price:'—', dom:'—', inventory:'—', blurb:'Apartments and townhouses near CBD.',   href:'/listings?area=kilimani' },
+  { slug:'kileleshwa', name:'Kileleshwa',  price:'—', dom:'—', inventory:'—', blurb:'Leafy suburb, mid–high end stock.',     href:'/listings?area=kileleshwa' },
+  { slug:'lavington',  name:'Lavington',   price:'—', dom:'—', inventory:'—', blurb:'Family homes, schools, malls access.',  href:'/listings?area=lavington' },
+  { slug:'parklands',  name:'Parklands',   price:'—', dom:'—', inventory:'—', blurb:'Close to hospitals and offices.',       href:'/listings?area=parklands' },
+  { slug:'karen',      name:'Karen',       price:'—', dom:'—', inventory:'—', blurb:'Acreage, premium villas, lifestyle.',   href:'/listings?area=karen' },
+  { slug:'runda',      name:'Runda',       price:'—', dom:'—', inventory:'—', blurb:'Gated estates, diplomatic enclave.',    href:'/listings?area=runda' },
+];
+
+// JSON-LD: ItemList of places
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: areas.map((a, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: { '@type': 'Place', name: a.name, url: a.href }
+  })),
+};
+---
+<MainLayout {title} {description}>
+  <section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
+    <header class="mb-6 md:mb-8">
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">Local Area Spotlights</h1>
+      <p class="mt-2 text-neutral-700">Scan key KPIs per neighborhood and jump to live listings.</p>
+
+      <div class="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+        <input id="area-search" type="search" placeholder="Search neighborhoods"
+               class="w-full sm:max-w-xs rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm"
+               aria-label="Search neighborhoods" />
+        <label class="inline-flex items-center gap-2 text-sm text-neutral-600">
+          <span>Sort</span>
+          <select id="area-sort" class="rounded-md ring-1 ring-neutral-300 px-2 py-2 text-sm">
+            <option value="name">Name (A–Z)</option>
+            <option value="price">Median Price</option>
+            <option value="dom">Days on Market</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <div id="area-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {areas.map(a => (
+        <article class="rounded-md ring-1 ring-neutral-200 bg-white p-4" data-name={a.name} data-price={a.price} data-dom={a.dom}>
+          <header class="mb-2 flex items-center justify-between gap-3">
+            <h2 class="text-lg font-semibold text-primary">{a.name}</h2>
+            <a href={a.href} class="text-sm text-[color:var(--color-cta)] hover:underline">View listings →</a>
+          </header>
+          <p class="text-sm text-neutral-600">{a.blurb}</p>
+          <dl class="mt-3 grid grid-cols-3 gap-2 text-center">
+            <div class="rounded bg-neutral-50/80 p-2">
+              <dt class="text-[11px] text-neutral-500">Median Price</dt>
+              <dd class="text-sm font-semibold text-primary">{a.price}</dd>
+            </div>
+            <div class="rounded bg-neutral-50/80 p-2">
+              <dt class="text-[11px] text-neutral-500">DOM</dt>
+              <dd class="text-sm font-semibold text-primary">{a.dom}</dd>
+            </div>
+            <div class="rounded bg-neutral-50/80 p-2">
+              <dt class="text-[11px] text-neutral-500">Inventory</dt>
+              <dd class="text-sm font-semibold text-primary">{a.inventory}</dd>
+            </div>
+          </dl>
+        </article>
+      ))}
+    </div>
+
+    <div class="mt-8 flex flex-wrap gap-3">
+      <a href="/contact" class="rounded-md px-3 py-2 bg-[color:var(--color-cta)] text-white text-sm">Request custom market analysis</a>
+      <a href="/resources/market-reports/quarterly" class="rounded-md px-3 py-2 ring-1 ring-neutral-200 bg-white text-sm">View quarterly archive</a>
+    </div>
+
+    <script type="application/ld+json">{JSON.stringify(ld)}</script>
+
+    <script type="module" client:load>
+      const grid = document.getElementById('area-grid');
+      const input = document.getElementById('area-search');
+      const select = document.getElementById('area-sort');
+
+      function normalizeNum(v){
+        // Expect formats like "—" or "KES 12.5M"; returns NaN when not numeric
+        const n = String(v).replace(/[^\d.]/g,'');
+        return n ? parseFloat(n) : NaN;
+      }
+
+      function applyFilterSort(){
+        const term = (input?.value || '').toLowerCase();
+        const cards = Array.from(grid.querySelectorAll('article'));
+
+        // filter
+        cards.forEach(c => {
+          const name = c.dataset.name?.toLowerCase() || '';
+          c.classList.toggle('hidden', term && !name.includes(term));
+        });
+
+        // sort
+        const mode = select?.value || 'name';
+        const visible = cards.filter(c => !c.classList.contains('hidden'));
+        visible.sort((a,b)=>{
+          if (mode === 'name') return a.dataset.name.localeCompare(b.dataset.name);
+          if (mode === 'price') return (normalizeNum(a.dataset.price) || 0) - (normalizeNum(b.dataset.price) || 0);
+          if (mode === 'dom')   return (normalizeNum(a.dataset.dom)   || 0) - (normalizeNum(b.dataset.dom)   || 0);
+          return 0;
+        });
+        visible.forEach(c => grid.appendChild(c));
+      }
+
+      input?.addEventListener('input', applyFilterSort);
+      select?.addEventListener('change', applyFilterSort);
+      applyFilterSort();
+    </script>
+  </section>
+</MainLayout>

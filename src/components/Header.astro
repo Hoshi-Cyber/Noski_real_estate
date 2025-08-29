@@ -1,0 +1,183 @@
+---
+---
+<header class="bg-white shadow-md sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <!-- Logo -->
+    <a href="/" class="group flex items-center gap-2 min-h-11" aria-label="Severino Reality home">
+      <img src="/images/logos/logo-32.webp" width="32" height="32" alt="Severino Reality logomark" class="w-8 h-8 md:w-9 md:h-9 shrink-0" loading="lazy" decoding="async" />
+      <span class="logo-wordmark font-bold text-primary leading-none tracking-tight whitespace-nowrap select-none">Severino Reality</span>
+    </a>
+
+    <!-- Mobile toggle -->
+    <button
+      id="nav-toggle"
+      class="md:hidden text-primary focus:outline-none"
+      aria-label="Open menu"
+      aria-controls="mobile-overlay"
+      aria-expanded="false"
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+
+    <!-- Desktop nav -->
+    <nav id="nav-menu" class="hidden md:flex items-center gap-6 text-sm font-medium">
+      <a href="/" class="hover:text-accent transition-colors">Home</a>
+
+      <!-- Listings (dropdown) -->
+      <div id="listings-wrapper" class="relative">
+        <button id="listings-btn" class="inline-flex items-center gap-1 hover:text-accent transition-colors" aria-haspopup="true" aria-expanded="false" aria-controls="listings-drop">
+          Listings
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div class="absolute left-0 right-0 top-full h-2"></div>
+        <div id="listings-drop" role="menu" aria-labelledby="listings-btn"
+          class="absolute left-0 top-full z-[70] w-auto min-w-[10rem] max-w-xs rounded-md border-t-2 border-cta/70 ring-1 ring-neutral-200 bg-white shadow-xl p-2 opacity-0 translate-y-1 pointer-events-none transition duration-150">
+          <a href="/listings" class="block rounded px-3 py-2 hover:bg-neutral-50">All Listings</a>
+          <a href="/for-sale" class="block rounded px-3 py-2 hover:bg-neutral-50">For Sale</a>
+          <a href="/for-rent" class="block rounded px-3 py-2 hover:bg-neutral-50">For Rent</a>
+          <a href="/short-stays" class="block rounded px-3 py-2 hover:bg-neutral-50">Short Stays</a>
+        </div>
+      </div>
+
+      <!-- Resources (dropdown) -->
+      <div id="res-wrapper" class="relative">
+        <button id="res-btn" class="inline-flex items-center gap-1 hover:text-accent transition-colors" aria-haspopup="true" aria-expanded="false" aria-controls="res-drop">
+          Resources
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div class="absolute left-0 right-0 top-full h-2"></div>
+        <div id="res-drop" role="menu" aria-labelledby="res-btn"
+          class="absolute left-0 top-full z-[70] w-auto min-w-[10rem] max-w-xs rounded-md border-t-2 border-cta/70 ring-1 ring-neutral-200 bg-white shadow-xl p-2 opacity-0 translate-y-1 pointer-events-none transition duration-150">
+          <a href="/resources/guides" class="block rounded px-3 py-2 hover:bg-neutral-50">Guides</a>
+          <a href="/resources/faqs" class="block rounded px-3 py-2 hover:bg-neutral-50">FAQs</a>
+          <a href="/resources/market-reports" class="block rounded px-3 py-2 hover:bg-neutral-50">Market Reports</a>
+          <a href="/blog" class="block rounded px-3 py-2 hover:bg-neutral-50">Blog</a>
+        </div>
+      </div>
+
+      <a href="/contact" class="hover:text-accent transition-colors">Contact</a>
+    </nav>
+  </div>
+
+  <!-- Mobile overlay drawer -->
+  <div id="mobile-overlay" class="fixed inset-0 z-[60] hidden" aria-hidden="true">
+    <div id="mobile-backdrop" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-200"></div>
+    <aside
+      id="mobile-drawer"
+      class="relative ml-auto h-full w-[88%] max-w-sm bg-white shadow-xl translate-x-full transition-transform duration-200 flex flex-col"
+      role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title"
+      style="padding-top: calc(env(safe-area-inset-top, 0px) + 12px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);"
+    >
+      <div class="px-4 pb-2 border-b border-neutral-100 flex items-center justify-between">
+        <h2 id="mobile-menu-title" class="sr-only">Menu</h2>
+        <a href="/" class="flex items-center gap-2" aria-label="Severino Reality home">
+          <img src="/images/logos/logo-32.webp" width="28" height="28" alt="" class="w-7 h-7" />
+          <span class="logo-wordmark text-primary">Severino Reality</span>
+        </a>
+        <button id="mobile-close" class="p-2 rounded hover:bg-neutral-50" aria-label="Close menu">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="px-4 pt-3 pb-2 overflow-y-auto text-[14px] leading-[1.35]">
+        <div class="space-y-1">
+          <a href="/" class="block nav-item rounded px-1.5 py-2 hover:bg-neutral-50">Home</a>
+        </div>
+
+        <!-- Listings (mobile) -->
+        <div class="mt-3">
+          <div class="rounded-md ring-1 ring-neutral-200 bg-neutral-50/80">
+            <button id="m-listings-toggle" class="w-full flex items-center justify-between px-3 py-2.5 rounded-md" aria-controls="m-listings-sub" aria-expanded="false">
+              <span class="font-medium">Listings</span>
+              <svg class="w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div id="m-listings-sub" class="hidden px-2 pb-2">
+              <a href="/listings" class="block rounded px-2 py-2 bg-white hover:bg-neutral-50 border-l-2 border-primary/20">All Listings</a>
+              <a href="/for-sale" class="block rounded px-2 py-2 bg-white hover:bg-neutral-50 border-l-2 border-primary/20 mt-1">For Sale</a>
+              <a href="/for-rent" class="block rounded px-2 py-2 bg-white hover:bg-neutral-50 border-l-2 border-primary/20 mt-1">For Rent</a>
+              <a href="/short-stays" class="block rounded px-2 py-2 bg-white hover:bg-neutral-50 border-l-2 border-primary/20 mt-1">Short Stays</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resources (mobile) -->
+        <div class="mt-3">
+          <div class="rounded-md ring-1 ring-neutral-200 bg-neutral-50/80">
+            <button id="m-resources-toggle" class="w-full flex items-center justify-between px-3 py-2.5 rounded-md" aria-controls="m-resources-sub" aria-expanded="false">
+              <span class="font-medium">Resources</span>
+              <svg class="w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div id="m-resources-sub" class="hidden px-2 pb-2">
+              <a href="/resources/guides" class="block rounded px-2 py-2 bg-white hover:bg-neutral-50 border-l-2 border-primary/20">Guides</a>
+              <a href="/resources/faqs" class="block rounded px-2 py-2 bg-white hover:bg-neutral-50 border-l-2 border-primary/20 mt-1">FAQs</a>
+              <a href="/resources/market-reports" class="block rounded px-2 py-2 bg-white hover:bg-neutral-50 border-l-2 border-primary/20 mt-1">Market Reports</a>
+              <a href="/blog" class="block rounded px-2 py-2 bg-white hover:bg-neutral-50 border-l-2 border-primary/20 mt-1">Blog</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 border-t border-neutral-100 pt-3">
+          <a href="/contact" class="block nav-item rounded px-1.5 py-2 hover:bg-neutral-50">Contact</a>
+        </div>
+      </nav>
+    </aside>
+  </div>
+
+  <!-- Script -->
+  <script type="module" client:load>
+    // Dropdown logic (reuse for Listings and Resources)
+    function setupDropdown(wrapperId, btnId, panelId){
+      const wrapper = document.getElementById(wrapperId);
+      const btn = document.getElementById(btnId);
+      const panel = document.getElementById(panelId);
+      let hideTimer;
+      function show(){ clearTimeout(hideTimer); btn.setAttribute('aria-expanded','true'); panel.classList.remove('opacity-0','translate-y-1','pointer-events-none'); panel.classList.add('opacity-100','translate-y-0','pointer-events-auto'); }
+      function hide(){ hideTimer = setTimeout(()=>{ btn.setAttribute('aria-expanded','false'); panel.classList.add('opacity-0','translate-y-1','pointer-events-none'); panel.classList.remove('opacity-100','translate-y-0','pointer-events-auto'); },160); }
+      wrapper?.addEventListener('mouseenter', show);
+      wrapper?.addEventListener('mouseleave', hide);
+      btn?.addEventListener('focus', show);
+      panel?.addEventListener('focusin', show);
+      panel?.addEventListener('focusout', hide);
+      document.addEventListener('mousedown', (e)=>{ if(!wrapper?.contains(e.target)) hide(); });
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hide(); btn?.focus(); } });
+    }
+    setupDropdown('listings-wrapper','listings-btn','listings-drop');
+    setupDropdown('res-wrapper','res-btn','res-drop');
+
+    // Mobile drawer
+    const openBtn = document.getElementById('nav-toggle');
+    const overlay = document.getElementById('mobile-overlay');
+    const backdrop = document.getElementById('mobile-backdrop');
+    const drawer = document.getElementById('mobile-drawer');
+    const closeBtn = document.getElementById('mobile-close');
+    const mListingsToggle = document.getElementById('m-listings-toggle');
+    const mListingsSub = document.getElementById('m-listings-sub');
+    const mResToggle = document.getElementById('m-resources-toggle');
+    const mResSub = document.getElementById('m-resources-sub');
+
+    function openMobile(){ overlay.classList.remove('hidden'); document.documentElement.classList.add('overflow-hidden'); document.body.classList.add('overflow-hidden'); requestAnimationFrame(()=>{ backdrop.classList.add('opacity-100'); drawer.classList.remove('translate-x-full'); }); openBtn.setAttribute('aria-expanded','true'); }
+    function closeMobile(){ backdrop.classList.remove('opacity-100'); drawer.classList.add('translate-x-full'); setTimeout(()=>{ overlay.classList.add('hidden'); document.documentElement.classList.remove('overflow-hidden'); document.body.classList.remove('overflow-hidden'); },200); openBtn.setAttribute('aria-expanded','false'); }
+    openBtn?.addEventListener('click', openMobile);
+    closeBtn?.addEventListener('click', closeMobile);
+    backdrop?.addEventListener('click', closeMobile);
+
+    // Mobile dropdown toggles
+    function toggleMobileSection(btn, sub){
+      btn?.addEventListener('click', ()=>{ const isOpen = btn.getAttribute('aria-expanded')==='true'; btn.setAttribute('aria-expanded', String(!isOpen)); sub.classList.toggle('hidden'); btn.querySelector('svg')?.classList.toggle('rotate-180', !isOpen); });
+    }
+    toggleMobileSection(mListingsToggle, mListingsSub);
+    toggleMobileSection(mResToggle, mResSub);
+  </script>
+</header>

@@ -1,0 +1,37 @@
+---
+import BaseCard from '../BaseCard.astro';
+
+export interface Props {
+  guide: {
+    title: string;
+    summary?: string;
+    heroImage?: string;
+    slug?: string;
+    pubDate?: string | Date;
+  };
+}
+
+const { guide } = Astro.props;
+
+// Normalize props
+const href = guide.slug ? `/guides/${guide.slug}` : `/guides`;
+const img = guide.heroImage ?? '/images/placeholder.webp';
+const date = guide.pubDate
+  ? new Date(guide.pubDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  : '';
+---
+
+<BaseCard
+  title={guide.title}
+  desc={guide.summary}
+  img={img}
+  href={href}
+  date={date}
+  tag="Guide"
+  cta="Read guide →"
+  variant="visual"
+/>

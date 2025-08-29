@@ -1,0 +1,45 @@
+---
+import { getCollection } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+import PropertyCard from '../../components/PropertyCard.astro';
+
+export async function getStaticPaths() {
+  const listings = await getCollection('listings');
+  const areas = Array.from(
+    new Set(
+      listings.map((l) =>
+        (l.data.area || (l.data.location || '').split(',')[0].trim()).toLowerCase()
+      )
+    )
+  ).filter(Boolean);
+
+  return areas.map((area) => ({
+    params: { slug: area },
+    props: { area },
+  }));
+}
+
+const { area } = Astro.props;
+const listings = await getCollection('listings');
+
+const filtered = listings.filter((l) => {
+  const lArea = (l.data.area || (l.data.location || '').split(',')[0].trim()).toLowerCase();
+  return lArea === area;
+});
+---
+
+<MainLayout title={`Properties in ${area}`} description={`Browse listings in ${area}.`}>
+  <section class="max-w-7xl mx-auto px-4 py-12">
+    <h1 class="text-3xl font-bold mb-8 capitalize">Properties in {area}</h1>
+
+    {filtered.length > 0 ? (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filtered.map((listing) => (
+          <PropertyCard listing={listing} />
+        ))}
+      </div>
+    ) : (
+      <p>No listings found in this area yet.</p>
+    )}
+  </section>
+</MainLayout>

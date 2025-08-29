@@ -1,0 +1,41 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseCard from '../BaseCard.astro';
+
+type Props = {
+  entry?: CollectionEntry<'blog'>;
+  fallbackImg?: string;
+  href?: string;
+  highlight?: boolean; // NEW → allows special styling
+};
+const { entry, fallbackImg, href, highlight = false } = Astro.props as Props;
+
+const slug = entry?.slug ?? '';
+const url = href ?? (slug ? `/blog/${slug}` : '/blog');
+
+const data = entry?.data ?? {};
+const title = data.title ?? 'Untitled';
+const desc = data.description ?? '';
+const cat = data.category ?? 'Blog';
+const date = data.pubDate
+  ? new Date(data.pubDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  : '';
+const img = data.heroImage ?? fallbackImg ?? '/images/placeholder.webp';
+---
+
+<BaseCard
+  title={title}
+  desc={desc}
+  img={img}
+  href={url}
+  date={date}
+  tag={cat}
+  cta="Read more →"
+  variant="horizontal"
+  showImage={true}
+  highlight={highlight}
+/>

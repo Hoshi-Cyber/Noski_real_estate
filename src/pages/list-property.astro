@@ -1,0 +1,286 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout
+  title="List Your Property"
+  description="Partner with Severino Realty to market, rent or manage your property. Fill out our comprehensive intake form and discover how we maximise your returns."
+>
+  <section class="py-12 px-4 max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-primary mb-4">List Your Property</h1>
+    <p class="text-neutral-700 mb-8">
+      Whether you’re selling, renting, hosting short stays or seeking a management partner, Severino Realty makes the process simple. We combine deep local knowledge with strategic marketing to deliver the results you need.
+    </p>
+
+    <!-- Why List With Us -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-primary mb-2">Why List With Us</h2>
+      <p class="text-neutral-700 mb-4">
+        We’re not just agents—we’re your strategic partners. Our exclusive marketing agreements protect your investment and allow us to commit resources to professional photography, targeted advertising and lead tracking. By routing all inquiries through our platforms, we ensure every potential buyer, tenant or guest is captured and nurtured.
+      </p>
+      <p class="text-neutral-700">
+        Non‑exclusive listings are available too. Even when you market through multiple channels, our attribution clauses and tracking links ensure you never miss a commissionable lead. We handle negotiations, viewings and communications so you can focus on what matters most.
+      </p>
+    </div>
+
+    <!-- Our Listing Fees -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-primary mb-2">Our Listing Fees</h2>
+      <ul class="list-disc list-inside text-neutral-700 space-y-2">
+        <li><strong>For Sale</strong> — 3% of the final sale price, payable upon signing of the sale agreement.</li>
+        <li><strong>For Rent</strong> — One month’s rent upon placement of a tenant.</li>
+        <li><strong>Short Stays</strong> — 15% of the nightly rate (excluding cleaning fees). Owners are paid within 3 business days of checkout.</li>
+        <li><strong>Management</strong> — 10% / 11.25% / 12.5% monthly based on scope: marketing only, operations light or full management.</li>
+      </ul>
+    </div>
+
+    <!-- Property Intake Form -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-primary mb-4">Property Intake Form</h2>
+      <form
+        name="property-intake"
+        method="POST"
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+        class="space-y-6"
+        id="propertyForm"
+      >
+        <input type="hidden" name="form-name" value="property-intake" />
+        <p class="hidden">
+          <label>Don’t fill this out: <input name="bot-field" /></label>
+        </p>
+
+        <!-- Service Type Selector -->
+        <div>
+          <label for="service-type" class="block text-sm font-medium text-primary mb-1">Service Type</label>
+          <select
+            id="service-type"
+            name="service-type"
+            required
+            class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta"
+          >
+            <option value="sale">For Sale</option>
+            <option value="rent">For Rent</option>
+            <option value="short">Short Stays</option>
+            <option value="management">Management</option>
+          </select>
+        </div>
+
+        <!-- Always Required Fields -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="full-name" class="block text-sm font-medium text-primary mb-1">Full Name</label>
+            <input type="text" id="full-name" name="full-name" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-primary mb-1">Email</label>
+            <input type="email" id="email" name="email" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="phone" class="block text-sm font-medium text-primary mb-1">Phone (WhatsApp)</label>
+            <input type="tel" id="phone" name="phone" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="property-title" class="block text-sm font-medium text-primary mb-1">Property Title</label>
+            <input type="text" id="property-title" name="property-title" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="property-type" class="block text-sm font-medium text-primary mb-1">Property Type</label>
+            <select id="property-type" name="property-type" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta">
+              <option>Apartment</option>
+              <option>House</option>
+              <option>Villa</option>
+              <option>Land</option>
+              <option>Bedsitter/Studio</option>
+              <option>Commercial</option>
+            </select>
+          </div>
+          <div>
+            <label for="address" class="block text-sm font-medium text-primary mb-1">Address / City / Map Pin</label>
+            <input type="text" id="address" name="address" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+        </div>
+
+        <!-- Photo Gallery Upload -->
+        <div>
+          <label for="photos" class="block text-sm font-medium text-primary mb-1">Property Photos (min. 8 images)</label>
+          <input type="file" id="photos" name="photos" accept="image/*" multiple required class="w-full" />
+          <p class="text-xs text-neutral-500 mt-1">Upload at least eight high‑quality images. Large files will be converted to WebP automatically.</p>
+        </div>
+
+        <!-- Ownership Status -->
+        <div>
+          <label class="block text-sm font-medium text-primary mb-1">Ownership Status</label>
+          <div class="flex items-center space-x-4">
+            <label class="inline-flex items-center"><input type="radio" name="ownership" value="owner" required class="mr-1" />Owner</label>
+            <label class="inline-flex items-center"><input type="radio" name="ownership" value="authorized-manager" class="mr-1" />Authorised Manager</label>
+            <label class="inline-flex items-center"><input type="radio" name="ownership" value="agent" class="mr-1" />Agent</label>
+          </div>
+        </div>
+
+        <!-- Payout Preference -->
+        <div>
+          <label for="payout" class="block text-sm font-medium text-primary mb-1">Payout Preference</label>
+          <select id="payout" name="payout" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta">
+            <option value="bank">Bank Transfer</option>
+            <option value="mpesa">M‑PESA Paybill</option>
+          </select>
+        </div>
+
+        <!-- Service Specific Sections -->
+        <!-- For Sale Fields -->
+        <div id="sale-fields" class="service-section hidden space-y-4">
+          <div>
+            <label for="asking-price" class="block text-sm font-medium text-primary mb-1">Asking Price (KES)</label>
+            <input type="number" id="asking-price" name="asking-price" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="tenure" class="block text-sm font-medium text-primary mb-1">Tenure / Title Info</label>
+            <input type="text" id="tenure" name="tenure" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="viewing-instructions" class="block text-sm font-medium text-primary mb-1">Viewing Instructions</label>
+            <textarea id="viewing-instructions" name="viewing-instructions" rows="3" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta"></textarea>
+          </div>
+        </div>
+
+        <!-- For Rent Fields -->
+        <div id="rent-fields" class="service-section hidden space-y-4">
+          <div>
+            <label for="monthly-rent" class="block text-sm font-medium text-primary mb-1">Monthly Rent (KES)</label>
+            <input type="number" id="monthly-rent" name="monthly-rent" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="deposit-policy" class="block text-sm font-medium text-primary mb-1">Deposit Policy</label>
+            <input type="text" id="deposit-policy" name="deposit-policy" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="availability-date" class="block text-sm font-medium text-primary mb-1">Availability Date</label>
+            <input type="date" id="availability-date" name="availability-date" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="tenant-requirements" class="block text-sm font-medium text-primary mb-1">Tenant Requirements</label>
+            <textarea id="tenant-requirements" name="tenant-requirements" rows="3" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta"></textarea>
+          </div>
+        </div>
+
+        <!-- Short Stays Fields -->
+        <div id="short-fields" class="service-section hidden space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="max-guests" class="block text-sm font-medium text-primary mb-1">Max Guests</label>
+              <input type="number" id="max-guests" name="max-guests" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+            </div>
+            <div>
+              <label for="bedrooms" class="block text-sm font-medium text-primary mb-1">Bedrooms</label>
+              <input type="number" id="bedrooms" name="bedrooms" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+            </div>
+            <div>
+              <label for="beds" class="block text-sm font-medium text-primary mb-1">Beds</label>
+              <input type="number" id="beds" name="beds" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+            </div>
+            <div>
+              <label for="bathrooms" class="block text-sm font-medium text-primary mb-1">Bathrooms</label>
+              <input type="number" id="bathrooms" name="bathrooms" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="nightly-rate" class="block text-sm font-medium text-primary mb-1">Base Nightly Rate (KES)</label>
+              <input type="number" id="nightly-rate" name="nightly-rate" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+            </div>
+            <div>
+              <label for="min-nights" class="block text-sm font-medium text-primary mb-1">Minimum Nights</label>
+              <input type="number" id="min-nights" name="min-nights" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+            </div>
+            <div>
+              <label for="cleaning-fee" class="block text-sm font-medium text-primary mb-1">Cleaning Fee (KES)</label>
+              <input type="number" id="cleaning-fee" name="cleaning-fee" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+            </div>
+          </div>
+          <div>
+            <label for="amenities" class="block text-sm font-medium text-primary mb-1">Amenities & Safety Basics</label>
+            <textarea id="amenities" name="amenities" rows="4" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta"></textarea>
+          </div>
+        </div>
+
+        <!-- Management Fields -->
+        <div id="management-fields" class="service-section hidden space-y-4">
+          <div>
+            <label for="management-tier" class="block text-sm font-medium text-primary mb-1">Management Tier</label>
+            <select id="management-tier" name="management-tier" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta">
+              <option value="10">10% — Marketing & Communications</option>
+              <option value="11.25">11.25% — Operations Light</option>
+              <option value="12.5">12.5% — Full Management</option>
+            </select>
+          </div>
+          <div>
+            <label for="responsibilities" class="block text-sm font-medium text-primary mb-1">Responsibilities Allocation</label>
+            <textarea id="responsibilities" name="responsibilities" rows="3" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" placeholder="E.g. marketing, guest communication, maintenance..."></textarea>
+          </div>
+          <div>
+            <label for="existing-tenants" class="block text-sm font-medium text-primary mb-1">Existing Tenants/Leases (optional)</label>
+            <textarea id="existing-tenants" name="existing-tenants" rows="3" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta"></textarea>
+          </div>
+        </div>
+
+        <!-- Fees Acceptance & Signature -->
+        <div>
+          <label class="inline-flex items-center">
+            <input type="checkbox" name="fees-acceptance" required class="mr-2" />
+            I agree to the applicable commission or management fee as described above.
+          </label>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="signature-name" class="block text-sm font-medium text-primary mb-1">Signature (typed name)</label>
+            <input type="text" id="signature-name" name="signature-name" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+          <div>
+            <label for="signature-date" class="block text-sm font-medium text-primary mb-1">Date</label>
+            <input type="date" id="signature-date" name="signature-date" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="bg-cta text-white px-6 py-2 rounded-md font-medium hover:bg-accent transition-colors">
+          Submit Property
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Show/hide form sections based on selected service type -->
+  <script>
+    {String.raw`
+    document.addEventListener('DOMContentLoaded', function () {
+      const serviceSelect = document.getElementById('service-type');
+      const sections = {
+        sale: document.getElementById('sale-fields'),
+        rent: document.getElementById('rent-fields'),
+        short: document.getElementById('short-fields'),
+        management: document.getElementById('management-fields'),
+      };
+
+      function updateSections() {
+        const value = serviceSelect.value;
+        Object.keys(sections).forEach(key => {
+          sections[key].classList.add('hidden');
+        });
+        if (sections[value]) {
+          sections[value].classList.remove('hidden');
+        }
+      }
+
+      // If the URL contains a serviceType query parameter, preselect the appropriate value
+      const params = new URLSearchParams(window.location.search);
+      const preselect = params.get('serviceType');
+      if (preselect && sections[preselect]) {
+        serviceSelect.value = preselect;
+      }
+      serviceSelect.addEventListener('change', updateSections);
+      updateSections();
+    });
+    `}
+  </script>
+</MainLayout>
