@@ -3,40 +3,32 @@ import { getCollection } from 'astro:content';
 import MainLayout from '../../layouts/MainLayout.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
 
-export const prerender = true;
-
+// helper to consistently derive an "area" key
 function getArea(d: any): string {
-  const loc = String(d?.location || '');
-  const area = d?.area ? String(d.area) : String((loc.split(',')[0] || '').trim());
-  return area.toLowerCase();
+  const a = (d?.area ?? '').toString().trim();
+  if (a) return a.toLowerCase();
+  const loc = (d?.location ?? '').toString();
+  const first = loc.split(',')[0]?.trim() ?? '';
+  return first.toLowerCase();
 }
 
 export async function getStaticPaths() {
   const listings = await getCollection('listings');
   const areas = Array.from(new Set(listings.map((l) => getArea(l.data)))).filter(Boolean);
-  return areas.map((area) => ({ params: { slug: area } }));
+  return areas.map((area) => ({
+    params: { slug: area },
+    props: { area },
+  }));
 }
 
-// Resolve from params safely
-const areaParam = String(Astro.params.slug || '').toLowerCase();
-
+const { area } = Astro.props;
 const listings = await getCollection('listings');
-const filtered = listings.filter((l) => getArea(l.data) === areaParam);
-
-// Pretty label for UI
-const areaName =
-  areaParam
-    .split(' ')
-    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
-    .join(' ') || 'Area';
-
-const pageTitle = `Properties in ${areaName}`;
-const pageDesc = `Browse listings in ${areaName}.`;
+const filtered = listings.filter((l) => getArea(l.data) === (area || '').toLowerCase());
 ---
 
-<MainLayout title={pageTitle} description={pageDesc}>
+<MainLayout title={`Properties in ${area}`} description={`Browse listings in ${area}.`}>
   <section class="max-w-7xl mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-8 capitalize">Properties in {areaName}</h1>
+    <h1 class="text-3xl font-bold mb-8 capitalize">Properties in {area}</h1>
 
     {filtered.length > 0 ? (
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
