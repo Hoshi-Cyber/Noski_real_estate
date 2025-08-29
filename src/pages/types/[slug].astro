@@ -5,41 +5,57 @@ import PropertyCard from '../../components/PropertyCard.astro';
 
 export const prerender = true;
 
-// Normalize a listing's category
-function resolveCategory(d: Record<string, any> = {}) {
-  if (d.category) return String(d.category).toLowerCase();
-  const t = String(d.type || '').toLowerCase();
-  if (t.includes('land')) return 'land';
-  if (
-    t.includes('apartment') ||
-    t.includes('townhouse') ||
-    t.includes('villa') ||
-    t.includes('cabin')
-  ) return 'residential';
-  return 'residential';
-}
-
 export async function getStaticPaths() {
   const listings = await getCollection('listings');
+
+  // Inline category derivation to avoid helper/hoisting issues
   const categories = Array.from(
     new Set(
-      listings
-        .map((l) => resolveCategory(l.data))
-        .filter(Boolean)
+      listings.map((l) => {
+        const d: any = l.data ?? {};
+        if (d.category) return String(d.category).toLowerCase();
+        const t = String(d.type || '').toLowerCase();
+        if (t.includes('land')) return 'land';
+        if (
+          t.includes('apartment') ||
+          t.includes('townhouse') ||
+          t.includes('villa') ||
+          t.includes('cabin')
+        ) return 'residential';
+        return 'residential';
+      })
     )
-  );
+  ).filter(Boolean);
+
   return categories.map((cat) => ({
     params: { slug: cat },
     props: { cat },
   }));
 }
 
-// Prefer prop from getStaticPaths, fallback to URL param
-const _props = (Astro.props ?? {}) as { cat?: string };
-const cat = String(_props.cat ?? Astro.params?.slug ?? '').toLowerCase();
+// Prefer value from getStaticPaths props, fallback to URL param
+const propCat = (Astro.props as { cat?: string } | undefined)?.cat;
+const cat = String(propCat ?? Astro.params?.slug ?? '').toLowerCase();
 
 const listings = await getCollection('listings');
-const filtered = listings.filter((l) => resolveCategory(l.data) === cat);
+
+// Inline the same derivation for filtering
+const filtered = listings.filter((l) => {
+  const d: any = l.data ?? {};
+  let c = d.category ? String(d.category).toLowerCase() : '';
+  if (!c) {
+    const t = String(d.type || '').toLowerCase();
+    if (t.includes('land')) c = 'land';
+    else if (
+      t.includes('apartment') ||
+      t.includes('townhouse') ||
+      t.includes('villa') ||
+      t.includes('cabin')
+    ) c = 'residential';
+    else c = 'residential';
+  }
+  return c === cat;
+});
 
 const pageTitle = cat ? `${cat} Properties` : 'Properties by Type';
 const pageDesc = cat ? `Browse ${cat} listings.` : 'Browse listings by type.';
