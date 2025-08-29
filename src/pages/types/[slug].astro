@@ -5,42 +5,55 @@ import PropertyCard from '../../components/PropertyCard.astro';
 
 export const prerender = true;
 
-function resolveCategory(d: any) {
-  if (d?.category) return String(d.category).toLowerCase();
-  const t = String(d?.type || '').toLowerCase();
+// Normalize a listing's category
+function resolveCategory(d: Record<string, any> = {}) {
+  if (d.category) return String(d.category).toLowerCase();
+  const t = String(d.type || '').toLowerCase();
   if (t.includes('land')) return 'land';
-  if (t.includes('apartment') || t.includes('townhouse') || t.includes('villa') || t.includes('cabin'))
-    return 'residential';
+  if (
+    t.includes('apartment') ||
+    t.includes('townhouse') ||
+    t.includes('villa') ||
+    t.includes('cabin')
+  ) return 'residential';
   return 'residential';
 }
 
-// Build static paths without props
 export async function getStaticPaths() {
   const listings = await getCollection('listings');
-  const categories = Array.from(new Set(listings.map((l) => resolveCategory(l.data)))).filter(Boolean);
-  return categories.map((cat) => ({ params: { slug: cat } }));
+  const categories = Array.from(
+    new Set(
+      listings
+        .map((l) => resolveCategory(l.data))
+        .filter(Boolean)
+    )
+  );
+  return categories.map((cat) => ({
+    params: { slug: cat },
+    props: { cat },
+  }));
 }
 
-// Resolve from params safely
-const slugParam = String(Astro.params.slug || '').toLowerCase();
-const cat = slugParam || 'residential';
+// Prefer prop from getStaticPaths, fallback to URL param
+const _props = (Astro.props ?? {}) as { cat?: string };
+const cat = String(_props.cat ?? Astro.params?.slug ?? '').toLowerCase();
 
 const listings = await getCollection('listings');
 const filtered = listings.filter((l) => resolveCategory(l.data) === cat);
 
-const pageTitle = `${cat.charAt(0).toUpperCase() + cat.slice(1)} Properties`;
-const pageDesc = `Browse ${cat} listings.`;
+const pageTitle = cat ? `${cat} Properties` : 'Properties by Type';
+const pageDesc = cat ? `Browse ${cat} listings.` : 'Browse listings by type.';
 ---
 
 <MainLayout title={pageTitle} description={pageDesc}>
   <section class="max-w-7xl mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-8 capitalize">{cat} Properties</h1>
+    <h1 class="text-3xl font-bold mb-8 capitalize">
+      {cat ? `${cat} Properties` : 'Properties'}
+    </h1>
 
     {filtered.length > 0 ? (
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((listing) => (
-          <PropertyCard listing={listing} />
-        ))}
+        {filtered.map((listing) => <PropertyCard listing={listing} />)}
       </div>
     ) : (
       <p>No listings found for this category yet.</p>
