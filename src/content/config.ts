@@ -1,9 +1,30 @@
 import { defineCollection, z } from 'astro:content';
 
-// ----- Shared enums / helpers -----
+/* -------------------------------
+   Shared enums / helpers
+-------------------------------- */
 const resourceSection = z.enum(['guides', 'faqs', 'market-reports']);
 
-// 🏠 Shared schema for listings
+/** Accept absolute http(s) OR site-relative (/docs/.., ./file.pdf, ../file.pdf) */
+const urlish = z
+  .string()
+  .refine(
+    (v) =>
+      v === '' ||
+      /^https?:\/\//i.test(v) ||
+      v.startsWith('/') ||
+      v.startsWith('./') ||
+      v.startsWith('../'),
+    { message: 'Must be absolute or site/relative URL' }
+  );
+
+// convenience
+const strNullish = z.string().optional().nullable();
+const urlNullish = urlish.optional().nullable();
+
+/* --------------------------------
+   Listings (existing)
+--------------------------------- */
 const listingsSchema = z.object({
   title: z.string(),
   price: z.number().optional(),
@@ -12,29 +33,24 @@ const listingsSchema = z.object({
   bathrooms: z.number().optional(),
   type: z.string().describe('e.g., Apartment, House, Villa, Bedsitter/Studio, Commercial'),
   availability: z.string().describe('e.g., For Rent, For Sale, Short Stays'),
-  // images
   heroImage: z.string().optional(),
-  image: z.string().optional(),            // single image (optional)
-  images: z.array(z.string()).optional(),  // gallery (optional)
-  imagesFolder: z.string().optional(),     // folder for asset resolution (optional)
-  // misc
+  image: z.string().optional(),
+  images: z.array(z.string()).optional(),
+  imagesFolder: z.string().optional(),
   amenities: z.array(z.string()).optional(),
   description: z.string().optional(),
 });
 
-// 🏠 Listings
-const listings = defineCollection({
-  type: 'content',
-  schema: listingsSchema,
-});
+const listings = defineCollection({ type: 'content', schema: listingsSchema });
 
-// 🌟 Featured Listings (same schema)
-const featured = defineCollection({
-  type: 'content',
-  schema: listingsSchema,
-});
+/* --------------------------------
+   Featured Listings (existing)
+--------------------------------- */
+const featured = defineCollection({ type: 'content', schema: listingsSchema });
 
-// 📰 Blog
+/* --------------------------------
+   Blog (existing)
+--------------------------------- */
 const blog = defineCollection({
   type: 'content',
   schema: z.object({
@@ -46,30 +62,123 @@ const blog = defineCollection({
   }),
 });
 
-// 📘 Resources
+/* --------------------------------
+   Resources (existing)
+--------------------------------- */
 const resources = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    section: resourceSection,             // 'guides' | 'faqs' | 'market-reports' (required)
+    section: resourceSection,
     pubDate: z.coerce.date().optional(),
-    // linking / downloads
-    download: z.string().optional(),
-    ctaLink: z.string().optional(),
-    // images (for robust resolver)
+    download: urlNullish,
+    ctaLink: urlNullish,
     heroImage: z.string().optional(),
     image: z.string().optional(),
     imagesFolder: z.string().optional(),
     icon: z.string().optional(),
-    // legacy/optional
     category: z.string().optional(),
   }),
 });
 
+/* --------------------------------
+   Developments (NEW)
+--------------------------------- */
+const geoSchema = z.object({
+  city: z.string().min(1),
+  estate: strNullish,
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+});
+
+const mediaSchema = z.object({
+  photos: z.array(z.string()).default([]),
+  planPdfs: z.array(urlish).default([]),
+});
+
+const ctaSchema = z.object({
+  label: z.string(),
+  href: urlNullish, // absolute or relative; allow null/omitted
+  action: z.enum(['link', 'download', 'lead', 'whatsapp']).default('link'),
+});
+
+const developmentBase = z.object({
+  title: z.string(),
+  slug: strNullish,
+  status: strNullish,
+  location: geoSchema,
+  priceFrom: z.number().optional(),
+  priceTo: z.number().optional(),
+  tenure: strNullish,
+  amenities: z.array(z.string()).default([]),
+  approvals: z.array(z.string()).default([]),
+  media: mediaSchema.default({ photos: [], planPdfs: [] }),
+  ctas: z.array(ctaSchema).default([]),
+});
+
+/** New Developments */
+const newDevelopmentSchema = developmentBase.extend({
+  category: z.literal('new_development'),
+  developer_name: z.string().min(1),
+  developer_track_record_url: urlNullish,
+  phase: strNullish,
+  expected_completion_date: z.coerce.date().optional().nullable(),
+  payment_plan: z
+    .array(
+      z.object({
+        stage: strNullish,
+        percent: z.number().min(0).max(100).optional(),
+        dueOn: strNullish,
+        note: strNullish,
+      })
+    )
+    .default([]),
+});
+
+/** Unfinished Projects */
+const unfinishedProjectSchema = developmentBase.extend({
+  category: z.literal('unfinished_project'),
+  completion_stage: strNullish,
+  completion_percent: z.number().min(0).max(100).optional(),
+  est_completion_cost_min: z.number().optional(),
+  est_completion_cost_max: z.number().optional(),
+  boq_url: urlNullish,
+  permits_status: strNullish,
+  risk_notes: strNullish,                 // allow null/omitted
+  structural_report_url: urlNullish,      // allow null/omitted
+  owner_name: strNullish,
+});
+
+const developmentsSchema = z.discriminatedUnion('category', [
+  newDevelopmentSchema,
+  unfinishedProjectSchema,
+]);
+
+const developments = defineCollection({
+  type: 'content',
+  schema: developmentsSchema,
+});
+
+/* --------------------------------
+   Exports
+--------------------------------- */
 export const collections = {
   listings,
   featured,
   blog,
   resources,
+  developments,
 };
+
+export type DevelopmentBase = z.infer<typeof developmentBase>;
+export type DevelopmentNew = z.infer<typeof newDevelopmentSchema>;
+export type DevelopmentUnfinished = z.infer<typeof unfinishedProjectSchema>;
+export type DevelopmentEntry = z.infer<typeof developmentsSchema>;
+
+export function isNewDevelopment(d: DevelopmentEntry): d is DevelopmentNew {
+  return d.category === 'new_development';
+}
+export function isUnfinishedProject(d: DevelopmentEntry): d is DevelopmentUnfinished {
+  return d.category === 'unfinished_project';
+}

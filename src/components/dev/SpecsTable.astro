@@ -1,0 +1,198 @@
+---
+import type { DevelopmentEntry, DevelopmentNew, DevelopmentUnfinished } from '../../content/config';
+
+type Props = {
+  dev: DevelopmentEntry;
+  class?: string;
+};
+const { dev, class: cls = '' } = Astro.props as Props;
+
+const isNew = dev.category === 'new_development';
+const isUnfinished = dev.category === 'unfinished_project';
+
+function fmtKES(n?: number) {
+  if (typeof n !== 'number' || !isFinite(n)) return null;
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(n);
+  } catch {
+    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
+  }
+}
+const pf = fmtKES(dev.priceFrom);
+const pt = fmtKES(dev.priceTo);
+const priceBand = pf && pt ? `${pf} – ${pt}` : pf ? `From ${pf}` : pt ? `Up to ${pt}` : 'Price on request';
+
+const city = dev.location?.city ?? '';
+const estate = dev.location?.estate ?? '';
+const locationStr = [estate, city].filter(Boolean).join(', ');
+
+const approvalsCount = (dev.approvals || []).length;
+const amenities = (dev.amenities || []).slice(0, 8);
+const moreAmenities = Math.max(0, (dev.amenities?.length || 0) - amenities.length);
+
+const eta =
+  isNew && (dev as DevelopmentNew).expected_completion_date
+    ? new Date((dev as DevelopmentNew).expected_completion_date!).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+    : null;
+
+const completionPct =
+  isUnfinished && typeof (dev as DevelopmentUnfinished).completion_percent === 'number'
+    ? `${Math.round((dev as DevelopmentUnfinished).completion_percent!)}%`
+    : null;
+
+const finishMin = isUnfinished ? fmtKES((dev as DevelopmentUnfinished).est_completion_cost_min) : null;
+const finishMax = isUnfinished ? fmtKES((dev as DevelopmentUnfinished).est_completion_cost_max) : null;
+const finishBand =
+  finishMin && finishMax ? `${finishMin} – ${finishMax}` : finishMin ? `≥ ${finishMin}` : finishMax ? `≤ ${finishMax}` : null;
+
+const phase = isNew ? (dev as DevelopmentNew).phase : null;
+const developer = isNew ? (dev as DevelopmentNew).developer_name : null;
+const developerLink = isNew ? (dev as DevelopmentNew).developer_track_record_url : null;
+
+const permits = isUnfinished ? (dev as DevelopmentUnfinished).permits_status : null;
+const boq = isUnfinished ? (dev as DevelopmentUnfinished).boq_url : null;
+const eng = isUnfinished ? (dev as DevelopmentUnfinished).structural_report_url : null;
+---
+
+<section class={`card-tight ${cls}`}>
+  <h2 class="section-subtitle">Specifications</h2>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <tbody class="[&_tr]:border-t [&_tr:first-child]:border-t-0 border-neutral-200">
+        <!-- Shared -->
+        <tr>
+          <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Location</th>
+          <td class="py-2 text-neutral-800">{locationStr || '—'}</td>
+        </tr>
+        <tr>
+          <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Tenure</th>
+          <td class="py-2 text-neutral-800">{dev.tenure ?? '—'}</td>
+        </tr>
+        <tr>
+          <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Price</th>
+          <td class="py-2 text-primary font-semibold">{priceBand}</td>
+        </tr>
+        {dev.status && (
+          <tr>
+            <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Status</th>
+            <td class="py-2">{dev.status}</td>
+          </tr>
+        )}
+        <tr>
+          <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Approvals</th>
+          <td class="py-2">
+            {approvalsCount > 0 ? (
+              <div class="flex flex-wrap gap-2">
+                {dev.approvals!.slice(0, 6).map((a) => <span class="badge" key={a}>{a}</span>)}
+                {dev.approvals!.length > 6 && <span class="badge">+{dev.approvals!.length - 6} more</span>}
+              </div>
+            ) : '—'}
+          </td>
+        </tr>
+        {amenities.length > 0 && (
+          <tr>
+            <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Amenities</th>
+            <td class="py-2">
+              <div class="flex flex-wrap gap-2">
+                {amenities.map((a) => <span class="badge" key={a}>{a}</span>)}
+                {moreAmenities > 0 && <span class="badge">+{moreAmenities} more</span>}
+              </div>
+            </td>
+          </tr>
+        )}
+
+        <!-- New Development only -->
+        {isNew && (
+          <>
+            <tr>
+              <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Developer</th>
+              <td class="py-2">
+                {developerLink ? <a href={developerLink} target="_blank" rel="noopener" class="link-decor">{developer}</a> : developer ?? '—'}
+              </td>
+            </tr>
+            {phase && (
+              <tr>
+                <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Phase</th>
+                <td class="py-2">{phase}</td>
+              </tr>
+            )}
+            {eta && (
+              <tr>
+                <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Expected Completion</th>
+                <td class="py-2">{eta}</td>
+              </tr>
+            )}
+            {(dev as DevelopmentNew).payment_plan?.length > 0 && (
+              <tr>
+                <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Payment Plan</th>
+                <td class="py-2">
+                  <div class="flex flex-wrap gap-2">
+                    {(dev as DevelopmentNew).payment_plan!.slice(0, 4).map((p, i) => (
+                      <span class="badge-cta" key={`${p.stage}-${i}`}>
+                        {p.stage}{p.percent != null ? ` ${p.percent}%` : ''}{p.dueOn ? ` • ${p.dueOn}` : ''}
+                      </span>
+                    ))}
+                    {(dev as DevelopmentNew).payment_plan!.length > 4 && (
+                      <span class="badge-cta">+{(dev as DevelopmentNew).payment_plan!.length - 4} more</span>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            )}
+          </>
+        )}
+
+        <!-- Unfinished Project only -->
+        {isUnfinished && (
+          <>
+            {(completionPct || (dev as DevelopmentUnfinished).completion_stage) && (
+              <tr>
+                <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Completion</th>
+                <td class="py-2">
+                  <div class="flex flex-wrap gap-2">
+                    {completionPct && <span class="badge">{completionPct}</span>}
+                    {(dev as DevelopmentUnfinished).completion_stage && (
+                      <span class="badge">{(dev as DevelopmentUnfinished).completion_stage}</span>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            )}
+            {finishBand && (
+              <tr>
+                <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Estimated Finish Cost</th>
+                <td class="py-2">{finishBand}</td>
+              </tr>
+            )}
+            {permits && (
+              <tr>
+                <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Permits</th>
+                <td class="py-2">
+                  <span class={/pending|none|missing/i.test(permits) ? 'badge-warn' : 'badge'}>{permits}</span>
+                </td>
+              </tr>
+            )}
+            {(boq || eng) && (
+              <tr>
+                <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Documentation</th>
+                <td class="py-2">
+                  <div class="flex flex-wrap gap-2">
+                    {boq && <a href={boq} target="_blank" rel="noopener" class="badge-cta">BOQ</a>}
+                    {eng && <a href={eng} target="_blank" rel="noopener" class="badge-cta">Engineer Report</a>}
+                  </div>
+                </td>
+              </tr>
+            )}
+            {(dev as DevelopmentUnfinished).risk_notes && (
+              <tr>
+                <th scope="row" class="text-left align-top py-2 pr-4 font-semibold text-neutral-700">Risk Notes</th>
+                <td class="py-2"><span class="badge-warn">Review advised</span></td>
+              </tr>
+            )}
+          </>
+        )}
+      </tbody>
+    </table>
+  </div>
+</section>

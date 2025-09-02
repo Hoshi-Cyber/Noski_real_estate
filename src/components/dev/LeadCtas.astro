@@ -1,0 +1,177 @@
+---
+import type { DevelopmentEntry, DevelopmentNew, DevelopmentUnfinished } from '../../content/config';
+
+type Props = {
+  dev: DevelopmentEntry;
+  /** E.164 without +. Example: "254712345678". If omitted, WhatsApp opens number picker. */
+  whatsappNumber?: string;
+  class?: string;
+};
+const { dev, whatsappNumber = '', class: cls = '' } = Astro.props as Props;
+
+const isNew = dev.category === 'new_development';
+const isUnf = dev.category === 'unfinished_project';
+
+const pdf = dev.media?.planPdfs?.[0] ?? null;
+
+// Heuristics for which CTAs to show
+const hasShowHouse =
+  isNew &&
+  (dev.ctas || []).some((c) => /show house|site visit/i.test(c.label));
+
+const hasPaymentPlan =
+  isNew && ((dev as DevelopmentNew).payment_plan?.length ?? 0) > 0;
+
+const hasBOQ = isUnf && Boolean((dev as DevelopmentUnfinished).boq_url);
+const hasEngineerWalk =
+  isUnf || (dev.ctas || []).some((c) => /engineer|walkthrough/i.test(c.label));
+
+const title = dev.title;
+const loc = [dev.location?.estate, dev.location?.city].filter(Boolean).join(', ');
+const refText = [title, loc].filter(Boolean).join(' — ');
+---
+
+<section class={`card-tight ${cls}`}>
+  <h2 class="section-subtitle">Enquire & Downloads</h2>
+
+  <div class="flex flex-wrap gap-2">
+    {pdf && (
+      <a href={pdf} target="_blank" rel="noopener" class="btn-outline px-4 py-2" aria-label="Download brochure or floor plans PDF">
+        Brochure
+      </a>
+    )}
+
+    {hasShowHouse && (
+      <button class="btn-outline px-4 py-2 js-lead" data-lead-type="show_house">
+        Show House
+      </button>
+    )}
+
+    {hasPaymentPlan && (
+      <button class="btn-outline px-4 py-2 js-lead" data-lead-type="payment_plan">
+        Payment Plan
+      </button>
+    )}
+
+    {hasBOQ && (
+      <a href={(dev as any).boq_url} target="_blank" rel="noopener" class="btn-outline px-4 py-2" aria-label="Open Bill of Quantities">
+        BOQ
+      </a>
+    )}
+
+    {hasEngineerWalk && (
+      <button class="btn-outline px-4 py-2 js-lead" data-lead-type="engineer_walkthrough">
+        Engineer Walkthrough
+      </button>
+    )}
+
+    <button class="btn-cta px-5 py-2.5 js-lead" data-lead-type="make_offer">
+      Make Offer
+    </button>
+
+    <a
+      class="btn-cta px-5 py-2.5"
+      href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        `Hi, I'm interested in "${refText}". ${typeof window === 'undefined' ? '' : ''}Can you assist?`
+      )}`}
+      target="_blank" rel="noopener"
+      aria-label="Start WhatsApp chat"
+    >
+      WhatsApp
+    </a>
+  </div>
+
+  <!-- Inline lead form (opened on any .js-lead click) -->
+  <form id="lead-form" class="mt-4 hidden" method="post" action="/api/lead">
+    <input type="hidden" name="type" value="">
+    <input type="hidden" name="source" value="developments">
+    <input type="hidden" name="listingId" value={dev.slug ?? ''}>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div>
+        <label for="lf-name" class="block text-sm font-medium text-neutral-700">Name</label>
+        <input id="lf-name" name="name" required autocomplete="name"
+          class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none" />
+      </div>
+      <div>
+        <label for="lf-phone" class="block text-sm font-medium text-neutral-700">Phone</label>
+        <input id="lf-phone" name="phone" required inputmode="tel" autocomplete="tel"
+          class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none" />
+      </div>
+      <div>
+        <label for="lf-email" class="block text-sm font-medium text-neutral-700">Email</label>
+        <input id="lf-email" name="email" type="email" autocomplete="email"
+          class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none" />
+      </div>
+      <div class="sm:col-span-3">
+        <label for="lf-msg" class="block text-sm font-medium text-neutral-700">Message</label>
+        <textarea id="lf-msg" name="message" rows="3"
+          class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none"
+          placeholder={`Enquiry about ${refText}`}></textarea>
+      </div>
+    </div>
+
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <button type="submit" class="btn-cta px-5 py-2.5">Send enquiry</button>
+      <button type="button" id="lf-cancel" class="btn-outline px-4 py-2">Cancel</button>
+      <p id="lf-status" class="text-sm text-neutral-600 ml-auto" aria-live="polite"></p>
+    </div>
+  </form>
+</section>
+
+<script type="module" client:load>
+  const form = document.getElementById('lead-form') as HTMLFormElement | null;
+  const statusEl = document.getElementById('lf-status') as HTMLParagraphElement | null;
+  const cancelBtn = document.getElementById('lf-cancel') as HTMLButtonElement | null;
+  const leadButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.js-lead'));
+
+  const qs = (s: string, r: ParentNode | Document = document) => r.querySelector(s) as HTMLElement | null;
+
+  function openForm(type: string) {
+    if (!form) return;
+    (form.elements.namedItem('type') as HTMLInputElement).value = type;
+    // Pre-fill default message
+    const msg = form.elements.namedItem('message') as HTMLTextAreaElement;
+    if (msg && !msg.value) {
+      msg.value = `I’m interested in ${document.title}. Action: ${type.replace('_',' ')}`;
+    }
+    form.classList.remove('hidden');
+    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    (form.elements.namedItem('name') as HTMLInputElement)?.focus();
+  }
+
+  leadButtons.forEach((btn) => {
+    btn.addEventListener('click', () => openForm(btn.dataset.leadType || 'enquiry'));
+  });
+
+  cancelBtn?.addEventListener('click', () => {
+    form?.classList.add('hidden');
+    if (statusEl) statusEl.textContent = '';
+  });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form) return;
+    statusEl && (statusEl.textContent = 'Sending…');
+
+    const fd = new FormData(form);
+    // Attach page URL and title for context
+    fd.append('pageUrl', location.href);
+    fd.append('pageTitle', document.title);
+
+    try {
+      const res = await fetch(form.action, { method: 'POST', body: fd });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      statusEl && (statusEl.textContent = 'Sent. We will contact you shortly.');
+      // Optionally open WhatsApp prefilled after successful send
+      const type = String(fd.get('type') || 'enquiry');
+      const text = `Hi, I'm interested in "${document.title}". Action: ${type}. Link: ${location.href}`;
+      const phone = `${Astro.props?.whatsappNumber ?? ''}`;
+      const wa = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+      window.open(wa, '_blank', 'noopener');
+      setTimeout(() => form.classList.add('hidden'), 600);
+    } catch (err) {
+      statusEl && (statusEl.textContent = 'Failed to send. Try WhatsApp instead.');
+    }
+  });
+</script>

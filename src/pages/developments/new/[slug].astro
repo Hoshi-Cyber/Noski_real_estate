@@ -1,0 +1,199 @@
+---
+// src/pages/developments/new/[slug].astro
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+import Gallery from '../../../components/dev/Gallery.astro';
+import SpecsTable from '../../../components/dev/SpecsTable.astro';
+import MapBlock from '../../../components/dev/MapBlock.astro';
+import LeadCtas from '../../../components/dev/LeadCtas.astro';
+import RelatedCarousel from '../../../components/dev/RelatedCarousel.astro';
+import SeoJsonLd from '../../../components/dev/SeoJsonLd.astro';
+
+/* Static paths for dynamic route */
+export async function getStaticPaths() {
+  const items = await getCollection('developments', (e) => (e.data as any).category === 'new_development');
+  return items.map((e) => ({ params: { slug: e.slug } }));
+}
+
+// params
+const { slug } = Astro.params;
+
+// fetch the development by slug and category
+const all = await getCollection('developments');
+const entry = all.find((e) => e.slug === slug && (e.data as any).category === 'new_development');
+if (!entry) throw new Error(`Development not found for slug: ${slug}`);
+
+const d = entry.data as any;
+
+// meta
+const title = `${d.title} | New Development`;
+const loc = [d.location?.estate, d.location?.city].filter(Boolean).join(', ');
+const description =
+  `Off-plan development in ${loc || 'Nairobi'} with pricing ${
+    d.priceFrom ? `from ${new Intl.NumberFormat(undefined,{style:'currency',currency:'KES',maximumFractionDigits:0}).format(d.priceFrom)}` : 'available on request'
+  }.`;
+
+// related (same city or same developer, exclude self)
+const related = all
+  .filter((e) => e.slug !== entry.slug && (e.data as any).category === 'new_development')
+  .filter((e) => {
+    const sameCity = (e.data as any).location?.city && d.location?.city && (e.data as any).location.city === d.location.city;
+    const sameDev  = (e.data as any).developer_name && d.developer_name && (e.data as any).developer_name === d.developer_name;
+    return sameCity || sameDev;
+  })
+  .slice(0, 8);
+
+// helpers
+function fmt(n?: number) {
+  if (typeof n !== 'number' || !isFinite(n)) return null;
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(n);
+  } catch {
+    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
+  }
+}
+const pf = fmt(d.priceFrom);
+const pt = fmt(d.priceTo);
+const priceBand = pf && pt ? `${pf} – ${pt}` : pf ? `From ${pf}` : pt ? `Up to ${pt}` : 'Price on request';
+
+const eta = d.expected_completion_date
+  ? new Date(d.expected_completion_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+  : null;
+
+const photos = d.media?.photos ?? [];
+const plans  = d.media?.planPdfs ?? [];
+---
+
+<MainLayout {title} {description}>
+
+  <!-- Breadcrumbs render from layout slot; spacing is tight via mb-2 -->
+  <Fragment slot="breadcrumbs">
+    <ol class="flex items-center gap-2 text-sm text-neutral-600">
+      <li><a href="/" class="link-decor">Home</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a href="/developments/" class="link-decor">Developments</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a href="/developments/new/" class="link-decor">New Developments</a></li>
+      <li aria-hidden="true">/</li>
+      <li class="text-neutral-900 font-medium">{d.title}</li>
+    </ol>
+  </Fragment>
+
+  <!-- Hero: reduced top padding so H1 hugs breadcrumbs -->
+  <section class="section pt-2">
+    <div class="max-w-5xl mx-auto">
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">{d.title}</h1>
+      <div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-neutral-700">
+        {loc && <span>{loc}</span>}
+        <span class="hidden sm:inline">•</span>
+        <span class="font-semibold text-primary">{priceBand}</span>
+        {eta && (
+          <>
+            <span class="hidden sm:inline">•</span>
+            <span>Completion {eta}</span>
+          </>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- Fast facts -->
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {d.phase && <div class="badge w-full justify-center">Phase {d.phase}</div>}
+      {d.tenure && <div class="badge w-full justify-center">{d.tenure}</div>}
+      {d.developer_name && <div class="badge w-full justify-center">Developer: {d.developer_name}</div>}
+      {d.approvals?.length > 0 && <div class="badge w-full justify-center">Approvals ×{d.approvals.length}</div>}
+      {d.payment_plan?.length > 0 && <div class="badge-cta w-full justify-center">Payment Plan</div>}
+      <div class="badge w-full justify-center">{photos.length} photos</div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <div class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <Gallery photos={photos} planPdfs={plans} />
+  </div>
+
+  <!-- Specs -->
+  <div class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <SpecsTable dev={d} />
+  </div>
+
+  <!-- Payment plan -->
+  {d.payment_plan?.length > 0 && (
+    <section class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="card-tight">
+        <h2 class="section-subtitle">Payment Plan</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="text-left border-b border-neutral-200">
+                <th class="py-2 pr-4">Stage</th>
+                <th class="py-2 pr-4">Percent</th>
+                <th class="py-2 pr-4">Due</th>
+                <th class="py-2">Note</th>
+              </tr>
+            </thead>
+            <tbody class="[&_tr]:border-b border-neutral-200">
+              {d.payment_plan.map((p: any) => (
+                <tr>
+                  <td class="py-2 pr-4">{p.stage ?? '—'}</td>
+                  <td class="py-2 pr-4">{p.percent != null ? `${p.percent}%` : '—'}</td>
+                  <td class="py-2 pr-4">{p.dueOn ?? '—'}</td>
+                  <td class="py-2">{p.note ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Approvals & documents -->
+  {(d.approvals?.length || plans.length) && (
+    <section class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="card-tight">
+        <h2 class="section-subtitle">Approvals & Documents</h2>
+
+        {d.approvals?.length > 0 && (
+          <div class="mb-3 flex flex-wrap gap-2">
+            {d.approvals.slice(0, 12).map((a: string) => <span class="badge" key={a}>{a}</span>)}
+            {d.approvals.length > 12 && <span class="badge">+{d.approvals.length - 12} more</span>}
+          </div>
+        )}
+
+        {plans.length > 0 && (
+          <ul class="space-y-2">
+            {plans.map((pdf: string) => (
+              <li class="flex items-center gap-3">
+                <a href={pdf} target="_blank" rel="noopener" class="pdf-badge">PDF</a>
+                <a href={pdf} target="_blank" rel="noopener" class="link-decor truncate">{pdf.split('/').pop()}</a>
+                <a href={pdf} download class="btn-outline px-2.5 py-1.5 text-xs ml-auto">Download</a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- Map -->
+  <div class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <MapBlock lat={d.location?.lat} lng={d.location?.lng} address={loc} />
+  </div>
+
+  <!-- Lead CTAs -->
+  <div class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <LeadCtas dev={d} whatsappNumber={import.meta.env.PUBLIC_WHATSAPP_NUMBER} />
+  </div>
+
+  <!-- Related -->
+  {related.length > 0 && (
+    <div class="mt-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <RelatedCarousel items={related} />
+    </div>
+  )}
+
+  <SeoJsonLd kind="Product" dev={d} url={Astro.url.href} />
+</MainLayout>

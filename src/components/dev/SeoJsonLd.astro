@@ -1,0 +1,146 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type {
+  DevelopmentEntry,
+  DevelopmentNew,
+  DevelopmentUnfinished,
+} from '../../content/config';
+
+type Props =
+  | {
+      kind: 'ItemList';
+      items: CollectionEntry<'developments'>[];
+      url?: string;
+      name?: string;
+      description?: string;
+    }
+  | {
+      kind: 'Product';
+      dev: DevelopmentEntry;
+      url?: string;
+    };
+
+const props = Astro.props as Props;
+const pageUrl = 'url' in props && props.url ? props.url : Astro.url?.href;
+
+// Helpers
+function hrefFor(d: DevelopmentEntry | CollectionEntry<'developments'>['data'], slug: string) {
+  const base = d.category === 'new_development' ? '/developments/new/' : '/developments/unfinished/';
+  return `${base}${(d.slug ?? slug).replace(/\/+$/,'')}/`;
+}
+function money(n?: number) {
+  return typeof n === 'number' && isFinite(n) ? n : undefined;
+}
+function cleanup<T>(obj: T): T {
+  if (obj && typeof obj === 'object') {
+    for (const k of Object.keys(obj as any)) {
+      const v = (obj as any)[k];
+      if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) {
+        delete (obj as any)[k];
+      } else if (typeof v === 'object' && !Array.isArray(v)) {
+        cleanup(v);
+        if (Object.keys(v).length === 0) delete (obj as any)[k];
+      }
+    }
+  }
+  return obj;
+}
+
+let data: any;
+
+// ItemList for category or hub indexes
+if (props.kind === 'ItemList') {
+  const items = props.items.map((it, i) => {
+    const d = it.data as DevelopmentEntry;
+    const url = hrefFor(d, it.slug);
+    const name = d.title;
+    return cleanup({
+      '@type': 'ListItem',
+      position: i + 1,
+      url,
+      name,
+    });
+  });
+
+  data = cleanup({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: props.name ?? 'Developments',
+    description: props.description,
+    itemListElement: items,
+    url: pageUrl,
+  });
+}
+
+// Product (+Offer/AggregateOffer) for detail pages
+if (props.kind === 'Product') {
+  const d = props.dev as DevelopmentEntry;
+  const isNew = d.category === 'new_development';
+  const isUnf = d.category === 'unfinished_project';
+
+  const images = (d.media?.photos ?? []).slice(0, 8);
+  const brand =
+    isNew && (d as DevelopmentNew).developer_name
+      ? { '@type': 'Organization', name: (d as DevelopmentNew).developer_name }
+      : undefined;
+
+  const offerBase = {
+    '@type': 'Offer' as const,
+    priceCurrency: 'KES',
+    url: pageUrl,
+    availability: 'https://schema.org/InStock',
+  };
+
+  const offers =
+    money(d.priceFrom) && money(d.priceTo) && d.priceFrom !== d.priceTo
+      ? {
+          '@type': 'AggregateOffer',
+          priceCurrency: 'KES',
+          lowPrice: money(d.priceFrom),
+          highPrice: money(d.priceTo),
+          offerCount: 1,
+          url: pageUrl,
+        }
+      : money(d.priceFrom) || money(d.priceTo)
+      ? { ...offerBase, price: money(d.priceFrom ?? d.priceTo) }
+      : undefined;
+
+  // additionalProperty for unfinished
+  const additionalProperty =
+    isUnf
+      ? [
+          (props.dev as DevelopmentUnfinished).completion_stage && {
+            '@type': 'PropertyValue',
+            name: 'completion_stage',
+            value: (props.dev as DevelopmentUnfinished).completion_stage,
+          },
+          (money((props.dev as DevelopmentUnfinished).est_completion_cost_min) ||
+            money((props.dev as DevelopmentUnfinished).est_completion_cost_max)) && {
+            '@type': 'PropertyValue',
+            name: 'est_completion_cost',
+            value: [
+              money((props.dev as DevelopmentUnfinished).est_completion_cost_min),
+              money((props.dev as DevelopmentUnfinished).est_completion_cost_max),
+            ]
+              .filter(Boolean)
+              .join(' - '),
+            unitText: 'KES',
+          },
+        ].filter(Boolean)
+      : undefined;
+
+  data = cleanup({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: d.title,
+    image: images.length ? images : undefined,
+    description: `${[d.location?.estate, d.location?.city].filter(Boolean).join(', ') || ''}`.trim() || undefined,
+    brand,
+    url: pageUrl,
+    offers,
+    additionalProperty,
+  });
+}
+---
+
+{data && <script type="application/ld+json">{JSON.stringify(data)}</script>}

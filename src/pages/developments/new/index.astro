@@ -1,0 +1,171 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Filters from '../../../components/dev/Filters.astro';
+import DevCard from '../../../components/dev/DevCard.astro';
+import SeoJsonLd from '../../../components/dev/SeoJsonLd.astro';
+
+const PAGE_SIZE = 12;
+
+const title = 'New Developments in Nairobi | Off-plan Homes & Payment Plans';
+const description = 'Browse off-plan properties, phases, and payment plans. Filter by city, estate, tenure, price, and developer.';
+
+// URL params
+const url = new URL(Astro.url);
+const params = url.searchParams;
+
+const city   = params.get('city') ?? '';
+const estate = params.get('estate') ?? '';
+const tenure = params.get('tenure') ?? '';
+const party  = params.get('party') ?? '';
+const pmin   = Number(params.get('price_min') ?? '') || undefined;
+const pmax   = Number(params.get('price_max') ?? '') || undefined;
+
+const sort   = params.get('sort') ?? 'title'; // 'title' | 'price_asc' | 'price_desc' | 'completion_asc' | 'completion_desc'
+const page   = Math.max(1, Number(params.get('page') ?? 1) || 1);
+
+// data
+const all = await getCollection('developments', (e) => (e.data as any).category === 'new_development');
+
+// filters
+function priceOverlaps(item: CollectionEntry<'developments'>) {
+  const from = item.data.priceFrom;
+  const to = item.data.priceTo;
+  if (pmin == null && pmax == null) return true;
+  // Treat missing ends as open interval
+  const lo = from ?? -Infinity;
+  const hi = to ?? Infinity;
+  const min = pmin ?? -Infinity;
+  const max = pmax ?? Infinity;
+  return lo <= max && hi >= min;
+}
+
+let filtered = all.filter((it) => {
+  const d = it.data;
+  if (city   && (d.location?.city   ?? '').toLowerCase() !== city.toLowerCase()) return false;
+  if (estate && (d.location?.estate ?? '').toLowerCase() !== estate.toLowerCase()) return false;
+  if (tenure && (d.tenure ?? '').toLowerCase() !== tenure.toLowerCase()) return false;
+  if (party  && ((d as any).developer_name ?? '').toLowerCase() !== party.toLowerCase()) return false;
+  if (!priceOverlaps(it)) return false;
+  return true;
+});
+
+// sorting
+filtered = filtered.sort((a, b) => {
+  if (sort === 'price_asc' || sort === 'price_desc') {
+    const ax = a.data.priceFrom ?? a.data.priceTo ?? Number.POSITIVE_INFINITY;
+    const bx = b.data.priceFrom ?? b.data.priceTo ?? Number.POSITIVE_INFINITY;
+    return sort === 'price_asc' ? ax - bx : bx - ax;
+  }
+  if (sort === 'completion_asc' || sort === 'completion_desc') {
+    const ad = (a.data as any).expected_completion_date ? new Date((a.data as any).expected_completion_date as any).getTime() : Number.POSITIVE_INFINITY;
+    const bd = (b.data as any).expected_completion_date ? new Date((b.data as any).expected_completion_date as any).getTime() : Number.POSITIVE_INFINITY;
+    return sort === 'completion_asc' ? ad - bd : bd - ad;
+  }
+  return a.data.title.localeCompare(b.data.title);
+});
+
+// pagination
+const total = filtered.length;
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+const start = (page - 1) * PAGE_SIZE;
+const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+// helpers to build query strings
+function qs(next: Record<string, string | number | undefined>) {
+  const q = new URLSearchParams(url.search);
+  for (const k of Object.keys(next)) {
+    const v = next[k];
+    if (v === undefined || v === '') q.delete(k);
+    else q.set(k, String(v));
+  }
+  return `?${q.toString()}`;
+}
+const basePath = '/developments/new/';
+---
+
+<MainLayout {title} {description}>
+  <Fragment slot="breadcrumbs">
+    <ol class="flex items-center gap-2 text-sm text-neutral-600">
+      <li><a href="/" class="link-decor">Home</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a href="/developments/" class="link-decor">Developments</a></li>
+      <li aria-hidden="true">/</li>
+      <li class="text-neutral-900 font-medium">New Developments</li>
+    </ol>
+  </Fragment>
+
+  <section class="section pt-2">
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+      <div>
+        <h1 class="section-title mb-2 text-left">New Developments</h1>
+        <p class="text-neutral-700 max-w-2xl">
+          Off-plan projects with phases and structured payment plans. Use filters to narrow by location, tenure, price, and developer.
+        </p>
+      </div>
+
+      <!-- Sort -->
+      <form method="GET" action={basePath} class="ml-auto">
+        <input type="hidden" name="city" value={city} />
+        <input type="hidden" name="estate" value={estate} />
+        <input type="hidden" name="tenure" value={tenure} />
+        <input type="hidden" name="party" value={party} />
+        <input type="hidden" name="price_min" value={pmin ?? ''} />
+        <input type="hidden" name="price_max" value={pmax ?? ''} />
+
+        <label for="sort" class="sr-only">Sort</label>
+        <select id="sort" name="sort" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none"
+          onchange="this.form.submit()">
+          <option value="title" selected={sort==='title'}>A–Z</option>
+          <option value="price_asc" selected={sort==='price_asc'}>Price ↑</option>
+          <option value="price_desc" selected={sort==='price_desc'}>Price ↓</option>
+          <option value="completion_asc" selected={sort==='completion_asc'}>Completion soonest</option>
+          <option value="completion_desc" selected={sort==='completion_desc'}>Completion latest</option>
+        </select>
+      </form>
+    </div>
+
+    <!-- Filters -->
+    <div class="mt-6">
+      <Filters action={basePath} category="new_development" items={all} />
+    </div>
+
+    <!-- Results -->
+    <div class="mt-6">
+      {pageItems.length > 0 ? (
+        <>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {pageItems.map((it) => <DevCard item={it} />)}
+          </div>
+
+          <!-- Pagination -->
+          {totalPages > 1 && (
+            <nav class="mt-6 flex items-center justify-between" aria-label="Pagination">
+              <a
+                class="btn-outline px-3 py-1.5 text-sm disabled:opacity-50"
+                href={page > 1 ? basePath + qs({ page: page - 1 }) : '#'}
+                aria-disabled={page <= 1}
+              >Previous</a>
+
+              <div class="text-sm text-neutral-700">
+                Page <span class="font-semibold">{page}</span> of <span class="font-semibold">{totalPages}</span>
+              </div>
+
+              <a
+                class="btn-outline px-3 py-1.5 text-sm disabled:opacity-50"
+                href={page < totalPages ? basePath + qs({ page: page + 1 }) : '#'}
+                aria-disabled={page >= totalPages}
+              >Next</a>
+            </nav>
+          )}
+        </>
+      ) : (
+        <div class="card-tight">
+          <p class="text-neutral-700">No results. Adjust filters or <a href={basePath} class="link-decor">reset</a>.</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <SeoJsonLd kind="ItemList" items={pageItems} url={Astro.url.href} name="New Developments" />
+</MainLayout>

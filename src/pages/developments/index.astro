@@ -1,0 +1,124 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import DevCard from '../../components/dev/DevCard.astro';
+import SeoJsonLd from '../../components/dev/SeoJsonLd.astro';
+
+const title = 'Developments Hub | Severino Realty';
+const description = 'Explore new developments and unfinished projects. Compare options, view pricing bands, and enquire.';
+
+const all = await getCollection('developments');
+
+// group by category
+const news = all.filter((e) => e.data.category === 'new_development');
+const unfs = all.filter((e) => e.data.category === 'unfinished_project');
+
+// pick top 3 per category
+const sortByTitle = (a: CollectionEntry<'developments'>, b: CollectionEntry<'developments'>) =>
+  a.data.title.localeCompare(b.data.title);
+
+const topNew = news.sort(sortByTitle).slice(0, 3);
+const topUnf = unfs.sort(sortByTitle).slice(0, 3);
+
+// quick-filter helper
+const q = (o: Record<string, string | number>) =>
+  '?' + new URLSearchParams(Object.fromEntries(Object.entries(o).map(([k, v]) => [k, String(v)]))).toString();
+
+const newUrl = '/developments/new/';
+const unfUrl = '/developments/unfinished/';
+---
+
+<MainLayout {title} {description}>
+  <Fragment slot="breadcrumbs">
+    <ol class="flex items-center gap-2 text-sm text-neutral-600">
+      <li><a href="/" class="link-decor">Home</a></li>
+      <li aria-hidden="true">/</li>
+      <li class="text-neutral-900 font-medium">Developments</li>
+    </ol>
+  </Fragment>
+
+  <!-- Hero -->
+  <section class="section pt-2">
+    <div class="max-w-3xl mx-auto text-center">
+      <h1 class="section-title mb-3">Developments</h1>
+      <p class="text-neutral-700">
+        Two tracks. Off-plan <span class="text-primary font-semibold">new developments</span> with payment plans,
+        or <span class="text-primary font-semibold">unfinished projects</span> suited for value-add buyers.
+      </p>
+    </div>
+
+    <!-- Category tiles -->
+    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
+      <!-- New Developments tile -->
+      <div class="category-tile tile-hover">
+        <div class="tile-badge">
+          <svg class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10" />
+          </svg>
+        </div>
+        <h2 class="tile-title">New Developments</h2>
+        <p class="tile-sub">Off-plan units, phases, and structured payment plans.</p>
+
+        <div class="mt-4 flex items-center justify-between gap-3">
+          <a href={newUrl} class="btn-cta px-4 py-2 rounded-full">Explore</a>
+          <div class="flex flex-wrap gap-2">
+            <a href={newUrl + q({ price_max: 10000000 })} class="chip-link">≤ KES 10M</a>
+            <a href={newUrl + q({ price_min: 10000000, price_max: 20000000 })} class="chip-link">KES 10–20M</a>
+            <a href={newUrl + q({ price_min: 20000000 })} class="chip-link">≥ KES 20M</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unfinished Projects tile -->
+      <div class="category-tile tile-hover">
+        <div class="tile-badge">
+          <svg class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 21h8M12 17V3m7 8l-7 6-7-6" />
+          </svg>
+        </div>
+        <h2 class="tile-title">Unfinished Projects</h2>
+        <p class="tile-sub">Shells and fixer-uppers with estimated completion cost bands.</p>
+
+        <div class="mt-4 flex items-center justify-between gap-3">
+          <a href={unfUrl} class="btn-cta px-4 py-2 rounded-full">Explore</a>
+          <div class="flex flex-wrap gap-2">
+            <a href={unfUrl + q({ price_max: 8000000 })} class="chip-link">≤ KES 8M</a>
+            <a href={unfUrl + q({ price_min: 8000000, price_max: 15000000 })} class="chip-link">KES 8–15M</a>
+            <a href={unfUrl + q({ price_min: 15000000 })} class="chip-link">≥ KES 15M</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured New Developments -->
+  {topNew.length > 0 && (
+    <section class="section pt-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="section-subtitle">Featured New Developments</h2>
+        <a href={newUrl} class="btn-outline px-3 py-1.5 text-sm">View all</a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {topNew.map((it) => <DevCard item={it} />)}
+      </div>
+    </section>
+  )}
+
+  <!-- Featured Unfinished Projects -->
+  {topUnf.length > 0 && (
+    <section class="section pt-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="section-subtitle">Featured Unfinished Projects</h2>
+        <a href={unfUrl} class="btn-outline px-3 py-1.5 text-sm">View all</a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {topUnf.map((it) => <DevCard item={it} />)}
+      </div>
+    </section>
+  )}
+
+  <!-- SEO JSON-LD with combined top items -->
+  <SeoJsonLd kind="ItemList" items={[...topNew, ...topUnf]} url={Astro.url.href} name="Developments" />
+</MainLayout>

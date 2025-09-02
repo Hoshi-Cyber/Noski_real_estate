@@ -1,0 +1,92 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getBadges, badgeClass } from './Badges';
+
+type Props = { item: CollectionEntry<'developments'> };
+const { item } = Astro.props as Props;
+const d = item.data;
+
+// slug + route
+const slug = d.slug ?? item.slug;
+const base =
+  d.category === 'new_development'
+    ? '/developments/new/'
+    : '/developments/unfinished/';
+const href = `${base}${slug}/`;
+
+// media
+const photos = d.media?.photos ?? [];
+const imgSrc = photos[0] ?? '/images/placeholders/development.webp';
+const imgAlt = `${d.title} – ${d.location?.estate || ''} ${d.location?.city || ''}`.trim();
+
+// location
+const location = [d.location?.estate, d.location?.city].filter(Boolean).join(', ');
+
+// price label
+function fmtKES(n?: number) {
+  if (typeof n !== 'number' || !isFinite(n)) return null;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: 'KES',
+      maximumFractionDigits: 0
+    }).format(n);
+  } catch {
+    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
+  }
+}
+const pf = fmtKES(d.priceFrom);
+const pt = fmtKES(d.priceTo);
+const priceLabel = pf && pt
+  ? `${pf} – ${pt}`
+  : pf
+  ? `From ${pf}`
+  : pt
+  ? `Up to ${pt}`
+  : 'Price on request';
+
+// badges
+const badges = getBadges(d as any);
+---
+
+<article class="card overflow-hidden group">
+  <a href={href} class="block">
+    <img
+      src={imgSrc}
+      alt={imgAlt}
+      width="1200"
+      height="800"
+      loading="lazy"
+      decoding="async"
+      class="post-media aspect-[3/2] object-cover transition group-hover:brightness-[.95]"
+    />
+  </a>
+
+  <div class="post-body">
+    <div class="flex items-start justify-between gap-3">
+      <h3 class="post-title text-base sm:text-lg">
+        <a href={href} class="no-underline hover:underline">{d.title}</a>
+      </h3>
+      {location && (
+        <span class="text-xs sm:text-sm text-neutral-600 shrink-0">{location}</span>
+      )}
+    </div>
+
+    <div class="mt-2 text-sm text-neutral-700">
+      <span class="font-semibold text-primary">{priceLabel}</span>
+    </div>
+
+    {badges.length > 0 && (
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        {badges.map((b) => (
+          <span class={badgeClass(b.variant)} key={b.key}>{b.label}</span>
+        ))}
+      </div>
+    )}
+
+    <div class="mt-4 flex items-center justify-between">
+      <a href={href} class="btn-outline text-xs sm:text-sm px-3 py-2">View details</a>
+      <a href={href} class="btn-cta text-xs sm:text-sm px-3 py-2">Enquire</a>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,179 @@
+---
+// src/pages/developments/unfinished/[slug].astro
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+import Gallery from '../../../components/dev/Gallery.astro';
+import SpecsTable from '../../../components/dev/SpecsTable.astro';
+import MapBlock from '../../../components/dev/MapBlock.astro';
+import LeadCtas from '../../../components/dev/LeadCtas.astro';
+import RelatedCarousel from '../../../components/dev/RelatedCarousel.astro';
+import SeoJsonLd from '../../../components/dev/SeoJsonLd.astro';
+
+/* Static paths for dynamic route */
+export async function getStaticPaths() {
+  const items = await getCollection('developments', (e) => (e.data as any).category === 'unfinished_project');
+  return items.map((e) => ({ params: { slug: e.slug } }));
+}
+
+// params
+const { slug } = Astro.params;
+
+// fetch the development by slug and category
+const all = await getCollection('developments');
+const entry = all.find((e) => e.slug === slug && (e.data as any).category === 'unfinished_project');
+if (!entry) throw new Error(`Unfinished project not found for slug: ${slug}`);
+
+const d = entry.data as any;
+
+// meta
+const title = `${d.title} | Unfinished Project`;
+const loc = [d.location?.estate, d.location?.city].filter(Boolean).join(', ');
+const description = `Unfinished project in ${loc || 'Nairobi'}${d.completion_stage ? `, stage: ${d.completion_stage}` : ''}.`;
+
+// related (same city)
+const related = all
+  .filter((e) => e.slug !== entry.slug && (e.data as any).category === 'unfinished_project')
+  .filter((e) => (e.data as any).location?.city && d.location?.city && (e.data as any).location.city === d.location.city)
+  .slice(0, 8);
+
+// helpers
+function money(n?: number) {
+  if (typeof n !== 'number' || !isFinite(n)) return null;
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(n);
+  } catch {
+    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
+  }
+}
+const costMin = money(d.est_completion_cost_min);
+const costMax = money(d.est_completion_cost_max);
+const costBand = costMin && costMax ? `${costMin} – ${costMax}` : costMin ? `From ${costMin}` : costMax ? `Up to ${costMax}` : null;
+
+const photos = d.media?.photos ?? [];
+const plans  = d.media?.planPdfs ?? [];
+---
+
+<MainLayout {title} {description}>
+
+  <!-- Breadcrumbs (tight via layout mb-2) -->
+  <Fragment slot="breadcrumbs">
+    <ol class="flex items-center gap-2 text-sm text-neutral-600">
+      <li><a href="/" class="link-decor">Home</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a href="/developments/" class="link-decor">Developments</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a href="/developments/unfinished/" class="link-decor">Unfinished Projects</a></li>
+      <li aria-hidden="true">/</li>
+      <li class="text-neutral-900 font-medium">{d.title}</li>
+    </ol>
+  </Fragment>
+
+  <!-- Hero -->
+  <section class="section pt-2">
+    <div class="max-w-5xl mx-auto">
+      {d.risk_notes && (
+        <div class="badge-warn mb-3 w-fit">Risk: {d.risk_notes}</div>
+      )}
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">{d.title}</h1>
+      <div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-neutral-700">
+        {loc && <span>{loc}</span>}
+        {(d.completion_stage || d.completion_percent != null) && (
+          <>
+            <span class="hidden sm:inline">•</span>
+            <span>
+              Stage {d.completion_stage ?? '—'}
+              {d.completion_percent != null ? ` (${d.completion_percent}%)` : ''}
+            </span>
+          </>
+        )}
+        {costBand && (
+          <>
+            <span class="hidden sm:inline">•</span>
+            <span class="font-semibold text-primary">Est. completion cost {costBand}</span>
+          </>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <div class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <Gallery photos={photos} planPdfs={plans} />
+  </div>
+
+  <!-- Specs -->
+  <div class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <SpecsTable dev={d} />
+  </div>
+
+  <!-- Financials -->
+  {(costBand || d.boq_url) && (
+    <section class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="card-tight">
+        <h2 class="section-subtitle">Financials</h2>
+        {costBand && <p class="mt-2 text-neutral-700">Estimated completion cost: <span class="font-semibold text-primary">{costBand}</span></p>}
+        {d.boq_url && (
+          <p class="mt-3">
+            <a href={d.boq_url} target="_blank" rel="noopener" class="btn-outline">View BOQ</a>
+          </p>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- Documents -->
+  {(d.approvals?.length || d.structural_report_url || plans.length) && (
+    <section class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="card-tight">
+        <h2 class="section-subtitle">Approvals & Documents</h2>
+
+        {d.approvals?.length > 0 && (
+          <div class="mb-3 flex flex-wrap gap-2">
+            {d.approvals.slice(0, 12).map((a: string) => <span class="badge" key={a}>{a}</span>)}
+            {d.approvals.length > 12 && <span class="badge">+{d.approvals.length - 12} more</span>}
+          </div>
+        )}
+
+        {(d.structural_report_url || plans.length > 0) && (
+          <ul class="space-y-2">
+            {d.structural_report_url && (
+              <li class="flex items-center gap-3">
+                <a href={d.structural_report_url} target="_blank" rel="noopener" class="pdf-badge">PDF</a>
+                <a href={d.structural_report_url} target="_blank" rel="noopener" class="link-decor truncate">
+                  Structural Report
+                </a>
+                <a href={d.structural_report_url} download class="btn-outline px-2.5 py-1.5 text-xs ml-auto">Download</a>
+              </li>
+            )}
+            {plans.map((pdf: string) => (
+              <li class="flex items-center gap-3">
+                <a href={pdf} target="_blank" rel="noopener" class="pdf-badge">PDF</a>
+                <a href={pdf} target="_blank" rel="noopener" class="link-decor truncate">{pdf.split('/').pop()}</a>
+                <a href={pdf} download class="btn-outline px-2.5 py-1.5 text-xs ml-auto">Download</a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- Map -->
+  <div class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <MapBlock lat={d.location?.lat} lng={d.location?.lng} address={loc} />
+  </div>
+
+  <!-- Lead CTAs -->
+  <div class="mt-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <LeadCtas dev={d} whatsappNumber={import.meta.env.PUBLIC_WHATSAPP_NUMBER} />
+  </div>
+
+  <!-- Related -->
+  {related.length > 0 && (
+    <div class="mt-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <RelatedCarousel items={related} />
+    </div>
+  )}
+
+  <SeoJsonLd kind="Product" dev={d} url={Astro.url.href} />
+</MainLayout>

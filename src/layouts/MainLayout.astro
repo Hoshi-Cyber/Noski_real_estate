@@ -1,4 +1,5 @@
 ---
+// src/layouts/MainLayout.astro
 /**
  * MainLayout.astro
  * SEO upgrades: canonical URL, OG/Twitter defaults. Safe UTM stripping.
@@ -56,16 +57,71 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
     <!-- Icons -->
     <link rel="icon" type="image/png" href="/images/placeholder.webp" sizes="32x32" />
     <link rel="icon" type="image/png" href="/images/placeholder.webp" sizes="64x64" />
+
+    <!-- Passive prefetch hints (safe) -->
+    <link rel="prefetch" href="/developments/">
+    <link rel="prefetch" href="/developments/new/">
+    <link rel="prefetch" href="/developments/unfinished/">
   </head>
   <body class="overflow-x-hidden bg-neutral-50 text-neutral-900">
     <Header />
 
-    <main class="min-h-[70vh] overflow-x-hidden">
+    <main id="main" class="min-h-[70vh] overflow-x-hidden" role="main">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumbs slot with tighter spacing -->
+        <nav aria-label="Breadcrumb" class="mb-2" id="breadcrumbs">
+          <slot name="breadcrumbs" />
+        </nav>
+
         <slot />
       </div>
     </main>
 
     <Footer />
+
+    <!-- Hover prefetch for dropdown targets (enhances perceived speed) -->
+    <script type="module">
+      const routes = [
+        '/developments/',
+        '/developments/new/',
+        '/developments/unfinished/',
+        '/listings',
+        '/for-sale',
+        '/for-rent',
+        '/short-stays',
+        '/resources/guides',
+        '/resources/faqs',
+        '/resources/market-reports',
+        '/blog'
+      ];
+
+      function prefetch(href) {
+        if (!href || document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
+        const l = document.createElement('link');
+        l.rel = 'prefetch';
+        l.href = href;
+        document.head.appendChild(l);
+      }
+
+      const ids = ['listings-btn','dev-btn','res-btn'];
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        el?.addEventListener('mouseenter', () => {
+          routes.forEach(prefetch);
+        }, { passive: true });
+        el?.addEventListener('focus', () => {
+          routes.forEach(prefetch);
+        }, { passive: true });
+      });
+
+      // Also prefetch on hover of any header nav links
+      document.addEventListener('mouseover', (e) => {
+        const a = (e.target)?.closest('a');
+        if (a && a.href && a.origin === location.origin) {
+          const href = a.pathname.endsWith('/') ? a.pathname : a.pathname + '/';
+          prefetch(href);
+        }
+      }, { passive: true });
+    </script>
   </body>
 </html>

@@ -1,0 +1,166 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+
+type Props = {
+  /** Submit target. Defaults to current path. */
+  action?: string;
+  /** Optional pre-fetched items to derive filter options. */
+  items?: CollectionEntry<'developments'>[];
+  /** Narrow options to a category if desired. */
+  category?: 'new_development' | 'unfinished_project';
+};
+
+const { action = Astro.url.pathname, category } = Astro.props as Props;
+let items = (Astro.props as Props).items;
+
+if (!items) {
+  items = await getCollection('developments', (e) =>
+    category ? (e.data as any).category === category : true
+  );
+}
+
+const params = new URLSearchParams(Astro.url.search);
+
+// helpers to read query values
+const q = (k: string) => params.get(k) ?? '';
+
+// derive option sets
+const cities = Array.from(
+  new Set(items.map((i) => i.data.location?.city).filter(Boolean) as string[])
+).sort((a, b) => a.localeCompare(b));
+
+const estates = Array.from(
+  new Set(items.map((i) => i.data.location?.estate).filter(Boolean) as string[])
+).sort((a, b) => a.localeCompare(b));
+
+const tenures = Array.from(
+  new Set(items.map((i) => i.data.tenure).filter(Boolean) as string[])
+).sort((a, b) => a.localeCompare(b));
+
+const parties = Array.from(
+  new Set(
+    items
+      .map((i) => (i.data as any).developer_name as string | undefined)
+      .filter(Boolean) as string[]
+  )
+).sort((a, b) => a.localeCompare(b));
+---
+
+<form id="dev-filters" method="GET" action={action} class="card-tight">
+  <fieldset class="space-y-3">
+    <legend class="section-subtitle">Filter developments</legend>
+
+    <!-- Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <!-- City -->
+      <div>
+        <label for="f-city" class="block text-sm font-medium text-neutral-700">City</label>
+        <select id="f-city" name="city" class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none"
+          value={q('city')}>
+          <option value="">Any</option>
+          {cities.map((c) => <option value={c} selected={q('city')===c}>{c}</option>)}
+        </select>
+      </div>
+
+      <!-- Estate/Area -->
+      <div>
+        <label for="f-estate" class="block text-sm font-medium text-neutral-700">Estate/Area</label>
+        <select id="f-estate" name="estate" class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none"
+          value={q('estate')}>
+          <option value="">Any</option>
+          {estates.map((e) => <option value={e} selected={q('estate')===e}>{e}</option>)}
+        </select>
+      </div>
+
+      <!-- Bedrooms (min) -->
+      <div>
+        <label for="f-bed" class="block text-sm font-medium text-neutral-700">Bedrooms (min)</label>
+        <select id="f-bed" name="bedrooms" class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none"
+          value={q('bedrooms')}>
+          <option value="">Any</option>
+          <option value="1" selected={q('bedrooms')==='1'}>1+</option>
+          <option value="2" selected={q('bedrooms')==='2'}>2+</option>
+          <option value="3" selected={q('bedrooms')==='3'}>3+</option>
+          <option value="4" selected={q('bedrooms')==='4'}>4+</option>
+          <option value="5" selected={q('bedrooms')==='5'}>5+</option>
+        </select>
+      </div>
+
+      <!-- Price Min -->
+      <div>
+        <label for="f-min" class="block text-sm font-medium text-neutral-700">Price min (KES)</label>
+        <input id="f-min" name="price_min" inputmode="numeric" pattern="[0-9]*" type="number" min="0" step="100000"
+          value={q('price_min')}
+          class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none" />
+      </div>
+
+      <!-- Price Max -->
+      <div>
+        <label for="f-max" class="block text-sm font-medium text-neutral-700">Price max (KES)</label>
+        <input id="f-max" name="price_max" inputmode="numeric" pattern="[0-9]*" type="number" min="0" step="100000"
+          value={q('price_max')}
+          class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none" />
+      </div>
+
+      <!-- Tenure -->
+      <div>
+        <label for="f-tenure" class="block text-sm font-medium text-neutral-700">Tenure</label>
+        <select id="f-tenure" name="tenure" class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none"
+          value={q('tenure')}>
+          <option value="">Any</option>
+          {tenures.map((t) => <option value={t} selected={q('tenure')===t}>{t}</option>)}
+        </select>
+      </div>
+
+      <!-- Developer/Owner -->
+      <div class="sm:col-span-2 lg:col-span-1">
+        <label for="f-party" class="block text-sm font-medium text-neutral-700">Developer / Owner</label>
+        {parties.length > 0 ? (
+          <select id="f-party" name="party" class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none"
+            value={q('party')}>
+            <option value="">Any</option>
+            {parties.map((p) => <option value={p} selected={q('party')===p}>{p}</option>)}
+          </select>
+        ) : (
+          <input id="f-party" name="party" type="text" placeholder="Type a name"
+            value={q('party')}
+            class="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none" />
+        )}
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-2 flex flex-wrap items-center gap-2">
+      <button type="submit" class="btn-cta px-5 py-2.5">Apply filters</button>
+      <a id="reset-filters" href={action} class="btn-outline px-4 py-2">Reset</a>
+    </div>
+  </fieldset>
+
+  {/* Keep category if provided */}
+  {category && <input type="hidden" name="category" value={category} />}
+</form>
+
+<script type="module" client:load>
+  const form = document.getElementById('dev-filters') as HTMLFormElement | null;
+  const reset = document.getElementById('reset-filters') as HTMLAnchorElement | null;
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const qs = new URLSearchParams();
+    for (const [k, v] of fd.entries()) {
+      const val = String(v).trim();
+      if (val) qs.append(k, val);
+    }
+    const action = form.getAttribute('action') || location.pathname;
+    location.href = qs.toString() ? `${action}?${qs.toString()}` : action;
+  });
+
+  reset?.addEventListener('click', (e) => {
+    // navigate to clean action URL
+    e.preventDefault();
+    const action = form?.getAttribute('action') || location.pathname;
+    location.href = action;
+  });
+</script>

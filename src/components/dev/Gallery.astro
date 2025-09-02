@@ -1,0 +1,94 @@
+---
+type Props = {
+  photos?: string[];
+  planPdfs?: string[];
+  class?: string;
+};
+const { photos = [], planPdfs = [], class: cls = '' } = Astro.props as Props;
+
+const hasMedia = photos.length > 0 || planPdfs.length > 0;
+const main = photos[0] ?? null;
+const rest = photos.slice(1);
+---
+
+<section class={`card-tight ${cls}`}>
+  <h2 class="section-subtitle">Gallery</h2>
+
+  {hasMedia ? (
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {/* Main image */}
+      <div class="md:col-span-2">
+        {main ? (
+          <img
+            src={main}
+            alt="Primary image"
+            width="1200" height="800"
+            loading="lazy" decoding="async"
+            class="w-full aspect-[3/2] object-cover rounded-lg ring-1 ring-neutral-200"
+          />
+        ) : (
+          <div class="w-full aspect-[3/2] rounded-lg bg-neutral-100 ring-1 ring-neutral-200" />
+        )}
+      </div>
+
+      {/* Right column: thumbs + PDFs */}
+      <div class="space-y-3">
+        {/* Image thumbs */}
+        <div class="grid grid-cols-2 gap-3">
+          {rest.slice(0, 4).map((src, i) => (
+            <a href={src} target="_blank" rel="noopener" class="block">
+              <img
+                src={src}
+                alt={`Gallery image ${i + 2}`}
+                width="600" height="400"
+                loading="lazy" decoding="async"
+                class="w-full aspect-[4/3] object-cover rounded-md ring-1 ring-neutral-200 hover:brightness-95 transition"
+              />
+            </a>
+          ))}
+          {rest.length === 0 && (
+            <>
+              <div class="w-full aspect-[4/3] rounded-md bg-neutral-100 ring-1 ring-neutral-200" />
+              <div class="w-full aspect-[4/3] rounded-md bg-neutral-100 ring-1 ring-neutral-200" />
+            </>
+          )}
+        </div>
+
+        {/* Plan PDFs */}
+        {planPdfs.length > 0 && (
+          <div class="rounded-lg ring-1 ring-neutral-200 p-3 bg-white">
+            <div class="mb-2 text-sm font-semibold text-neutral-700">Plans & Brochures</div>
+            <ul class="space-y-2">
+              {planPdfs.map((pdf, i) => (
+                <li class="flex items-center justify-between gap-3">
+                  <a href={pdf} target="_blank" rel="noopener" class="pdf-badge">PDF</a>
+                  <a href={pdf} target="_blank" rel="noopener" class="link-decor truncate flex-1">{pdf.split('/').pop()}</a>
+                  <a href={pdf} download class="btn-outline px-2.5 py-1.5 text-xs">Download</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* More images below main block */}
+      {rest.length > 4 && (
+        <div class="md:col-span-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {rest.slice(4, 12).map((src, i) => (
+            <a href={src} target="_blank" rel="noopener" class="block">
+              <img
+                src={src}
+                alt={`Gallery image ${i + 6}`}
+                width="600" height="400"
+                loading="lazy" decoding="async"
+                class="w-full aspect-[4/3] object-cover rounded-md ring-1 ring-neutral-200 hover:brightness-95 transition"
+              />
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  ) : (
+    <div class="w-full aspect-[3/2] rounded-lg bg-neutral-100 ring-1 ring-neutral-200" />
+  )}
+</section>
