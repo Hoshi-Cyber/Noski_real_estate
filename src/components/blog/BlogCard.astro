@@ -2,40 +2,144 @@
 import type { CollectionEntry } from 'astro:content';
 import BaseCard from '../BaseCard.astro';
 
+type Variant = 'default' | 'inline' | 'grid';
+
 type Props = {
   entry?: CollectionEntry<'blog'>;
-  fallbackImg?: string;
   href?: string;
-  highlight?: boolean; // NEW → allows special styling
+  fallbackImg?: string;
+  highlight?: boolean;
+  compact?: boolean;          // legacy
+  showCategory?: boolean;
+  variant?: Variant;
 };
-const { entry, fallbackImg, href, highlight = false } = Astro.props as Props;
+
+const {
+  entry,
+  href,
+  fallbackImg,
+  highlight = false,
+  compact = false,
+  showCategory = false,
+  variant = 'default',
+} = Astro.props as Props;
 
 const slug = entry?.slug ?? '';
-const url = href ?? (slug ? `/blog/${slug}` : '/blog');
+const url  = href ?? (slug ? `/blog/${slug}` : '/blog');
 
-const data = entry?.data ?? {};
+const data  = entry?.data ?? {};
 const title = data.title ?? 'Untitled';
-const desc = data.description ?? '';
-const cat = data.category ?? 'Blog';
-const date = data.pubDate
-  ? new Date(data.pubDate).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
+const desc  = data.description ?? '';
+const cat   = data.category ?? 'Blog';
+
+const dateObj = data.pubDate ? new Date(data.pubDate) : undefined;
+const dateISO = dateObj ? dateObj.toISOString() : undefined;
+const dateStr = dateObj
+  ? dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
   : '';
-const img = data.heroImage ?? fallbackImg ?? '/images/placeholder.webp';
+
+const img   = data.heroImage ?? fallbackImg ?? '/images/placeholder.webp';
+
+/* Intrinsic sizes + lazy hints to reduce CLS */
+const imgAttrs = { loading: 'lazy', decoding: 'async', width: 640, height: 360 } as const;
 ---
 
-<BaseCard
-  title={title}
-  desc={desc}
-  img={img}
-  href={url}
-  date={date}
-  tag={cat}
-  cta="Read more →"
-  variant="horizontal"
-  showImage={true}
-  highlight={highlight}
-/>
+{variant === 'inline' ? (
+  /* Inline: compact callout for in-article "Related reading" */
+  <a href={url} class="group inline-card focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)] rounded-md">
+    <div class="flex items-stretch gap-4">
+      <div class="shrink-0 rounded-md overflow-hidden ring-1 ring-slate-200">
+        <img
+          src={img}
+          alt={title}
+          class="block object-cover w-28 h-16 sm:w-36 sm:h-20"
+          loading="lazy" decoding="async"
+          width="160" height="90"
+          sizes="(min-width:640px) 144px, 112px"
+        />
+      </div>
+      <div class="min-w-0">
+        {showCategory && <span class="text-[11px] uppercase tracking-wide text-neutral-500">{cat}</span>}
+        <h3 class="text-sm font-semibold text-slate-900 truncate group-hover:underline">
+          {title}
+        </h3>
+        {desc && <p class="mt-1 text-xs text-slate-600 two-line">{desc}</p>}
+        {dateStr && (
+          <time datetime={dateISO} class="mt-2 block text-[11px] text-slate-500">
+            {dateStr}
+          </time>
+        )}
+      </div>
+    </div>
+  </a>
+) : variant === 'grid' ? (
+  /* Grid: equal-height vertical card for bottom Related posts */
+  <a href={url} class="card group block h-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)] rounded-xl">
+    <div class="aspect-16/9 w-full overflow-hidden">
+      <img
+        src={img}
+        alt={title}
+        class="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+        loading={imgAttrs.loading}
+        decoding={imgAttrs.decoding}
+        width={imgAttrs.width} height={imgAttrs.height}
+        sizes="(min-width:1024px) 320px, (min-width:640px) 50vw, 100vw"
+      />
+    </div>
+    <div class="p-4 flex flex-col">
+      <h3 class="font-semibold text-slate-900 line-clamp-2 min-h-[2.75rem]">{title}</h3>
+      {desc && <p class="mt-1 text-sm text-slate-600 line-clamp-3">{desc}</p>}
+      {dateStr && (
+        <time datetime={dateISO} class="mt-2 block text-xs text-slate-500">
+          {dateStr}
+        </time>
+      )}
+    </div>
+  </a>
+) : !compact ? (
+  /* Default: BaseCard (grid/list elsewhere) */
+  <BaseCard
+    title={title}
+    desc={desc}
+    img={img}
+    href={url}
+    date={dateStr}
+    tag={cat}
+    cta="Read more →"
+    ctaClass="btn-outline"
+    imgAttrs={{ loading: 'lazy', decoding: 'async', width: 880, height: 224 }}
+    variant="horizontal"
+    showImage={true}
+    highlight={highlight}
+  />
+) : (
+  /* Legacy compact: sidebar-friendly thumbnail + meta */
+  <article class="group">
+    <a href={url} class="flex gap-3 items-start hover:text-accent focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)] rounded-md">
+      <img
+        src={img}
+        alt={title}
+        width="64" height="64"
+        loading="lazy" decoding="async"
+        class="w-16 h-16 rounded object-cover shrink-0 ring-1 ring-slate-200"
+      />
+      <div class="min-w-0">
+        {showCategory && <span class="text-[11px] uppercase tracking-wide text-neutral-500">{cat}</span>}
+        <h3 class="text-sm font-medium text-primary leading-snug line-clamp-2 group-hover:underline">
+          {title}
+        </h3>
+        {dateStr && <p class="text-xs text-neutral-500 mt-0.5">{dateStr}</p>}
+      </div>
+    </a>
+  </article>
+)}
+
+<style>
+  .aspect-16\/9{ aspect-ratio:16/9; }
+  .two-line{
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+</style>

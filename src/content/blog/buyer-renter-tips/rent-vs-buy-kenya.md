@@ -3,7 +3,7 @@ title: "Rent vs Buy in Kenya: Break-Even Calculator and Real Examples"
 description: "Should you keep renting or buy? Use a simple break-even formula with Kenyan costs—then see worked examples from Nairobi and Nakuru."
 pubDate: 2025-07-12
 category: "Buyer & Renter Tips"
-heroImage: "/images/placeholders/hero-apartment-1.webp"
+heroImage: "/images/blog/14.webp"
 tone: "Data-led, neutral, educational"
 audience: "Middle-income renters, first-time buyers, and corporate transferees"
 seoKeywords: ["rent vs buy Kenya", "buying a house Kenya calculator", "mortgage vs rent Kenya", "break-even housing Kenya", "Nairobi rent or buy"]

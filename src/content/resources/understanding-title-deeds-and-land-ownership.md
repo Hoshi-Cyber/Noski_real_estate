@@ -1,8 +1,10 @@
 ---
 title: "Understanding Title Deeds & Land Ownership"
 description: "Explanation of land registration and title deed process."
-category: "Legal & Regulatory Guides"
+section: guides
 pubDate: 2025-08-05
+imagesFolder: /images/resources/guides/understanding-title-deeds-and-land-ownership
+heroImage: /images/resources/guides/understanding-title-deeds-and-land-ownership/cover.webp
 download: "/docs/resources/understanding-title-deeds-and-land-ownership.pdf"
 ---
 

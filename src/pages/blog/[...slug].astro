@@ -2,11 +2,11 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import PostLayout from '../../components/blog/PostLayout.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
   return posts.map((p) => ({
-    // REST param must be a string, not an array
     params: { slug: p.slug },
     props: { entry: p },
   }));
@@ -40,10 +40,27 @@ const related = all
 
 const pageTitle = `${resolved.data.title} | Blog | Severino Realty`;
 const pageDesc = resolved.data.description ?? '';
+
+/** Category slug mapping */
+const CAT_PATHS: Record<string, string> = {
+  'Buyer & Renter Tips': 'buying-renting-tips',
+  'Seller & Marketing Tips': 'seller-marketing-tips',
+  'Short-Stay & Lifestyle': 'short-stay-lifestyle',
+  'Local Living Features': 'local-living-features',
+};
+
+const breadcrumbTrail = [
+  { label: 'Blog', href: '/blog' },
+  { label: resolved.data.category, href: `/blog/${CAT_PATHS[resolved.data.category]}` },
+  { label: resolved.data.title }
+];
 ---
 
 <MainLayout title={pageTitle} description={pageDesc}>
   <PostLayout entry={resolved} headings={toc} related={related}>
+    <!-- Breadcrumb sits inside PostLayout, directly above the title -->
+    <Breadcrumb segments={breadcrumbTrail} slot="breadcrumb" />
+
     <Content />
   </PostLayout>
 </MainLayout>

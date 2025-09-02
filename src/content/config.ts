@@ -1,6 +1,9 @@
 import { defineCollection, z } from 'astro:content';
 
-// 🏠 Shared schema for all listings
+// ----- Shared enums / helpers -----
+const resourceSection = z.enum(['guides', 'faqs', 'market-reports']);
+
+// 🏠 Shared schema for listings
 const listingsSchema = z.object({
   title: z.string(),
   price: z.number().optional(),
@@ -9,10 +12,14 @@ const listingsSchema = z.object({
   bathrooms: z.number().optional(),
   type: z.string().describe('e.g., Apartment, House, Villa, Bedsitter/Studio, Commercial'),
   availability: z.string().describe('e.g., For Rent, For Sale, Short Stays'),
-  images: z.array(z.string()).optional(),
+  // images
+  heroImage: z.string().optional(),
+  image: z.string().optional(),            // single image (optional)
+  images: z.array(z.string()).optional(),  // gallery (optional)
+  imagesFolder: z.string().optional(),     // folder for asset resolution (optional)
+  // misc
   amenities: z.array(z.string()).optional(),
   description: z.string().optional(),
-  heroImage: z.string().optional(),
 });
 
 // 🏠 Listings
@@ -21,7 +28,7 @@ const listings = defineCollection({
   schema: listingsSchema,
 });
 
-// 🌟 Featured Listings (uses same schema)
+// 🌟 Featured Listings (same schema)
 const featured = defineCollection({
   type: 'content',
   schema: listingsSchema,
@@ -45,10 +52,18 @@ const resources = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    category: z.string().optional(),
+    section: resourceSection,             // 'guides' | 'faqs' | 'market-reports' (required)
     pubDate: z.coerce.date().optional(),
+    // linking / downloads
     download: z.string().optional(),
     ctaLink: z.string().optional(),
+    // images (for robust resolver)
+    heroImage: z.string().optional(),
+    image: z.string().optional(),
+    imagesFolder: z.string().optional(),
+    icon: z.string().optional(),
+    // legacy/optional
+    category: z.string().optional(),
   }),
 });
 

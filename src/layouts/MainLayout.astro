@@ -1,29 +1,65 @@
 ---
-const { 
-  title = 'Severino Realty', 
-  description = 'Discover Nairobi real estate with Severino Realty', 
-  seoImage 
+/**
+ * MainLayout.astro
+ * SEO upgrades: canonical URL, OG/Twitter defaults. Safe UTM stripping.
+ * Accepts optional: canonical, noIndex, seoImage
+ */
+const {
+  title = 'Severino Realty',
+  description = 'Discover Nairobi real estate with Severino Realty',
+  seoImage,
+  canonical,
+  noIndex = false,
 } = Astro.props;
 
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
----
 
+/* Build canonical without tracking params */
+const url = new URL(Astro.url);
+['utm_source','utm_medium','utm_campaign','utm_content'].forEach(k => url.searchParams.delete(k));
+const canonicalUrl = canonical ?? url.toString();
+
+const siteName = 'Severino Realty';
+const ogImgPath = seoImage ?? '/images/og-default.jpg';
+const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, url.origin).toString();
+---
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>{title}</title>
     <meta name="description" content={description} />
-    {seoImage && <meta property="og:image" content={seoImage} />}
-    <link rel="icon" type="image/png" href="/images/placeholder.webp" />
+    {noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+    <!-- Canonical -->
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImgAbs} />
+    <meta property="og:image:alt" content={title} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImgAbs} />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="/images/placeholder.webp" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/images/placeholder.webp" sizes="64x64" />
   </head>
   <body class="overflow-x-hidden bg-neutral-50 text-neutral-900">
     <Header />
 
-    <!-- Main content wrapper -->
     <main class="min-h-[70vh] overflow-x-hidden">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <slot />

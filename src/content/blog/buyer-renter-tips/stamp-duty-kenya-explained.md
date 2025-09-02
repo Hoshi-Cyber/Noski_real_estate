@@ -3,7 +3,7 @@ title: "Stamp Duty in Kenya Explained: Rates, Exemptions, and Budgeting"
 description: "Understand stamp duty rates (urban vs rural), how it’s assessed, exemptions, and smart ways to plan cash-flow at completion."
 pubDate: 2025-07-15
 category: "Buyer & Renter Tips"
-heroImage: "/images/placeholders/hero-docs-1.webp"
+heroImage: "/images/blog/17.webp"
 tone: "Authoritative, plain-language, policy-aware"
 audience: "First-time buyers, sellers, and diaspora purchasers budgeting for completion"
 seoKeywords: ["stamp duty Kenya 2025", "urban stamp duty Kenya 4%", "rural stamp duty 2%", "KRA stamp duty", "exemptions stamp duty Kenya", "property tax Kenya transfer"]

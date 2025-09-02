@@ -1,0 +1,44 @@
+---
+export interface Props {
+  title: string;
+  desc?: string;
+  href: string;
+}
+
+const { title, desc = '', href } = Astro.props;
+---
+
+<article class="related-card">
+  <a
+    href={href}
+    class="block focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+    aria-label={title}
+  >
+    <!-- Decorative placeholder media -->
+    <div class="post-media bg-neutral-100 flex items-center justify-center">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        class="w-7 h-7 text-primary"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 6v12m6-6H6"
+        />
+      </svg>
+    </div>
+  </a>
+  <div class="post-body">
+    <h4 class="post-title">
+      <a href={href} class="hover:underline">{title}</a>
+    </h4>
+    {desc && <p class="post-desc">{desc}</p>}
+    <div class="post-meta">
+      <span class="text-neutral-500">Guide</span>
+      <a href={href} class="link-decor">Read more &rarr;</a>
+    </div>
+  </div>
+</article>

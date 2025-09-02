@@ -1,0 +1,253 @@
+---
+// BookingForm.astro
+export interface Availability {
+  startHour: number;          // 24h local
+  endHour: number;            // day boundary: slot END must be <= endHour:00
+  stepMins?: number;          // e.g. 60
+  closedWeekdays?: number[];  // 0=Sun..6=Sat
+  blackoutDates?: string[];   // ISO YYYY-MM-DD
+  maxDaysAhead?: number;      // booking horizon
+}
+
+interface Props {
+  serviceType: string;
+  propertyTitle: string;
+  propertyUrl: string;
+  availability: Availability;
+  ctaLabel: string;
+  action?: string;
+  method?: 'get' | 'post';
+}
+
+const {
+  serviceType,
+  propertyTitle,
+  propertyUrl,
+  availability,
+  ctaLabel,
+  action = '/list-property',
+  method = 'get',
+} = Astro.props;
+---
+
+<form id="enquiry-form" action={action} method={method} class="space-y-3" novalidate>
+  <input type="hidden" name="serviceType" value={serviceType} />
+  <input type="hidden" name="property" value={propertyTitle} />
+  <input type="hidden" name="propertyUrl" value={propertyUrl} />
+  <input type="hidden" id="preferred_at" name="preferred_at" />
+
+  <div>
+    <label class="block text-sm mb-1">Name</label>
+    <input name="name" required />
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div>
+      <label class="block text-sm mb-1">Phone</label>
+      <input
+        name="phone"
+        type="tel"
+        inputmode="tel"
+        pattern="^\+?[1-9]\d{7,14}$"
+        placeholder="+2547XXXXXXXX"
+        required
+      />
+      <p class="help">Use country code, e.g. +254712345678.</p>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Email</label>
+      <input name="email" type="email" placeholder="you@example.com" required />
+      <p class="help">Use a valid email, e.g. you@example.com.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div>
+      <label class="block text-sm mb-1">Preferred date</label>
+      <input id="visit_date" name="visit_date" type="date" required />
+      <p class="help">Business hours: {availability.startHour}:00–{availability.endHour}:00</p>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Available time</label>
+      <div id="slot-wrap" class="flex flex-wrap gap-2"></div>
+      <p id="slot-help" class="help"></p>
+    </div>
+  </div>
+
+  <div>
+    <span class="block text-sm mb-1">Contact method</span>
+    <label class="mr-4"><input type="radio" name="contact_method" value="Call" required /> Call</label>
+    <label><input type="radio" name="contact_method" value="WhatsApp" /> WhatsApp</label>
+    <p class="help">We’ll confirm your booking via Call or WhatsApp.</p>
+  </div>
+
+  <div>
+    <label class="block text-sm mb-1">Notes</label>
+    <textarea name="message" rows="3" placeholder={`I’d like to ${ctaLabel.toLowerCase()}...`}></textarea>
+  </div>
+
+  <div class="flex items-center justify-end gap-3 pt-1">
+    <button type="button" class="btn-outline rounded-md" data-close-modal>Cancel</button>
+    <button id="submit-btn" type="submit" class="btn-cta rounded-md">{ctaLabel}</button>
+  </div>
+</form>
+
+<!-- Safe JSON embed for availability config -->
+<script type="application/json" id="bf-config">{JSON.stringify(availability ?? {})}</script>
+
+<script is:inline>
+  (function () {
+    const cfgNode = document.getElementById('bf-config');
+    const cfg = cfgNode ? JSON.parse(cfgNode.textContent || '{}') : {};
+
+    const visitDate = document.getElementById('visit_date');
+    const slotWrap = document.getElementById('slot-wrap');
+    const slotHelp = document.getElementById('slot-help');
+    const hiddenPreferred = document.getElementById('preferred_at');
+    const form = document.getElementById('enquiry-form');
+    const submitBtn = document.getElementById('submit-btn');
+
+    const stepMins = Math.max(15, Number(cfg.stepMins || 60));
+    const maxDaysAhead = Number(cfg.maxDaysAhead || 60);
+    const closedWeekdays = Array.isArray(cfg.closedWeekdays) ? cfg.closedWeekdays : [];
+    const blackoutDates = Array.isArray(cfg.blackoutDates) ? cfg.blackoutDates : [];
+    const startHour = Number(cfg.startHour ?? 10);
+    const endHour = Number(cfg.endHour ?? 17); // slot END must be <= endHour:00
+
+    const pad = (n) => String(n).padStart(2,'0');
+    const fmtHM = (h,m) => `${pad(h)}:${pad(m)}`;
+    const addMinutes = (h,m,add) => {
+      const t = h*60+m+add; return {h:Math.floor(t/60), m:t%60};
+    };
+    const weekday = (iso) => { const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d).getDay(); };
+    const isBlackout = (iso) => blackoutDates.includes(iso);
+    const to12 = (h,m=0)=>{ const p=h<12?'am':'pm'; const h12=((h+11)%12)+1; const mm=m?`:${pad(m)}`:''; return {h12,p,mm}; };
+    const humanRange = (sh,sm,eh,em)=>{
+      const eNoon = eh===12 && em===0;
+      const s=to12(sh,sm), e=to12(eh,em);
+      return `${s.h12}${s.mm}–${e.h12}${e.mm} ${eNoon?'noon':e.p}`;
+    };
+
+    function todayISO(){
+      const n=new Date(); return `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`;
+    }
+
+    // Bounds for date input
+    if (visitDate && visitDate instanceof HTMLInputElement) {
+      const now = new Date();
+      const minIso = todayISO();
+      const max = new Date(now.getTime() + maxDaysAhead*86400000);
+      const maxIso = `${max.getFullYear()}-${pad(max.getMonth()+1)}-${pad(max.getDate())}`;
+      visitDate.min = minIso;
+      visitDate.max = maxIso;
+
+      // Robustly set today's date (valueAsDate works across locales)
+      if (!visitDate.value) {
+        try { visitDate.valueAsDate = new Date(); } catch {}
+        if (!visitDate.value) visitDate.value = minIso;
+      }
+    }
+
+    function updateSubmitState(){
+      const hasPreferred = hiddenPreferred && hiddenPreferred instanceof HTMLInputElement && hiddenPreferred.value;
+      const valid = form && form.checkValidity() && !!hasPreferred;
+      if (submitBtn) submitBtn.disabled = !valid;
+    }
+
+    function clearPreferred(){
+      if (hiddenPreferred && hiddenPreferred instanceof HTMLInputElement) hiddenPreferred.value = '';
+      const checked = slotWrap ? slotWrap.querySelector('input[name="slot"]:checked') : null;
+      if (checked) checked.checked = false;
+    }
+
+    function buildSlots(isoDate){
+      if (!slotWrap) return;
+      slotWrap.innerHTML = '';
+      clearPreferred();
+      updateSubmitState();
+
+      if (!isoDate){
+        if (slotHelp) slotHelp.textContent = 'Choose a date to see available times.';
+        return;
+      }
+      if (isBlackout(isoDate) || closedWeekdays.includes(weekday(isoDate))){
+        if (slotHelp) slotHelp.textContent = 'No slots available on the selected date.';
+        return;
+      }
+
+      if (slotHelp) slotHelp.textContent = '';
+      const now = new Date();
+      const [yy,mm,dd] = isoDate.split('-').map(Number);
+      const isToday = (now.getFullYear()===yy && now.getMonth()+1===mm && now.getDate()===dd);
+
+      let any = false;
+      for (let h = startHour; h < endHour; h++) {
+        for (let m = 0; m < 60; m += stepMins) {
+          const end = addMinutes(h, m, stepMins);
+          if (end.h > endHour || (end.h === endHour && end.m > 0)) continue;
+
+          const startDate = new Date(yy, mm-1, dd, h, m, 0, 0);
+          if (isToday && startDate.getTime() <= now.getTime()) continue;
+
+          const id = `slot_${pad(h)}${pad(m)}`;
+          const labelText = humanRange(h, m, end.h, end.m);
+
+          const label = document.createElement('label');
+          label.className = 'chip-link cursor-pointer';
+          label.htmlFor = id;
+
+          const input = document.createElement('input');
+          input.type = 'radio';
+          input.id = id;
+          input.name = 'slot';
+          input.value = fmtHM(h,m);
+          input.required = true;
+          input.className = 'sr-only';
+
+          const span = document.createElement('span');
+          span.textContent = labelText;
+
+          label.appendChild(input);
+          label.appendChild(span);
+          slotWrap.appendChild(label);
+          any = true;
+
+          input.addEventListener('change', ()=> {
+            const preferredStart = `${isoDate}T${input.value}`;
+            if (hiddenPreferred && hiddenPreferred instanceof HTMLInputElement) hiddenPreferred.value = preferredStart;
+            updateSubmitState();
+          });
+        }
+      }
+      if (!any && slotHelp) slotHelp.textContent = 'No future slots left for this date. Pick another date.';
+    }
+
+    // Initial build (force-trigger a change so we definitely render)
+    if (visitDate && visitDate instanceof HTMLInputElement){
+      buildSlots(visitDate.value);
+      visitDate.addEventListener('change', ()=> buildSlots(visitDate.value));
+      visitDate.addEventListener('input',  ()=> buildSlots(visitDate.value));
+      // ensure any browser that didn’t reflect value yet will rebuild
+      setTimeout(()=> {
+        if (visitDate && !visitDate.value) {
+          try { visitDate.valueAsDate = new Date(); } catch {}
+        }
+        visitDate.dispatchEvent(new Event('change', { bubbles: true }));
+      }, 0);
+    }
+
+    if (form) {
+      form.addEventListener('input', updateSubmitState);
+      form.addEventListener('change', updateSubmitState);
+      form.addEventListener('submit', (e)=> {
+        const hasPreferred = hiddenPreferred && hiddenPreferred instanceof HTMLInputElement && hiddenPreferred.value;
+        if (!hasPreferred || !form.checkValidity()) {
+          e.preventDefault();
+          if (slotHelp && !hasPreferred) slotHelp.textContent = 'Select a date and time slot.';
+        }
+      });
+    }
+
+    updateSubmitState();
+  })();
+</script>

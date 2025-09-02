@@ -1,119 +1,353 @@
 ---
-/** Props:
- * - entry: CollectionEntry<"blog">
- * - headings: Array<{ id: string; text: string; level: 2 | 3 }>
- * - related: CollectionEntry<"blog">[]
- */
 import BlogCard from './BlogCard.astro';
+import { BLOG_CATEGORIES } from '../../lib/blog-categories';
 
-const { entry, headings = [], related = [] } = Astro.props;
+type Props = {
+  entry?: any;
+  headings?: Array<any>;
+  related?: Array<any>;
+};
 
-const category = entry.data.category ?? "Blog";
-const date = new Date(entry.data.pubDate ?? entry.data.date ?? Date.now());
+const { entry = { data: { title: 'Untitled' } }, headings = [], related = [] } = Astro.props as Props;
+
+const category: string = entry?.data?.category ?? 'Blog';
+const date = new Date(entry?.data?.pubDate ?? entry?.data?.date ?? Date.now());
+const slug = (entry as any)?.slug ?? entry?.data?.slug ?? '';
 
 const catHue =
-  category === "Buyer & Renter Tips" ? "text-blue-700 bg-blue-50" :
-  category === "Seller & Marketing Tips" ? "text-amber-700 bg-amber-50" :
-  category === "Short-Stay & Lifestyle" ? "text-emerald-700 bg-emerald-50" :
-  category === "Local Living Features" ? "text-purple-700 bg-purple-50" :
-  "text-slate-700 bg-slate-100";
+  category === 'Buyer & Renter Tips'     ? 'text-blue-700 bg-blue-50'   :
+  category === 'Seller & Marketing Tips' ? 'text-amber-700 bg-amber-50' :
+  category === 'Short-Stay & Lifestyle'  ? 'text-emerald-700 bg-emerald-50' :
+  category === 'Local Living Features'   ? 'text-purple-700 bg-purple-50' :
+  'text-slate-700 bg-slate-100';
 
-const hero = entry.data.heroImage ?? "/images/placeholders/hero-house-1.webp";
+const hero = entry?.data?.heroImage ?? '/images/placeholders/hero-house-1.webp';
+
+/* Canonical category href */
+const catSlug = Object.entries(BLOG_CATEGORIES).find(([, meta]) => meta.label === category)?.[0] ?? null;
+const catHref = catSlug ? `/blog/${catSlug}` : '/blog';
+
+/* UTM-safe share URLs */
+const baseUrl = new URL(Astro.url);
+['utm_source','utm_medium','utm_campaign','utm_content'].forEach(k => baseUrl.searchParams.delete(k));
+const trackingUrl = (source: string) => {
+  const u = new URL(baseUrl);
+  u.searchParams.set('utm_source', source);
+  u.searchParams.set('utm_medium', 'share');
+  u.searchParams.set('utm_campaign', 'blog');
+  if (slug) u.searchParams.set('utm_content', slug);
+  return u.toString();
+};
+
+const title = entry?.data?.title ?? '';
+const desc  = entry?.data?.description ?? '';
+
+const xHref     = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(trackingUrl('twitter'))}`;
+const fbHref    = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(trackingUrl('facebook'))}`;
+const liHref    = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(trackingUrl('linkedin'))}`;
+const waHref    = `https://wa.me/?text=${encodeURIComponent(`${title} — ${trackingUrl('whatsapp')}`)}`;
+const emailHref = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent((desc || title) + '\n' + trackingUrl('email'))}`;
+const copyUrl   = trackingUrl('copy');
+
+/* JSON-LD (BlogPosting) */
+const origin = Astro.url.origin;
+const canonicalForJsonLd = baseUrl.toString();
+const imageAbs = hero?.startsWith('http') ? hero : new URL(hero, origin).toString();
+const logoAbs  = new URL('/images/logo-512.png', origin).toString();
+const dateISO  = date.toISOString();
+const articleJson = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description: desc || undefined,
+  image: imageAbs,
+  datePublished: dateISO,
+  dateModified: dateISO,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalForJsonLd },
+  url: canonicalForJsonLd,
+  articleSection: category,
+  isPartOf: { '@type': 'Blog', name: 'Blog', url: new URL('/blog', origin).toString() },
+  author: { '@type': 'Organization', name: 'Severino Realty' },
+  publisher: { '@type': 'Organization', name: 'Severino Realty', logo: { '@type': 'ImageObject', url: logoAbs } }
+};
 ---
 
-<!-- shell -->
-<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-  <!-- breadcrumb -->
-  <nav aria-label="Breadcrumb" class="mb-4 text-sm">
-    <a href="/blog" class="text-slate-500 hover:text-slate-700">Blog</a>
-    <span class="mx-2 text-slate-400">/</span>
-    <a href={`/blog/${(category || '').toLowerCase().replaceAll('&','and').replaceAll(/\s+/g,'-')}`}
-       class={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 ${catHue}`}>
-      {category}
-    </a>
-  </nav>
+<!-- Article JSON-LD -->
+<script type="application/ld+json" is:inline>{JSON.stringify(articleJson)}</script>
 
-  <!-- title + meta -->
+<!-- shell -->
+<div
+  id="post-root"
+  class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12"
+  data-copy-url={copyUrl}
+  data-share-title={title}
+  data-share-text={desc || title}
+  data-share-url={trackingUrl('webshare')}
+>
+  <!-- breadcrumb injection point (use from page via slot="breadcrumb") -->
+  <slot name="breadcrumb" />
+
+  <!-- title + lean meta -->
   <header class="max-w-3xl">
     <h1 class="text-3xl/tight sm:text-4xl/tight font-semibold text-slate-900">
-      {entry.data.title}
+      {title}
     </h1>
-    <p class="mt-2 text-slate-500">{date.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' })}</p>
+
+    <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600">
+      <time datetime={date.toISOString()}>
+        {date.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' })}
+      </time>
+      <span aria-hidden="true">·</span>
+      <a
+        href={catHref}
+        class={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${catHue}`}
+      >
+        {category}
+      </a>
+      <span id="rt" class="hidden sm:inline" aria-label="Estimated reading time"></span>
+    </div>
+
+    {desc && <p class="mt-2 text-slate-600">{desc}</p>}
+
+    <!-- Desktop share bar -->
+    <div class="share-bar hidden md:flex" role="group" aria-label="Share this article">
+      <a class="share-btn" href={xHref} target="_blank" rel="noopener" aria-label="Share on X">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l7.3 9.6L4.7 20H8l4.2-4.8L16.8 20H20l-7.4-9.8L19.3 4H16l-4 4.6L8.8 4H4z"/></svg>
+      </a>
+      <a class="share-btn" href={fbHref} target="_blank" rel="noopener" aria-label="Share on Facebook">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 9h3V6h-3c-2 0-3.5 1.5-3.5 3.5V12H8v3h2.5v6H14v-6h2.6l.4-3H14V9.5c0-.3.2-.5.5-.5z"/></svg>
+      </a>
+      <a class="share-btn" href={liHref} target="_blank" rel="noopener" aria-label="Share on LinkedIn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9h3v9H6V9zm1.5-5a1.75 1.75 0 110 3.5A1.75 1.75 0 017.5 4zM10 9h2.9v1.2h.1c.4-.8 1.4-1.4 2.8-1.4 3 0 3.5 2 3.5 4.6V18h-3v-3.7c0-.9 0-2-1.2-2s-1.4 1-1.4 2V18h-3V9z"/></svg>
+      </a>
+      <a class="share-btn" href={waHref} target="_blank" rel="noopener" aria-label="Share on WhatsApp">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 00-7.8 13.3L3 21l4.9-1.3A9 9 0 1012 3zm0 2a7 7 0 015.7 11.1l-.2.3c-1.2 1.5-3.7 2.1-5.8 1.6l-2.2-.6-2.2.6.6-2.2-.6-2.2C6.8 10.2 7.8 8 9.4 6.9A7 7 0 0112 5z"/></svg>
+      </a>
+      <a class="share-btn" href={emailHref} aria-label="Share by email">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6h20v12H2V6zm10 6L3.5 7h17L12 12z"/></svg>
+      </a>
+      <button type="button" id="copy-link-desktop" class="share-btn" aria-label="Copy link">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2zm-1-3h10v2H7V4z"/></svg>
+      </button>
+    </div>
+
+    <!-- TOP TOC -->
+    {Array.isArray(headings) && headings.length > 0 && (
+      <nav aria-label="Table of contents" class="toc-card mt-6 rounded-lg border border-slate-200 bg-white p-5">
+        <h2 class="text-sm font-semibold text-slate-900">Contents</h2>
+        <ul class="mt-3 space-y-2 text-sm toc-list">
+          {headings.map((h: any) => (
+            <li class={h.level === 3 ? "pl-4" : ""}>
+              <a href={`#${h.id}`} class="link-decor focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)] rounded">
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
   </header>
 
-  <!-- hero -->
-  {hero && (
-    <div class="mt-6 rounded-xl overflow-hidden ring-1 ring-slate-200">
-      <img src={hero} alt={entry.data.title} class="w-full h-auto object-cover"/>
+  <!-- two-column layout -->
+  <div class="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-x-12 lg:gap-x-12 gap-y-6 items-start">
+    <!-- LEFT COLUMN -->
+    <div class="w-full max-w-3xl">
+      {hero && (
+        <figure class="w-full hero-wrap rounded-xl overflow-hidden ring-1 ring-slate-200">
+          <img
+            src={hero}
+            alt={title || 'Post hero image'}
+            class="w-full h-full object-cover object-center"
+            loading="lazy"
+            decoding="async"
+            width="960"
+            height="960"
+            sizes="(min-width: 1024px) 48rem, 100vw"
+          />
+        </figure>
+      )}
+
+      <article class="mt-6 w-full">
+        <slot />
+
+        <!-- Bottom CTA -->
+        <div class="mt-10 rounded-lg border border-slate-200 p-5 bg-slate-50">
+          <h3 class="font-semibold text-slate-900">Need help with your next step?</h3>
+          <p class="mt-1 text-slate-600">Talk to Severino Realty for a quick walkthrough tailored to your case.</p>
+          <a href="/contact?ref=cta-bottom" class="btn-outline rounded-md mt-3 inline-flex focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+            Contact us
+          </a>
+        </div>
+
+        <!-- Inline CTA template -->
+        <template id="tpl-cta-1">
+          <aside class="cta-inline rounded-lg border border-slate-200 bg-white p-5 mt-8">
+            <h3 class="text-base font-semibold text-slate-900">Have a quick property question?</h3>
+            <p class="mt-1 text-slate-600">Get a free 10-minute consult. Fast and specific to your case.</p>
+            <a href="/contact?ref=cta-mid-1" class="btn-cta mt-3 inline-flex rounded-md focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+              Book a call
+            </a>
+          </aside>
+        </template>
+      </article>
     </div>
-  )}
 
-  <!-- main two-column -->
-  <div class="mt-10 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12">
-    <!-- article -->
-    <article class="mx-auto w-full max-w-3xl">
-      <slot />
+    <!-- RIGHT COLUMN / SIDEBAR -->
+    <aside class="lg:sticky lg:top-24 h-max space-y-6">
+      <section class="rounded-lg border border-slate-200 p-5 bg-white">
+        <h2 class="text-sm font-semibold text-slate-900">Quick actions</h2>
+        <div class="mt-3 grid gap-2">
+          <a href="/contact?ref=sidebar-consult" class="btn-cta rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">Book a consult</a>
+          <a href={catHref} class="btn-outline rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">More on {category}</a>
+          <a href="/blog" class="btn-outline rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">All articles</a>
+        </div>
+      </section>
 
-      <!-- CTA (light) -->
-      <div class="mt-10 rounded-lg border border-slate-200 p-5 bg-slate-50">
-        <h3 class="font-semibold text-slate-900">Need help with your next step?</h3>
-        <p class="mt-1 text-slate-600">Talk to Severino Realty for a quick walkthrough tailored to your case.</p>
-        <a href="/contact" class="mt-3 inline-flex items-center rounded-md bg-[color:var(--color-cta)] px-4 py-2 text-white hover:opacity-90 transition">
-          Contact us
-        </a>
-      </div>
-    </article>
-
-    <!-- sidebar -->
-    <aside class="lg:sticky lg:top-24 h-max">
-      <!-- TOC -->
-      {headings.length > 0 && (
+      {Array.isArray(headings) && headings.length > 0 && (
         <section class="rounded-lg border border-slate-200 p-5 bg-white">
           <h2 class="text-sm font-semibold text-slate-900">On this page</h2>
           <ul class="mt-3 space-y-2 text-sm">
-            {headings.map(h => (
-              <li class={h.level === 3 ? "pl-4" : ""}>
-                <a href={`#${h.id}`} class="text-slate-600 hover:text-slate-900">{h.text}</a>
+            {headings.map((h:any) => (
+              <li class={h.level === 3 ? 'pl-4' : ''}>
+                <a href={`#${h.id}`} class="link-decor focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)] rounded">
+                  {h.text}
+                </a>
               </li>
             ))}
           </ul>
         </section>
       )}
 
-      <!-- share -->
-      <section class="mt-6 rounded-lg border border-slate-200 p-5 bg-white">
-        <h2 class="text-sm font-semibold text-slate-900">Share</h2>
-        <div class="mt-3 flex gap-3 text-sm">
-          <a class="underline text-slate-600 hover:text-slate-900"
-             href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(entry.data.title)}&url=${encodeURIComponent(Astro.url.href)}`} target="_blank">X</a>
-          <a class="underline text-slate-600 hover:text-slate-900"
-             href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`} target="_blank">Facebook</a>
-          <a class="underline text-slate-600 hover:text-slate-900"
-             href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(Astro.url.href)}`} target="_blank">LinkedIn</a>
-        </div>
+      <section class="rounded-lg border border-slate-200 p-5 bg-white">
+        <h2 class="text-sm font-semibold text-slate-900">Free checklist</h2>
+        <p class="mt-1 text-sm text-slate-600">Stamp duty & fees checklist to avoid surprises at completion.</p>
+        <a href="/contact?ref=sidebar-checklist" class="btn-outline mt-3 inline-flex rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">Get the checklist</a>
       </section>
     </aside>
   </div>
 
-  <!-- related -->
-  {related.length > 0 && (
+  {Array.isArray(related) && related.length > 0 && (
     <section class="mt-14">
       <h2 class="text-lg font-semibold text-slate-900">Related posts</h2>
-      <div class="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {related.slice(0,4).map(r => (
-          <BlogCard entry={r} />
+      <div class="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" style="grid-auto-rows:1fr">
+        {related.slice(0,4).map((r: any) => (
+          <BlogCard entry={r} variant="grid" />
         ))}
       </div>
     </section>
   )}
 </div>
 
+<!-- Sticky mobile share bar -->
+<div class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 backdrop-blur border-t border-neutral-200 safe-bottom">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2">
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2" role="group" aria-label="Share this article">
+        <a class="share-btn" href={xHref} target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24"><path d="M4 4l7.3 9.6L4.7 20H8l4.2-4.8L16.8 20H20l-7.4-9.8L19.3 4H16l-4 4.6L8.8 4H4z"/></svg></a>
+        <a class="share-btn" href={fbHref} target="_blank" rel="noopener" aria-label="Share on Facebook"><svg viewBox="0 0 24 24"><path d="M14 9h3V6h-3c-2 0-3.5 1.5-3.5 3.5V12H8v3h2.5v6H14v-6h2.6l.4-3H14V9.5c0-.3.2-.5.5-.5z"/></svg></a>
+        <a class="share-btn" href={liHref} target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24"><path d="M6 9h3v9H6V9zm1.5-5a1.75 1.75 0 110 3.5A1.75 1.75 0 017.5 4zM10 9h2.9v1.2h.1c(.4-.8 1.4-1.4 2.8-1.4) 3 0 3.5 2 3.5 4.6V18h-3v-3.7c0-.9 0-2-1.2-2s-1.4 1-1.4 2V18h-3V9z"/></svg></a>
+        <a class="share-btn" href={waHref} target="_blank" rel="noopener" aria-label="Share on WhatsApp"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 00-7.8 13.3L3 21l4.9-1.3A9 9 0 1012 3zm0 2a7 7 0 015.7 11.1l-.2.3c-1.2 1.5-3.7 2.1-5.8 1.6l-2.2-.6-2.2.6.6-2.2-.6-2.2C6.8 10.2 7.8 8 9.4 6.9A7 7 0 0112 5z"/></svg></a>
+        <a class="share-btn" href={emailHref} aria-label="Share by email"><svg viewBox="0 0 24 24"><path d="M2 6h20v12H2V6zm10 6L3.5 7h17L12 12z"/></svg></a>
+        <button type="button" id="copy-link-mobile" class="share-btn" aria-label="Copy link"><svg viewBox="0 0 24 24"><path d="M8 7h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2zm-1-3h10v2H7V4z"/></svg></button>
+      </div>
+      <button id="share-mobile" class="btn-cta px-4 py-2 text-sm">Share</button>
+    </div>
+  </div>
+</div>
+
 <style>
-  /* pleasant reading width */
   article :global(p){margin-top:1rem;line-height:1.75}
   article :global(h2){margin-top:2.5rem;margin-bottom:.75rem;font-size:1.25rem;font-weight:700}
   article :global(h3){margin-top:1.75rem;margin-bottom:.25rem;font-weight:600}
   article :global(ul){list-style:disc;padding-left:1.25rem}
   article :global(ol){list-style:decimal;padding-left:1.25rem}
-  article :global(a){text-decoration:underline}
+
+  article :global(a){
+    text-decoration:none;
+    border-bottom: 1px dotted currentColor;
+    padding-bottom: 1px;
+  }
+  article :global(a:hover){ border-bottom-style: solid; }
+
+  .hero-wrap{ width:100%; aspect-ratio:1/1; max-height:clamp(240px,58vh,640px); position:relative; background:#f8fafc; }
+  .hero-wrap > img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; }
+
+  .cta-inline a.btn-cta, .cta-inline a.btn-outline{ text-decoration:none; }
+
+  .chip-link{ display:inline-block; padding:.375rem .625rem; border:1px solid #e2e8f0; border-radius:9999px; font-size:.8125rem; color:#0f172a; background:#fff; }
+  .chip-link:hover{ border-color:#94a3b8; }
 </style>
+
+<script>
+  /* existing JS unchanged */
+  document.addEventListener('DOMContentLoaded', function () {
+    var root = document.getElementById('post-root');
+    var ds = root ? root.dataset : {};
+    var copyHref = ds.copyUrl || location.href;
+    var shareTitle = ds.shareTitle || document.title;
+    var shareText = ds.shareText || shareTitle;
+    var shareUrl = ds.shareUrl || location.href;
+
+    var art = document.querySelector('article');
+    var out = document.getElementById('rt');
+    if (art && out) {
+      var words = (art.innerText || '').trim().split(/\s+/).length;
+      if (words) {
+        var minutes = Math.max(1, Math.round(words / 200));
+        out.textContent = minutes + ' min read';
+        out.classList.remove('hidden');
+      }
+    }
+
+    function copyLink(url) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function(){ alert('Link copied'); }).catch(function(){});
+      }
+    }
+    var btnCopyDesktop = document.getElementById('copy-link-desktop');
+    if (btnCopyDesktop) btnCopyDesktop.addEventListener('click', function(){ copyLink(copyHref); });
+    var btnCopyMobile = document.getElementById('copy-link-mobile');
+    if (btnCopyMobile) btnCopyMobile.addEventListener('click', function(){ copyLink(copyHref); });
+
+    var shareBtn = document.getElementById('share-mobile');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', function () {
+        var data = { title: shareTitle, text: shareText, url: shareUrl };
+        if (navigator.share) { navigator.share(data).catch(function(){}); } else { copyLink(shareUrl); }
+      });
+    }
+
+    // Remove ONLY the in-article TOC (keep top + sidebar anchors)
+    if (art) {
+      var tocs = art.querySelectorAll('nav[aria-label="Table of contents"], nav[aria-label="Contents"], .toc-card');
+      tocs.forEach(function(el){ el.remove(); });
+      var hs = art.querySelectorAll('h1,h2,h3,h4,h5,h6');
+      hs.forEach(function(h){
+        var t = (h.textContent || '').trim().toLowerCase();
+        if (t === 'table of contents' || t === 'contents') {
+          var sib = h.nextElementSibling;
+          if (sib && (sib.tagName === 'UL' || sib.tagName === 'OL')) { sib.remove(); }
+          h.remove();
+        }
+      });
+
+      function hasInjected(id){ return !!art.querySelector('[data-cta="' + id + '"]'); }
+      function inject(tplId, afterNode){
+        if (!afterNode || hasInjected(tplId)) return false;
+        var tpl = document.getElementById(tplId);
+        if (!tpl) return false;
+        var node = tpl.content.firstElementChild.cloneNode(true);
+        node.setAttribute('data-cta', tplId);
+        afterNode.parentNode.insertBefore(node, afterNode.nextSibling);
+        return true;
+      }
+      var h2s = Array.prototype.slice.call(art.querySelectorAll('h2'));
+      var ps  = Array.prototype.slice.call(art.querySelectorAll('p'));
+
+      var placed = false;
+      if (h2s.length >= 1) placed = inject('tpl-cta-1', h2s[0]);
+      if (!placed && ps.length >= 3) placed = inject('tpl-cta-1', ps[2]);
+      if (!placed && ps.length) inject('tpl-cta-1', ps[Math.floor(ps.length * 0.6)]);
+    }
+  });
+</script>

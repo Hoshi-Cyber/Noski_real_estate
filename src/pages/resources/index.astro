@@ -1,3 +1,59 @@
 ---
-Astro.redirect('/resources/guides');
+import MainLayout from '../../layouts/MainLayout.astro';
 ---
+
+<MainLayout
+  title="Resources — Severino Realty"
+  description="Guides, FAQs, and market reports to help you buy, sell, rent, or invest."
+>
+  <section class="py-12" aria-labelledby="resources-title">
+    <div class="container">
+      <h1 id="resources-title" class="section-title text-center mb-10">Resources</h1>
+      <p class="text-center text-neutral-600 max-w-2xl mx-auto mb-10">
+        Practical guides, clear FAQs, and up-to-date market reports—all in one place.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="/resources/guides"
+           class="card group ring-1 ring-neutral-200 hover:ring-neutral-300 transition focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+           aria-label="Browse Guides">
+          <div class="p-6">
+            <h2 class="text-lg font-semibold text-primary mb-2">Guides</h2>
+            <p class="text-sm text-neutral-600 mb-4">
+              Step-by-step playbooks for buyers, sellers, and landlords.
+            </p>
+            <span class="btn-cta inline-flex rounded-full px-4 py-2">Browse Guides</span>
+          </div>
+        </a>
+
+        <a href="/resources/faqs"
+           class="card group ring-1 ring-neutral-200 hover:ring-neutral-300 transition focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+           aria-label="Browse FAQs">
+          <div class="p-6">
+            <h2 class="text-lg font-semibold text-primary mb-2">FAQs</h2>
+            <p class="text-sm text-neutral-600 mb-4">
+              Straight answers to the most common real-estate questions.
+            </p>
+            <span class="btn-cta inline-flex rounded-full px-4 py-2">Browse FAQs</span>
+          </div>
+        </a>
+
+        <a href="/resources/market-reports"
+           class="card group ring-1 ring-neutral-200 hover:ring-neutral-300 transition focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+           aria-label="View Market Reports">
+          <div class="p-6">
+            <h2 class="text-lg font-semibold text-primary mb-2">Market Reports</h2>
+            <p class="text-sm text-neutral-600 mb-4">
+              Data-driven insights on pricing, demand, and neighbourhood trends.
+            </p>
+            <span class="btn-cta inline-flex rounded-full px-4 py-2">View Reports</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="mt-12 text-center">
+        <a href="/blog" class="btn-outline rounded-full">Read the Blog</a>
+      </div>
+    </div>
+  </section>
+</MainLayout>

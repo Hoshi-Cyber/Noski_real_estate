@@ -1,0 +1,82 @@
+---
+/**
+ * Hero-area search bar to keep the header clean.
+ * Submits to /listings using names expected by search.ts:
+ * q, beds, type, availability (for-sale|for-rent|short-stays), minPrice, maxPrice
+ */
+---
+<form action="/listings" method="get"
+      class="mt-6 rounded-xl border border-neutral-200 bg-white/90 backdrop-blur p-3 sm:p-4 shadow-sm">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
+    <!-- Availability -->
+    <label class="sr-only" for="hs-avail">Availability</label>
+    <select id="hs-avail" name="availability" class="rounded-md border border-neutral-300 p-2 text-sm">
+      <option value="">All</option>
+      <option value="for-sale">For Sale</option>
+      <option value="for-rent">For Rent</option>
+      <option value="short-stays">Short Stays</option>
+    </select>
+
+    <!-- Query -->
+    <label class="sr-only" for="hs-q">Location or keyword</label>
+    <input id="hs-q" name="q" type="search" inputmode="search" placeholder="e.g. Karen"
+           class="rounded-md border border-neutral-300 p-2 text-sm" />
+
+    <!-- Min price -->
+    <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden">
+      <span class="px-2 text-xs text-neutral-500">KES</span>
+      <input name="minPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Min"
+             class="w-full p-2 text-sm outline-none"/>
+    </div>
+
+    <!-- Max price -->
+    <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden">
+      <span class="px-2 text-xs text-neutral-500">KES</span>
+      <input name="maxPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Max"
+             class="w-full p-2 text-sm outline-none"/>
+    </div>
+
+    <!-- Type -->
+    <label class="sr-only" for="hs-type">Type</label>
+    <select id="hs-type" name="type" class="rounded-md border border-neutral-300 p-2 text-sm">
+      <option value="">Any</option>
+      <option value="apartment">Apartment</option>
+      <option value="bungalow">Bungalow</option>
+      <option value="cabin">Cabin</option>
+      <option value="cottage">Cottage</option>
+      <option value="house">House</option>
+      <option value="maisonette">Maisonette</option>
+      <option value="studio/bedsitter">Studio/Bedsitter</option>
+      <option value="suite">Suite</option>
+      <option value="townhouse">Townhouse</option>
+      <option value="villa">Villa</option>
+      <option value="land">Land</option>
+    </select>
+
+    <!-- Beds -->
+    <label class="sr-only" for="hs-beds">Beds</label>
+    <select id="hs-beds" name="beds" class="rounded-md border border-neutral-300 p-2 text-sm">
+      <option value="">Beds</option>
+      <option value="1">1+</option>
+      <option value="2">2+</option>
+      <option value="3">3+</option>
+      <option value="4">4+</option>
+      <option value="5">5+</option>
+    </select>
+
+    <!-- Submit -->
+    <button class="btn-cta inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm">
+      <svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true"><path d="M10 4a6 6 0 104.47 10.03l4.25 4.25 1.42-1.42-4.25-4.25A6 6 0 0010 4zm0 2a4 4 0 110 8 4 4 0 010-8z"/></svg>
+      Search
+    </button>
+  </div>
+</form>
+
+<script type="module" is:inline>
+  // Prefill from current URL so users see their last filters
+  const sp = new URLSearchParams(location.search);
+  document.querySelectorAll('[name]').forEach(el=>{
+    const k = el.getAttribute('name');
+    if (k && sp.get(k) != null) el.value = sp.get(k);
+  });
+</script>

@@ -1,9 +1,10 @@
 ---
 title: "Real Estate Glossary"
-slug: "real-estate-glossary"
 description: "A handy glossary defining over 200 property terms used in Kenya’s real estate industry."
-category: "Glossary"
+section: guides
 pubDate: 2025-07-26
+imagesFolder: /images/resources/guides/real-estate-glossary
+heroImage: /images/resources/guides/real-estate-glossary/cover.webp
 ---
 
 Understanding industry jargon helps you navigate property transactions with ease. This glossary defines key terms used by agents, lawyers and lenders.

@@ -10,7 +10,7 @@ const {
     { name: 'Selling', href: '/resources/faqs/selling', count: 10 },
     { name: 'Renting', href: '/resources/faqs/renting', count: 9 },
     { name: 'Short-Stay', href: '/resources/faqs/short-stay', count: 8 },
-  ]
+  ],
 } = Astro.props;
 ---
 
@@ -21,19 +21,21 @@ const {
     <p class="mt-2 text-neutral-700">{intro}</p>
 
     <!-- Search -->
-    <div class="mt-4">
+    <form role="search" aria-label="Search FAQs" class="mt-4">
+      <label for="faq-search" class="sr-only">Search FAQs</label>
       <input
         id="faq-search"
         type="search"
         placeholder="Search FAQs"
-        class="w-full max-w-lg rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm"
+        class="w-full max-w-lg rounded-md border border-neutral-300 px-3 py-2 text-sm
+               focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
       />
-    </div>
+    </form>
   </header>
 
   <!-- FAQ Groups -->
   <div id="faq-groups" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    {groups.map(g => (
+    {groups.map((g) => (
       <div data-title={g.name}>
         <BaseCard
           title={g.name}
@@ -52,12 +54,13 @@ const {
 <script type="module" client:load>
   const q = document.getElementById('faq-search');
   const container = document.getElementById('faq-groups');
+
   if (q && container) {
     q.addEventListener('input', () => {
-      const term = q.value.toLowerCase();
-      container.querySelectorAll('[data-title]').forEach(el => {
+      const term = q.value.trim().toLowerCase();
+      container.querySelectorAll('[data-title]').forEach((el) => {
         const t = el.getAttribute('data-title')?.toLowerCase() || '';
-        el.classList.toggle('hidden', term && !t.includes(term));
+        el.classList.toggle('hidden', !!term && !t.includes(term));
       });
     });
   }

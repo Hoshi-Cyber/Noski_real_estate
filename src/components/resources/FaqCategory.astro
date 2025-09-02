@@ -3,7 +3,7 @@
 const {
   title,
   guideUrl = '#',
-  faqs = /** [{ q, aHtml }] */ []
+  faqs = /** [{ q, aHtml }] */ [],
 } = Astro.props;
 ---
 
@@ -11,20 +11,26 @@ const {
   <!-- Header -->
   <header class="mb-6 md:mb-8">
     <h1 class="text-2xl md:text-3xl font-bold text-primary">{title} FAQs</h1>
-    <div class="mt-3 flex items-center gap-3">
+    <div class="mt-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
       <!-- Search -->
-      <input
-        id="faq-q"
-        type="search"
-        placeholder="Search this category"
-        class="w-full max-w-lg rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm"
-      />
+      <form role="search" aria-label={`Search ${title} FAQs`} class="w-full">
+        <label for="faq-q" class="sr-only">Search this category</label>
+        <input
+          id="faq-q"
+          type="search"
+          placeholder="Search this category"
+          class="w-full max-w-lg rounded-md border border-neutral-300 px-3 py-2 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+        />
+      </form>
+
       <!-- Guide Link -->
       <a
         href={guideUrl}
-        class="shrink-0 rounded-md px-3 py-2 bg-[color:var(--color-cta)] text-white text-sm font-medium hover:opacity-90 transition"
+        class="shrink-0 btn-outline rounded-md text-sm px-3 py-2
+               focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
       >
-        Read full Guide
+        Read full guide
       </a>
     </div>
   </header>
@@ -32,12 +38,13 @@ const {
   <!-- FAQ Accordion -->
   <div
     id="faq-list"
-    class="divide-y divide-neutral-200 rounded-md ring-1 ring-neutral-200 bg-white shadow-sm"
+    class="divide-y divide-neutral-200 rounded-xl ring-1 ring-neutral-200 bg-white shadow-sm"
   >
     {faqs.map((f, i) => (
       <details class="group" data-title={f.q}>
         <summary
-          class="list-none cursor-pointer px-4 py-3 flex items-center justify-between hover:bg-neutral-50"
+          class="list-none cursor-pointer px-4 py-3 flex items-center justify-between
+                 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
         >
           <span class="font-medium text-primary">{f.q}</span>
           <svg
@@ -45,13 +52,9 @@ const {
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
+            aria-hidden="true"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-            />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
           </svg>
         </summary>
         <div
@@ -66,12 +69,13 @@ const {
 <script type="module" client:load>
   const q = document.getElementById('faq-q');
   const list = document.getElementById('faq-list');
+
   if (q && list) {
     q.addEventListener('input', () => {
-      const term = q.value.toLowerCase();
-      list.querySelectorAll('[data-title]').forEach(d => {
+      const term = q.value.trim().toLowerCase();
+      list.querySelectorAll('[data-title]').forEach((d) => {
         const t = d.getAttribute('data-title')?.toLowerCase() || '';
-        d.classList.toggle('hidden', term && !t.includes(term));
+        d.classList.toggle('hidden', !!term && !t.includes(term));
       });
     });
   }

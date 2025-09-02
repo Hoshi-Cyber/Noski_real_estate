@@ -8,19 +8,20 @@ export interface Props {
     heroImage?: string;
     slug?: string;
     pubDate?: string | Date;
+    highlight?: boolean;
   };
 }
 
 const { guide } = Astro.props;
 
-// Normalize props
-const href = guide.slug ? `/guides/${guide.slug}` : `/guides`;
-const img = guide.heroImage ?? '/images/placeholder.webp';
-const date = guide.pubDate
+// Normalize props and align paths with resources section
+const href = guide?.slug ? `/resources/guides/${guide.slug}` : `/resources/guides`;
+const img = guide?.heroImage ?? '/images/placeholder.webp';
+const date = guide?.pubDate
   ? new Date(guide.pubDate).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     })
   : '';
 ---
@@ -34,4 +35,6 @@ const date = guide.pubDate
   tag="Guide"
   cta="Read guide →"
   variant="visual"
+  showImage={true}
+  highlight={guide?.highlight ?? false}
 />

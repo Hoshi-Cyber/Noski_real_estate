@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withV } from '../../../lib/assets';
+import BookingForm from '../../../components/BookingForm.astro';
+import { defaultAvailability } from '../../../lib/availability';
 
 export const prerender = true;
 
@@ -26,7 +28,7 @@ const entry = all.find(
 const data = entry?.data as any | undefined;
 const notFound = !entry;
 
-// canonicalize /properties/{availability}/slug
+/* Canonicalize /properties/{availability}/{slug} */
 if (!notFound) {
   const canonicalType = norm(data?.availability || '');
   if (canonicalType && canonicalType !== type) {
@@ -34,7 +36,7 @@ if (!notFound) {
   }
 }
 
-// ---- Images (public folder scan first, then frontmatter fallbacks) ----
+/* Images: prefer public folder scan then frontmatter fallbacks */
 let images: string[] = [];
 try {
   const folder = (data?.imagesFolder || '').replace(/^\/+/, '');
@@ -56,9 +58,7 @@ try {
       images = files.map((f) => `/${folder}/${f}`);
     }
   }
-} catch {
-  // ignore
-}
+} catch {}
 
 if (!Array.isArray(images) || images.length === 0) {
   images =
@@ -68,61 +68,96 @@ if (!Array.isArray(images) || images.length === 0) {
 }
 images = images.map(withV);
 
-// ---- Derived fields & SEO ----
+/* Derived fields & SEO */
 const priceNumber: number | undefined =
   typeof data?.price === 'number' ? data.price : undefined;
 const priceText =
   typeof data?.price === 'number' ? `KSh ${data.price.toLocaleString()}` : 'N/A';
 
 const avail = (data?.availability || '').toLowerCase();
-const serviceType = avail.includes('rent')
-  ? 'rent'
-  : avail.includes('sale')
-    ? 'sale'
-    : 'short-stays';
+const serviceType =
+  avail.includes('rent') ? 'rent' :
+  avail.includes('sale') ? 'sale' : 'short-stays';
 
-const enquireHref = `/list-property?serviceType=${serviceType}`;
+/* Secondary routing for listings index */
+const listHref =
+  serviceType === 'rent' ? '/for-rent' :
+  serviceType === 'sale' ? '/for-sale' : '/short-stays';
 
 const badgeClass =
   avail.includes('rent') ? 'bg-emerald-600' :
-  avail.includes('sale') ? 'bg-blue-600' :
-  'bg-neutral-800';
+  avail.includes('sale') ? 'bg-blue-600'  : 'bg-neutral-800';
 
-const sameAvail = notFound
-  ? []
-  : all.filter(
-      (e) =>
-        e.slug !== slug &&
-        (e.data.availability || '').toLowerCase() === (data?.availability || '').toLowerCase()
-    );
+/* Helpers */
+const fmtPrice = (n: any) => typeof n === 'number' ? `KSh ${n.toLocaleString()}` : 'N/A';
+const arr = (x: any) => Array.isArray(x) ? x : [];
+const intersectCount = (a: any[], b: any[]) => {
+  const setB = new Set((b || []).map((x) => String(x).toLowerCase()));
+  return (a || []).reduce((acc, v) => acc + (setB.has(String(v).toLowerCase()) ? 1 : 0), 0);
+};
 
-const sameLocation = notFound
-  ? []
-  : sameAvail.filter(
-      (e) => (e.data.location || '').toLowerCase() === (data?.location || '').toLowerCase()
-    );
+/* Related listings: similarity score then top 4 */
+const pool = notFound ? [] : all.filter(
+  (e) => e.slug !== slug && norm(e.data.availability || '') === norm(data?.availability || '')
+);
 
-const relatedPool = sameLocation.length >= 3 ? sameLocation : sameAvail;
-const related = relatedPool.slice(0, 3);
+function score(candidate: any, current: any) {
+  let s = 0;
+  if ((candidate.location || '').toLowerCase() === (current.location || '').toLowerCase()) s += 40;
+  if ((candidate.type || '').toLowerCase() === (current.type || '').toLowerCase()) s += 20;
+  const cb = typeof candidate.bedrooms === 'number' ? candidate.bedrooms : undefined;
+  const tb = typeof current.bedrooms === 'number' ? current.bedrooms : undefined;
+  if (typeof cb === 'number' && typeof tb === 'number' && Math.abs(cb - tb) <= 1) s += 15;
+  const cp = typeof candidate.price === 'number' ? candidate.price : undefined;
+  const tp = typeof current.price === 'number' ? current.price : undefined;
+  if (typeof cp === 'number' && typeof tp === 'number') {
+    if (cp >= tp * 0.8 && cp <= tp * 1.2) s += 15;
+  }
+  if (intersectCount(arr(candidate.amenities), arr(current.amenities)) >= 2) s += 10;
+  const cn = arr(candidate.neighborhoodHighlights || candidate.neighborhood || candidate.nearby);
+  const tn = arr(current.neighborhoodHighlights || current.neighborhood || current.nearby);
+  if (intersectCount(cn, tn) > 0) s += 5;
+  return s;
+}
 
+const related = pool
+  .map((e) => ({ e, s: score(e.data, data) }))
+  .sort((a, b) => b.s - a.s || (b.e.data?.date || 0) - (a.e.data?.date || 0))
+  .slice(0, 4)
+  .map((x) => x.e);
+
+/* Optional rich media */
 const videoUrl = data?.videoUrl as string | undefined;
 const isYouTube = typeof videoUrl === 'string' && /youtube\.com|youtu\.be/.test(videoUrl);
 const isVimeo = typeof videoUrl === 'string' && /vimeo\.com/.test(videoUrl);
 
+/* Content blocks */
 const neighborhood: string[] =
   (Array.isArray(data?.neighborhoodHighlights) && data.neighborhoodHighlights) ||
   (Array.isArray(data?.neighborhood) && data.neighborhood) ||
   (Array.isArray(data?.nearby) && data.nearby) ||
   [];
 
+const amenities: string[] = Array.isArray(data?.amenities) ? data.amenities : [];
+
 const floorPlans: string[] = (Array.isArray(data?.floorPlans) ? data.floorPlans : []).map(withV);
 
-const canonicalPath = notFound
-  ? '/properties'
-  : `/properties/${norm(data?.availability || '')}/${slug}`;
+/* Canonical */
+const canonicalPath = notFound ? '/properties' : `/properties/${norm(data?.availability || '')}/${slug}`;
 const canonicalUrl = Astro.site ? new URL(canonicalPath, Astro.site).toString() : canonicalPath;
 
-// ---- JSON-LD ----
+/* Share URLs */
+const enc = encodeURIComponent;
+const share = {
+  fb: `https://www.facebook.com/sharer/sharer.php?u=${enc(canonicalUrl)}`,
+  x: `https://twitter.com/intent/tweet?url=${enc(canonicalUrl)}&text=${enc(data?.title || '')}`,
+  li: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(canonicalUrl)}`,
+  wa: `https://wa.me/?text=${enc((data?.title || '') + ' ' + canonicalUrl)}`,
+  em: `mailto:?subject=${enc(data?.title || '')}&body=${enc((data?.title || '') + '\n' + canonicalUrl)}`,
+  sms:`sms:?&body=${enc((data?.title || '') + ' ' + canonicalUrl)}`
+};
+
+/* JSON-LD */
 const offerAvailability =
   avail.includes('rent') || avail.includes('sale')
     ? 'https://schema.org/InStock'
@@ -131,39 +166,37 @@ const offerAvailability =
 const listingType = (data?.type || 'Residence').toLowerCase();
 const schemaResidenceType =
   listingType.includes('apartment') ? 'Apartment' :
-  listingType.includes('villa') ? 'House' :
-  listingType.includes('house') ? 'House' :
-  listingType.includes('studio') ? 'Apartment' :
-  listingType.includes('commercial') ? 'Place' : 'Residence';
+  listingType.includes('villa')     ? 'House'     :
+  listingType.includes('house')     ? 'House'     :
+  listingType.includes('studio')    ? 'Apartment' :
+  listingType.includes('commercial')? 'Place'     : 'Residence';
 
-const realEstateLD = notFound
-  ? null
-  : {
-      '@context': 'https://schema.org',
-      '@type': 'RealEstateListing',
-      name: data?.title,
-      description: data?.description || `${data?.title} in ${data?.location}`,
-      url: canonicalUrl,
-      image: images,
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: data?.location || 'Nairobi',
-        addressCountry: 'KE'
-      },
-      itemOffered: {
-        '@type': schemaResidenceType,
-        name: data?.title,
-        numberOfRoomsTotal: data?.bedrooms || undefined,
-        numberOfBathroomsTotal: data?.bathrooms || undefined
-      },
-      offers: {
-        '@type': 'Offer',
-        price: priceNumber,
-        priceCurrency: 'KES',
-        availability: offerAvailability,
-        url: canonicalUrl
-      }
-    };
+const realEstateLD = notFound ? null : {
+  '@context': 'https://schema.org',
+  '@type': 'RealEstateListing',
+  name: data?.title,
+  description: data?.description || `${data?.title} in ${data?.location}`,
+  url: canonicalUrl,
+  image: images,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: data?.location || 'Nairobi',
+    addressCountry: 'KE'
+  },
+  itemOffered: {
+    '@type': schemaResidenceType,
+    name: data?.title,
+    numberOfRoomsTotal: data?.bedrooms || undefined,
+    numberOfBathroomsTotal: data?.bathrooms || undefined
+  },
+  offers: {
+    '@type': 'Offer',
+    price: priceNumber,
+    priceCurrency: 'KES',
+    availability: offerAvailability,
+    url: canonicalUrl
+  }
+};
 
 const breadcrumbLD = {
   '@context': 'https://schema.org',
@@ -175,6 +208,23 @@ const breadcrumbLD = {
     !notFound && { '@type': 'ListItem', position: 4, name: data?.title, item: canonicalUrl },
   ].filter(Boolean)
 };
+
+/* CTA label */
+const ctaLabel =
+  serviceType === 'rent' ? 'Book Viewing' :
+  serviceType === 'sale' ? 'Enquire' : 'Book Stay';
+
+/* Strategic secondary CTAs */
+const BUSINESS_PHONE = import.meta.env.PUBLIC_BUSINESS_PHONE || ''; // e.g. +254712345678
+const waText = `Hello, I'm interested in ${data?.title || 'the listing'} – ${canonicalUrl}`;
+const telHref = BUSINESS_PHONE ? `tel:${BUSINESS_PHONE}` : '';
+const waHref  = BUSINESS_PHONE ? `https://wa.me/${BUSINESS_PHONE.replace(/\D/g,'')}?text=${enc(waText)}` : '';
+
+/* Prefiltered “Get similar in {Location}” link */
+const similarHref = `${listHref}?location=${enc(data?.location || '')}&type=${enc(norm(data?.type || ''))}&beds=${enc(String(data?.bedrooms ?? ''))}`;
+
+const pillColors = ['pill-blue','pill-amber','pill-emerald','pill-purple','pill-slate'];
+const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
 ---
 
 <MainLayout
@@ -198,7 +248,7 @@ const breadcrumbLD = {
     </section>
   ) : (
     <>
-      <!-- Hero / Carousel -->
+      <!-- HERO / CAROUSEL -->
       <section class="relative">
         <div id="carousel" class="relative aspect-[16/9] max-h-[70vh] overflow-hidden bg-black">
           {images.map((src, idx) => (
@@ -221,26 +271,65 @@ const breadcrumbLD = {
         </div>
       </section>
 
-      <!-- Header -->
+      <!-- HEADER / TITLE & PRIMARY FACTS -->
       <section class="max-w-6xl mx-auto px-4 py-8">
-        <div class="flex flex-wrap items-start gap-4">
-          <span class={`text-xs text-white px-2 py-1 rounded ${badgeClass}`}>
-            {data.availability}
-          </span>
+        <div class="flex flex-wrap items-start gap-3">
+          <span class={`text-xs text-white px-2 py-1 rounded ${badgeClass}`}>{data.availability}</span>
           <h1 class="text-2xl md:text-3xl font-semibold">{data.title}</h1>
         </div>
-        <p class="text-neutral-600 mt-1">{data.location}</p>
-        <div class="mt-4 flex flex-wrap items-center gap-4">
+        <p class="mt-1">{data.location}</p>
+
+        <div class="mt-4 flex flex-wrap items-center gap-3">
           <span class="text-xl font-bold">{priceText}</span>
-          <span class="text-sm text-neutral-600">{data.bedrooms ?? '—'} bd • {data.bathrooms ?? '—'} ba</span>
-          <a href={enquireHref} class="ml-auto bg-cta text-white px-5 py-2 rounded-md">Enquire</a>
+          <span class="text-sm text-neutral-700">
+            {data.bedrooms ?? '—'} bd • {data.bathrooms ?? '—'} ba{data.area ? ` • ${data.area}` : ''}
+          </span>
+
+          <!-- Primary CTA (desktop/tablet) -->
+          <button data-open-modal class="ml-auto hidden sm:inline-flex bg-cta text-white px-5 py-2 rounded-md">
+            {ctaLabel}
+          </button>
+
+          <!-- Strategic secondary CTAs -->
+          {BUSINESS_PHONE && (
+            <>
+              <a href={telHref} class="btn-outline">Call</a>
+              <a href={waHref}  class="btn-outline">WhatsApp</a>
+            </>
+          )}
+          <a href={similarHref} class="text-sm underline underline-offset-2 text-primary">Get similar in {data.location}</a>
+        </div>
+
+        <!-- SHARE BAR (adaptive) -->
+        <div class="mt-4 share-bar" aria-label="Share this listing">
+          <span class="share-label">Share this listing:</span>
+          <button id="share-native" class="share-btn" type="button" title="Open your device share options">Share</button>
+          <!-- Fallback (revealed when native share is not available) -->
+          <div id="share-fallback" class="hidden flex gap-2 flex-wrap" role="group" aria-label="Share via">
+            <a class="share-btn" href={share.fb} target="_blank" rel="noopener" title="Share on Facebook">Facebook</a>
+            <a class="share-btn" href={share.x}  target="_blank" rel="noopener" title="Share on X">X</a>
+            <a class="share-btn" href={share.li} target="_blank" rel="noopener" title="Share on LinkedIn">LinkedIn</a>
+            <a class="share-btn" href={share.wa} target="_blank" rel="noopener" title="Share on WhatsApp">WhatsApp</a>
+            <a class="share-btn" href={share.em} title="Share by Email">Email</a>
+            <a class="share-btn" href={share.sms} title="Share by Text">Text</a>
+            <button id="share-copy" class="share-btn" type="button" title="Copy link to clipboard">Copy link</button>
+          </div>
         </div>
       </section>
 
-      <!-- Details -->
-      <section class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8 pb-10">
+      <!-- DETAILS GRID -->
+      <section class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8 pb-24 md:pb-10">
         <article class="md:col-span-2 space-y-6">
           {data.description && <p class="leading-relaxed text-neutral-800">{data.description}</p>}
+
+          {amenities.length > 0 && (
+            <div>
+              <h2 class="text-lg font-semibold mb-2">Amenities</h2>
+              <div class="flex flex-wrap gap-2">
+                {amenities.map((a, i) => <span class={pillClass(i)}><span class="pill-dot"></span>{a}</span>)}
+              </div>
+            </div>
+          )}
 
           {neighborhood.length > 0 && (
             <div>
@@ -287,6 +376,18 @@ const breadcrumbLD = {
               )}
             </div>
           )}
+
+          {(data?.deposit || data?.serviceCharge || data?.utilitiesIncluded !== undefined || data?.petsAllowed !== undefined) && (
+            <div>
+              <h2 class="text-lg font-semibold mb-2">Fees & policies</h2>
+              <ul class="list-disc pl-5 space-y-1 text-neutral-800">
+                {data?.deposit && <li>Deposit: {fmtPrice(data.deposit)}</li>}
+                {data?.serviceCharge && <li>Service charge: {fmtPrice(data.serviceCharge)}</li>}
+                {data?.utilitiesIncluded !== undefined && <li>Utilities included: {String(data.utilitiesIncluded)}</li>}
+                {data?.petsAllowed !== undefined && <li>Pets allowed: {String(data.petsAllowed)}</li>}
+              </ul>
+            </div>
+          )}
         </article>
 
         <aside class="space-y-4">
@@ -301,26 +402,32 @@ const breadcrumbLD = {
             </ul>
           </div>
 
-          <a href={enquireHref} class="block text-center bg-primary text-white px-5 py-3 rounded-md">
-            Enquire about this property
-          </a>
+          <!-- Desktop/Tablet CTA -->
+          <button data-open-modal class="w-full text-center bg-primary text-white px-5 py-3 rounded-md">
+            {ctaLabel}
+          </button>
         </aside>
       </section>
 
-      <!-- Related -->
+      <!-- RELATED -->
       {related.length > 0 && (
         <section class="max-w-6xl mx-auto px-4 pb-16">
           <h2 class="text-xl font-semibold mb-4">You might also like</h2>
-          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {related.map((e) => {
               const href = `/properties/${norm(e.data.availability || '')}/${e.slug}`;
               const img = (e.data.heroImage || e.data.images?.[0] || '/images/placeholder.webp');
+              const price = fmtPrice(e.data.price);
               return (
-                <a href={href} class="block rounded-xl overflow-hidden border hover:shadow">
+                <a href={href} class="block rounded-xl overflow-hidden border hover:shadow focus:outline-none focus:ring-2 focus:ring-cta">
                   <img src={withV(img)} alt={e.data.title} class="h-40 w-full object-cover" loading="lazy" />
-                  <div class="p-3">
+                  <div class="p-3 space-y-0.5">
+                    <p class="text-sm font-semibold">{price}</p>
+                    <p class="text-xs text-neutral-700">
+                      {(e.data.bedrooms ?? '—')} bd • {(e.data.bathrooms ?? '—')} ba{e.data.area ? ` • ${e.data.area}` : ''}
+                    </p>
                     <h3 class="font-medium">{e.data.title}</h3>
-                    <p class="text-sm text-neutral-600">{e.data.location}</p>
+                    <p class="text-sm">{e.data.location}</p>
                   </div>
                 </a>
               );
@@ -328,42 +435,110 @@ const breadcrumbLD = {
           </div>
         </section>
       )}
+
+      <!-- MOBILE STICKY CTA BAR -->
+      <div class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t safe-bottom">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+          <div class="flex-1">
+            <div class="text-sm text-neutral-700">{data.title}</div>
+            <div class="text-base font-semibold">{priceText}</div>
+          </div>
+          <button data-open-modal class="btn-cta px-4 py-2 rounded-md">{ctaLabel}</button>
+        </div>
+      </div>
+
+      <!-- ENQUIRY MODAL -->
+      <div id="enquire-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/50" data-close-modal></div>
+        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-lg mx-auto bg-white rounded-xl shadow p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold">Enquiry – {data.title}</h3>
+            <button class="w-8 h-8 rounded-md border text-neutral-600" aria-label="Close" data-close-modal>✕</button>
+          </div>
+          <BookingForm
+            serviceType={serviceType}
+            propertyTitle={data.title}
+            propertyUrl={canonicalUrl}
+            availability={defaultAvailability}
+            ctaLabel={ctaLabel}
+            action="/list-property"
+            method="get"
+          />
+        </div>
+      </div>
     </>
   )}
 </MainLayout>
 
 <script is:inline>
   (function(){
+    /* Carousel */
     const root = document.getElementById('carousel');
-    if (!root) return;
+    if (root) {
+      const slides = Array.from(root.querySelectorAll('img'));
+      const dotsWrap = document.getElementById('dots');
+      const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('button')) : [];
+      const prev = document.getElementById('prev');
+      const next = document.getElementById('next');
 
-    const slides = Array.from(root.querySelectorAll('img'));
-    const dotsWrap = document.getElementById('dots');
-    const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('button')) : [];
-    const prev = document.getElementById('prev');
-    const next = document.getElementById('next');
+      let i = 0, t;
+      const show = (n) => {
+        i = (n + slides.length) % slides.length;
+        slides.forEach((img, idx) => img.style.opacity = idx === i ? '1' : '0');
+        dots.forEach((d, idx) => d.className = 'h-2.5 w-2.5 rounded-full ' + (idx===i ? 'bg-white' : 'bg-white/60'));
+      };
+      const start = () => { stop(); t = setInterval(()=>show(i+1), 4500); };
+      const stop  = () => { if (t) clearInterval(t); };
 
-    let i = 0, t;
-    const show = (n) => {
-      i = (n + slides.length) % slides.length;
-      slides.forEach((img, idx) => img.style.opacity = idx === i ? '1' : '0');
-      dots.forEach((d, idx) => d.className = 'h-2.5 w-2.5 rounded-full ' + (idx===i ? 'bg-white' : 'bg-white/60'));
-    };
-    const start = () => { stop(); t = setInterval(()=>show(i+1), 4500); };
-    const stop  = () => { if (t) clearInterval(t); };
+      prev && prev.addEventListener('click', () => { show(i-1); start(); });
+      next && next.addEventListener('click', () => { show(i+1); start(); });
+      dots.forEach((d, idx) => d.addEventListener('click', () => { show(idx); start(); }));
 
-    prev && prev.addEventListener('click', () => { show(i-1); start(); });
-    next && next.addEventListener('click', () => { show(i+1); start(); });
-    dots.forEach((d, idx) => d.addEventListener('click', () => { show(idx); start(); }));
+      let sx=0;
+      root.addEventListener('touchstart', e=>{ sx = e.touches[0].clientX; stop(); }, {passive:true});
+      root.addEventListener('touchend', e=>{
+        const dx = e.changedTouches[0].clientX - sx;
+        if (Math.abs(dx) > 40) show(i + (dx<0?1:-1));
+        start();
+      }, {passive:true});
 
-    let sx=0;
-    root.addEventListener('touchstart', e=>{ sx = e.touches[0].clientX; stop(); }, {passive:true});
-    root.addEventListener('touchend', e=>{
-      const dx = e.changedTouches[0].clientX - sx;
-      if (Math.abs(dx) > 40) show(i + (dx<0?1:-1));
       start();
-    }, {passive:true});
+    }
 
-    start();
+    /* Adaptive Share */
+    const nativeBtn = document.getElementById('share-native');
+    const fallbackRow = document.getElementById('share-fallback');
+    const copyBtn = document.getElementById('share-copy');
+
+    if (nativeBtn && navigator.share) {
+      nativeBtn.addEventListener('click', () => {
+        navigator.share({ title: document.title, url: window.location.href }).catch(()=>{});
+      });
+      // keep fallback hidden
+    } else {
+      if (fallbackRow) fallbackRow.classList.remove('hidden');
+      if (nativeBtn) nativeBtn.style.display = 'none';
+    }
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          copyBtn.textContent = 'Copied';
+          setTimeout(()=>copyBtn.textContent='Copy link', 1500);
+        } catch {}
+      });
+    }
+
+    /* Enquiry modal open/close */
+    const modal = document.getElementById('enquire-modal');
+    const openers = Array.from(document.querySelectorAll('[data-open-modal]'));
+    const closers = Array.from(document.querySelectorAll('[data-close-modal]'));
+
+    const open = () => { if (modal){ modal.classList.remove('hidden'); document.body.style.overflow='hidden'; } };
+    const close = () => { if (modal){ modal.classList.add('hidden'); document.body.style.overflow=''; } };
+
+    openers.forEach(btn => btn.addEventListener('click', open));
+    closers.forEach(btn => btn.addEventListener('click', close));
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
   })();
 </script>

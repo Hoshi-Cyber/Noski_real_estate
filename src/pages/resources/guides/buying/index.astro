@@ -1,15 +1,46 @@
 ---
 import MainLayout from '../../../../layouts/MainLayout.astro';
 import GuideDetail from '../../../../components/resources/GuideDetail.astro';
-const title = 'Buying Guide | Severino Reality';
+import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
+
+const title = 'Buying Guide | Severino Realty';
 const description = 'Step-by-step buying process, costs, timelines, and checklists.';
+
 const steps = [
-  { id:'finance', heading:'Financing & Pre-approval', bodyHtml:'<p>…</p>' },
-  { id:'search', heading:'Property Search', bodyHtml:'<p>…</p>' },
-  { id:'offer', heading:'Offer & Negotiation', bodyHtml:'<p>…</p>' },
-  { id:'close', heading:'Closing & Handover', bodyHtml:'<p>…</p>' },
+  { id: 'finance', heading: 'Financing & Pre-approval', bodyHtml: '<p>…</p>' },
+  { id: 'search',  heading: 'Property Search',           bodyHtml: '<p>…</p>' },
+  { id: 'offer',   heading: 'Offer & Negotiation',       bodyHtml: '<p>…</p>' },
+  { id: 'close',   heading: 'Closing & Handover',        bodyHtml: '<p>…</p>' },
+];
+
+// PDF lives at /public/docs/resources/buyer-checklist.pdf -> href /docs/resources/buyer-checklist.pdf
+const checklistUrl = '/docs/resources/buyer-checklist.pdf';
+
+const related = [
+  { title: 'Selling Guide',          href: '/resources/guides/selling',          desc: 'Prep, pricing, marketing, closing.' },
+  { title: 'Renting & Landlord',     href: '/resources/guides/renting-landlord', desc: 'Screening, leases, compliance.' },
+  { title: 'Investment',             href: '/resources/guides/investment',       desc: 'Yields, financing, exits.' },
 ];
 ---
+
 <MainLayout {title} {description}>
-  <GuideDetail {title} summary="From search to ownership." estReadMin={10} checklistUrl="#" {steps} />
+  <GuideDetail
+    title="Buying Guide"
+    intro="From search to ownership."
+    estReadMin={10}
+    {steps}
+    {checklistUrl}
+    {related}
+  >
+    <Fragment slot="breadcrumbs">
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Resources', href: '/resources' },
+          { label: 'Guides', href: '/resources/guides' },
+          { label: 'Buying' }
+        ]}
+      />
+    </Fragment>
+  </GuideDetail>
 </MainLayout>

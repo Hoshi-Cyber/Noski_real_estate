@@ -1,8 +1,10 @@
 ---
 title: "Rental Rights & Obligations Guide"
 description: "Understand rights and duties of landlords and tenants in Kenya."
-category: "Legal & Regulatory Guides"
+section: guides
 pubDate: 2025-08-03
+imagesFolder: /images/resources/guides/rental-rights-and-obligations-guide
+heroImage: /images/resources/guides/rental-rights-and-obligations-guide/cover.webp
 download: "/docs/resources/rental-rights-and-obligations-guide.pdf"
 ---
 

@@ -15,7 +15,7 @@
   --color-cta-90: rgb(37 99 235 / .9);
   --color-cta-active: rgb(37 99 235 / .8);
 
-  /* Neutral Scale */
+  /* Neutrals */
   --color-neutral-50: #FAFAFA;
   --color-neutral-100: #F3F4F6;
   --color-neutral-200: #E5E7EB;
@@ -58,13 +58,13 @@ a {
 }
 a:hover   { color: var(--color-primary-90); }
 a:active  { color: var(--color-primary-active); }
-a:focus   { @apply outline-none ring-2 ring-offset-2 ring-primary; }
+a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 a:disabled {
   color: var(--color-neutral-500);
   pointer-events: none;
 }
 
-/* ---- Custom Utilities ---- */
+/* ---- Utilities ---- */
 @layer utilities {
   .text-primary   { color: var(--color-primary); }
   .text-accent    { color: var(--color-accent); }
@@ -89,136 +89,137 @@ a:disabled {
   .container { @apply max-w-7xl mx-auto; }
 }
 
-/* ---- Components Layer ---- */
+/* ---- Components ---- */
 @layer components {
   /* ---- Buttons ---- */
   .btn {
-    @apply inline-block px-6 py-3 rounded-lg font-medium transition shadow-sm
-           focus:outline-none focus:ring-2 focus:ring-offset-2
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-md font-medium transition shadow-sm
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply bg-primary text-white focus:ring-primary;
+    @apply text-white;
+    background-color: var(--color-primary);
   }
   .btn-primary:hover   { background-color: var(--color-primary-90); }
   .btn-primary:active  { background-color: var(--color-primary-active); }
+  .btn-primary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
   .btn-primary:disabled{ background-color: var(--color-neutral-300); }
 
+  /* Primary CTA uses --color-cta */
   .btn-cta {
-    @apply bg-cta text-white focus:ring-cta;
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-md font-semibold text-white transition shadow-sm;
+    background-color: var(--color-cta);
   }
   .btn-cta:hover   { background-color: var(--color-cta-90); }
   .btn-cta:active  { background-color: var(--color-cta-active); }
+  .btn-cta:focus-visible { outline: 2px solid var(--color-cta); outline-offset: 2px; }
   .btn-cta:disabled{ background-color: var(--color-neutral-300); }
 
+  /* Secondary CTA uses --color-accent */
   .btn-outline {
-    @apply border border-primary text-primary focus:ring-primary;
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-md font-medium transition;
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent);
+    background-color: transparent;
   }
-  .btn-outline:hover   { background-color: var(--color-neutral-100); }
-  .btn-outline:active  { background-color: var(--color-neutral-200); }
+  .btn-outline:hover   { background-color: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+  .btn-outline:active  { background-color: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+  .btn-outline:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
   .btn-outline:disabled{ color: var(--color-neutral-500); border-color: var(--color-neutral-300); }
 
   /* ---- Cards ---- */
-  .card         { @apply bg-white rounded-xl shadow hover:shadow-md transition; }
-  .card-tight   { @apply bg-white rounded-lg shadow p-4; }
-  .card-highlight {
-    @apply border-2 border-cta ring-1 ring-cta;
-  }
+  .card           { @apply bg-white rounded-xl shadow hover:shadow-md transition; }
+  .card-tight     { @apply bg-white rounded-lg shadow p-4; }
+  .card-highlight { @apply border-2 border-cta ring-1 ring-cta; }
 
-  /* Horizontal card layout */
-  .card-horizontal img {
-    @apply w-40 h-40 object-cover;
-  }
-  .card-horizontal .content {
-    @apply flex flex-col justify-between p-4 flex-1;
-  }
+  .card-horizontal img { @apply w-40 h-40 object-cover; }
+  .card-horizontal .content { @apply flex flex-col justify-between p-4 flex-1; }
 
-  /* ---- Category Tile (for Sale/Rent/Short Stays/etc.) ---- */
+  /* ---- Category Tile (ENHANCED) ---- */
   .category-tile {
-    @apply flex flex-col items-center justify-center p-6 rounded-xl shadow-sm 
-           bg-white transition hover:shadow-md hover:-translate-y-1 text-center;
+    @apply relative flex flex-col items-start p-6 rounded-2xl bg-white shadow-sm
+           ring-1 ring-neutral-200 transition hover:shadow-md hover:-translate-y-0.5
+           focus-visible:outline-2 focus-visible:outline-cta;
+    background-image: linear-gradient(180deg, rgba(10,37,64,.02), rgba(10,37,64,0));
   }
-  .category-tile svg {
-    @apply w-8 h-8 text-primary mb-2;
+  .tile-accent::after{
+    content:"";
+    @apply absolute inset-x-6 top-[56px] h-px bg-neutral-200;
   }
-  .category-tile span {
-    @apply font-medium text-neutral-800;
-  }
+  .tile-icon  { @apply w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center text-primary mb-4; }
+  .tile-title { @apply text-lg font-semibold text-primary; }
+  .tile-sub   { @apply text-sm text-neutral-600 mt-1; }
 
-  /* ---- Area Card (carousel ready) ---- */
+  /* ---- Area Card ---- */
   .area-card {
     @apply shrink-0 snap-start basis-2/3 sm:basis-1/3 md:basis-1/4 lg:basis-1/5
            p-4 rounded-lg bg-white shadow-sm hover:shadow-md text-center transition;
   }
-  .area-card span {
-    @apply font-semibold text-neutral-700;
-  }
+  .area-card span { @apply font-semibold text-neutral-700; }
+  .area-card:focus-visible { outline: 2px solid var(--color-cta); outline-offset: 2px; }
 
-  /* ---- Chip links (property type pills) ---- */
+  /* ---- Chip links ---- */
   .chip-link {
     @apply shrink-0 snap-start px-4 py-2 rounded-full border border-neutral-300 text-sm
            text-neutral-700 hover:bg-neutral-100 transition whitespace-nowrap;
   }
 
-  /* Hide ugly scrollbars but keep scrolling smooth */
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  /* ---- TOC (NEW) ---- */
+  .toc-card { @apply rounded-2xl ring-1 ring-neutral-200 bg-white p-4 text-sm shadow-sm lg:sticky lg:top-20; }
+  .toc-list a { @apply block rounded px-2 py-1 hover:underline hover:text-cta transition focus:outline-none focus:ring-2 focus:ring-cta; }
+
+  /* ---- PDF Badge (NEW) ---- */
+  .pdf-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-50 text-red-700 border border-red-200;
   }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+
+  /* ---- Related Guides (reuse post-card) ---- */
+  .related-card { @apply post-card; }
 
   /* ---- Why Choose Us ---- */
   .why-card {
     @apply flex flex-col items-center justify-center p-8 bg-white rounded-xl shadow-sm 
            hover:shadow-md transition cursor-default;
   }
-  .why-icon {
-    @apply w-12 h-12 text-primary mb-3 transition-transform;
-  }
-  .why-label {
-    @apply font-semibold text-neutral-700 text-sm sm:text-base;
-  }
-  .why-card:hover .why-icon {
-    @apply text-cta scale-110;
-  }
+  .why-icon { @apply w-12 h-12 text-primary mb-3 transition-transform; }
+  .why-label { @apply font-semibold text-neutral-700 text-sm sm:text-base; }
+  .why-card:hover .why-icon { @apply text-cta scale-110; }
+  .why-card:focus-visible { @apply outline-none; outline: 2px solid var(--color-cta); outline-offset: 2px; }
 
   /* ---- Testimonials ---- */
-  .testimonial {
-    @apply p-6 bg-white rounded-lg shadow hover:shadow-md transition text-neutral-600;
-  }
-  .testimonial p         { @apply italic; }
-  .testimonial .author   { @apply mt-4 font-semibold text-primary; }
-  .testimonial .role     { @apply text-sm text-neutral-500; }
+  .testimonial { @apply p-6 bg-white rounded-lg shadow hover:shadow-md transition text-neutral-600; }
+  .testimonial p { @apply italic; }
+  .testimonial .author { @apply mt-4 font-semibold text-primary; }
+  .testimonial .role   { @apply text-sm text-neutral-500; }
+  .testimonial:focus-visible { @apply outline-none; outline: 2px solid var(--color-cta); outline-offset: 2px; }
 
   /* ---- Section headers ---- */
-  .section-title {
-    @apply text-2xl font-bold text-primary mb-8 text-center;
-  }
+  .section-title { @apply text-2xl md:text-3xl font-bold text-primary mb-8 text-center; }
+  .section-subtitle { @apply text-sm font-semibold text-neutral-700 uppercase tracking-wide; }
 
-  /* ---- Form inputs ---- */
-  input[type="email"],
-  input[type="text"],
-  input[type="number"],
-  input[type="search"],
-  textarea,
-  select {
-    @apply border border-neutral-300 rounded px-3 py-2 w-full
-           focus:outline-none focus:ring-2 focus:ring-cta;
-  }
-  input:hover, textarea:hover, select:hover {
-    @apply border-neutral-500;
-  }
-  input:disabled, textarea:disabled, select:disabled {
-    @apply bg-neutral-100 text-neutral-500 cursor-not-allowed;
-  }
+  /* ---- Popular Articles (ENHANCED) ---- */
+  .post-card  { @apply bg-white rounded-2xl shadow ring-1 ring-neutral-200 overflow-hidden hover:shadow-md transition; }
+  .post-media { @apply w-full h-44 object-cover; }
+  .post-body  { @apply p-4; }
+  .post-title { @apply font-semibold leading-snug text-primary; }
+  .post-desc  { @apply text-sm text-neutral-600 mt-1; }
+  .post-meta  { @apply mt-3 text-sm text-neutral-500 flex items-center justify-between; }
+}
 
-  /* ---- Footer links ---- */
-  .footer-link {
-    @apply text-neutral-500 hover:text-primary transition;
-  }
+/* Field validation */
+input:invalid, select:invalid, textarea:invalid { @apply border-red-400; }
+
+/* ---- Footer (on-dark) link overrides ---- */
+footer.bg-primary a:not(.btn-cta):not(.btn-outline) {
+  color: var(--color-neutral-100);
+}
+footer.bg-primary a:not(.btn-cta):not(.btn-outline):hover {
+  color: var(--color-accent);
+}
+footer.bg-primary a:focus-visible {
+  outline: 2px solid var(--color-cta);
+  outline-offset: 2px;
 }
 
 /* ---- Responsive Adjustments ---- */
@@ -226,7 +227,34 @@ a:disabled {
   .section-title { @apply text-xl; }
   .btn           { @apply px-4 py-2 text-sm; }
   .category-tile { @apply p-4; }
-  .category-tile svg { @apply w-6 h-6; }
+  .tile-icon     { @apply w-9 h-9 mb-3; }
   .why-card      { @apply p-6; }
   .why-icon      { @apply w-10 h-10; }
 }
+
+/* ---- In-article link decoration ---- */
+.link-decor {
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+  padding-bottom: 1px;
+  transition: border-color .15s ease, color .15s ease;
+}
+.link-decor:hover { border-bottom-style: solid; }
+.link-decor:focus-visible { outline: 2px solid var(--color-cta); outline-offset: 2px; }
+
+/* ---- Share bars ---- */
+@layer components {
+  .share-bar{ @apply mt-4 flex items-center gap-2 flex-wrap; }
+  .share-label{ @apply text-sm text-neutral-700 mr-1; }
+  .share-btn{
+    appearance:none; -webkit-appearance:none;
+    @apply inline-flex items-center gap-2 px-2.5 py-2 rounded-md border border-neutral-300 bg-white text-neutral-800 text-sm transition;
+    text-decoration: none;
+  }
+  .share-btn:hover{ @apply bg-neutral-100 border-neutral-400; }
+  .share-btn:focus{ outline:2px solid var(--color-cta); outline-offset:2px; }
+  .share-btn svg{ width:16px; height:16px; display:block; }
+}
+
+/* Safe-area padding for sticky bars */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }

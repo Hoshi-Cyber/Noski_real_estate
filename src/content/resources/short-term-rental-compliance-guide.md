@@ -1,11 +1,13 @@
 ---
-title: "Short‑Term Rental Compliance Guide"
-description: "Regulations for hosting short stays; licensing, taxes, etc."
-category: "Legal & Regulatory Guides"
+title: "Short-Term Rental Compliance Guide (Kenya)"
+description: "Permits, taxes, zoning and platform rules landlords must meet for Airbnb/holiday lets."
+section: guides
 pubDate: 2025-08-06
+imagesFolder: /images/resources/guides/short-term-rental-compliance-guide
+heroImage: /images/resources/guides/short-term-rental-compliance-guide/cover.webp
 download: "/docs/resources/short-term-rental-compliance-guide.pdf"
 ---
 
-Short‑stay rentals like Airbnb have grown rapidly, but hosts must comply with local laws. This guide summarises licensing requirements, zoning restrictions and tax obligations for short‑term rentals in Kenya. We discuss when you need a business permit, how to register with county authorities and how to collect and remit taxes such as the hotel levy.
+Short-term rentals can be profitable—but only when they’re compliant. This guide outlines typical county permits and licensing, tax registration and filing basics, safety/insurance requirements, and the house rules you should formalize before you host.
 
-The guide also touches on safety and insurance considerations, emphasising the importance of adequate liability cover and adherence to health and safety standards. By understanding the legal framework, hosts can avoid fines and build sustainable, profitable hospitality businesses.
+You’ll also learn how platform policies (e.g., identity checks, guest verification, cancellations) interact with Kenyan tenancy and consumer laws, plus a pre-listing checklist to reduce disputes and protect your property. Use the included templates to standardize cleaning, check-in/out, and incident reporting.

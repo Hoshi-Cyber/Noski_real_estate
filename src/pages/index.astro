@@ -2,11 +2,12 @@
 import { getCollection } from 'astro:content';
 import MainLayout from '../layouts/MainLayout.astro';
 import HeroBanner from '../components/HeroBanner.astro';
+import HeroSearch from '../components/HeroSearch.astro';
 import BlogCard from '../components/blog/BlogCard.astro';
 import ResourceCard from '../components/ResourceCard.astro';
 import FeaturedListingsRow from '../components/FeaturedListingsRow.astro';
-import BaseCard from '../components/BaseCard.astro'; // ✅ fixed import
-import { resolveListingImage } from '../lib/utils/paths';
+import BaseCard from '../components/BaseCard.astro';
+import { resolveListingImage, buildResourceHref, resolveResourceImage } from '../lib/utils/paths';
 
 const listings = await getCollection('listings');
 const featured = await getCollection('featured');
@@ -22,12 +23,26 @@ const blogFallbacks = ['/images/blog/01.webp', '/images/blog/02.webp'];
 const pickBlogImg = (post: any, i: number) =>
   post?.data?.heroImage || blogFallbacks[i % blogFallbacks.length];
 
-// Resources
+// Resources (latest 3 + build href/image)
 const latestResources = [...resources]
   .sort((a, b) =>
     new Date(b.data?.pubDate || 0).getTime() - new Date(a.data?.pubDate || 0).getTime()
   )
   .slice(0, 3);
+
+const resourceItems = latestResources.map((res) => {
+  const href = buildResourceHref(res as any);
+  const img = resolveResourceImage(
+    res.slug,
+    (res.data as any)?.section,
+    (res.data as any)?.imagesFolder,
+    (res.data as any)?.heroImage,
+    (res.data as any)?.image
+  );
+  // Prefer explicit icon if provided
+  const cover = (res.data as any)?.icon || img;
+  return { res, href, cover };
+});
 
 // Featured listings
 const featuredItems = featured
@@ -80,375 +95,237 @@ const TYPES = allCategories.slice(0, 8).map((c) => ({
   description="Explore properties for sale, rent and short stays in Nairobi. Expert advice, guides and more."
 >
   <!-- Hero -->
-<HeroBanner
-  title="Luxury Villas in Karen | Secure, Private, Exclusive"
-  subtitle="Curated homes with privacy, gated security, and concierge-level service."
-  ctaText="View Listings"
-  ctaLink="/listings"
-  img="/images/hero/karen-villas.webp"
-/>
+  <HeroBanner
+    title="Luxury Villas in Karen | Secure, Private, Exclusive"
+    subtitle="Curated homes with privacy, gated security, and concierge-level service."
+    ctaText="View Listings"
+    ctaLink="/listings"
+    img="/images/hero/karen-villas.webp"
+  />
 
-
-
-
-
-<!-- Quick Search -->
-<section class="bg-white relative">
-  <div class="w-full">
-    <!-- Toggle button (mobile only) -->
-    <button 
-      id="toggle-search" 
-      class="md:hidden mx-auto mt-3 flex items-center justify-center px-5 py-2 bg-primary text-white rounded-full shadow-md transition hover:bg-primary/90"
-    >
-      🔍 Quick Search
-    </button>
-
-    <!-- Search Form -->
-    <form 
-      id="search-form" 
-      action="/listings" 
-      method="GET"
-      class="hidden md:grid md:grid-cols-6 gap-3 bg-white shadow-md p-4 rounded-xl max-w-7xl mx-auto transition-all duration-300"
-      aria-label="Quick property search"
-    >
-      <select name="availability" class="input rounded-md">
-        <option value="">All</option>
-        <option value="rent">For Rent</option>
-        <option value="sale">For Sale</option>
-        <option value="short">Short Stays</option>
-      </select>
-
-      <input name="q" placeholder="e.g. Karen" class="input rounded-md" />
-
-      <div class="flex w-full">
-        <span class="inline-flex items-center px-2 bg-gray-100 border border-r-0 rounded-l-md text-sm">KES</span>
-        <input name="minPrice" type="number" placeholder="Min" class="input rounded-r-md" />
-      </div>
-
-      <div class="flex w-full">
-        <span class="inline-flex items-center px-2 bg-gray-100 border border-r-0 rounded-l-md text-sm">KES</span>
-        <input name="maxPrice" type="number" placeholder="Max" class="input rounded-r-md" />
-      </div>
-
-      <select name="beds" class="input rounded-md">
-        <option value="">Any</option>
-        <option value="1">1+</option>
-        <option value="2">2+</option>
-        <option value="3">3+</option>
-        <option value="4">4+</option>
-        <option value="5_plus">5+</option>
-      </select>
-
-      <button class="btn-primary flex items-center justify-center gap-2 rounded-full">
-        🔍 Search
-      </button>
-    </form>
-  </div>
-</section>
-
-<script>
-  const toggleBtn = document.getElementById("toggle-search");
-  const searchForm = document.getElementById("search-form");
-
-  toggleBtn?.addEventListener("click", () => {
-    searchForm.classList.toggle("hidden");
-    searchForm.classList.toggle("grid");
-  });
-</script>
-
-
-
-
-
-
-
-
+  <!-- Hero Search (clean, after hero) -->
+  <section class="bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <HeroSearch />
+    </div>
+  </section>
 
   <!-- Featured Listings -->
-<section class="py-16 bg-neutral-50">
-  <div class="container">
-    <!-- Section Title -->
-    <h2 class="section-title text-center mb-10">Featured Listings</h2>
-
-    <!-- Listings Row -->
-    <FeaturedListingsRow items={featuredItems} />
-
-    <!-- CTA -->
-    <div class="mt-8 flex justify-center">
-  <a 
-    href="/listings" 
-    class="px-8 py-3 rounded-full font-semibold text-white bg-[#0A2540] shadow-md hover:bg-[#16375c] hover:shadow-lg transition-all duration-300"
-  >
-    View all listings
-  </a>
-</div>
-
-  </div>
-</section>
-
-
-
-
-<!-- Explore Categories -->
-<section class="py-16 bg-white">
-  <div class="container">
-    <h2 class="section-title">Explore Categories</h2>
-
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      
-      <!-- For Sale -->
-      <a href="/types/sale" class="category-tile">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-             stroke-width="1.5" stroke="currentColor" 
-             class="w-10 h-10 text-primary mb-3">
-          <path stroke-linecap="round" stroke-linejoin="round" 
-                d="M2.25 12l8.954-8.955a1.125 1.125 0 011.591 0L21.75 12M4.5 
-                   9.75v10.125c0 .621.504 1.125 1.125 
-                   1.125H9.75v-4.875c0-.621.504-1.125 
-                   1.125-1.125h2.25c.621 0 1.125.504 
-                   1.125 1.125V21h4.125c.621 0 1.125-.504 
-                   1.125-1.125V9.75M8.25 21h8.25" />
-        </svg>
-        <span class="label">For Sale</span>
-      </a>
-
-      <!-- For Rent -->
-      <a href="/types/rent" class="category-tile">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-             stroke-width="1.5" stroke="currentColor" 
-             class="w-10 h-10 text-primary mb-3">
-          <path stroke-linecap="round" stroke-linejoin="round" 
-                d="M12 3v9.75m0 0l3.75-3.75M12 
-                   12.75l-3.75-3.75M4.5 19.5h15" />
-        </svg>
-        <span class="label">For Rent</span>
-      </a>
-
-      <!-- Short Stays -->
-      <a href="/types/short" class="category-tile">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-             stroke-width="1.5" stroke="currentColor" 
-             class="w-10 h-10 text-primary mb-3">
-          <path stroke-linecap="round" stroke-linejoin="round" 
-                d="M21.75 7.5l-9-5.25-9 
-                   5.25m18 0v9l-9 5.25m9-14.25l-9 
-                   5.25m0 0l-9-5.25m9 5.25v9" />
-        </svg>
-        <span class="label">Short Stays</span>
-      </a>
-
-    </div>
-  </div>
-</section>
-
-
-<!-- Explore by Area -->
-<section class="py-16 bg-neutral-50">
-  <div class="container">
-    <h2 class="section-title">Explore by Area</h2>
-
-    <div class="relative">
-      <div class="flex overflow-x-auto gap-4 snap-x snap-mandatory scrollbar-hide">
-        {AREAS.map(({ href, label }) => (
-          <a href={href} class="area-card flex-shrink-0 w-48 snap-center">
-            {label}
-          </a>
-        ))}
+  <section class="py-16 bg-neutral-50">
+    <div class="container">
+      <h2 class="section-title text-center mb-10">Featured Listings</h2>
+      <FeaturedListingsRow items={featuredItems} />
+      <div class="mt-8 flex justify-center">
+        <a href="/listings" class="btn-cta rounded-full">View all listings</a>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
+  <!-- Explore Categories -->
+  <section class="relative py-16">
+    <div class="absolute inset-0 -z-10 bg-gradient-to-b from-neutral-50 via-white to-neutral-50"></div>
+    <div class="container">
+      <h2 class="section-title">Explore Categories</h2>
 
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <a href="/types/sale" class="category-tile bg-white/80 backdrop-blur-sm ring-1 ring-neutral-200 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.125 1.125 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+          <span class="label">For Sale</span>
+        </a>
 
+        <a href="/types/rent" class="category-tile bg-white/80 backdrop-blur-sm ring-1 ring-neutral-200 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v9.75m0 0l3.75-3.75M12 12.75l-3.75-3.75M4.5 19.5h15"/></svg>
+          <span class="label">For Rent</span>
+        </a>
 
-
-
-<!-- Why Choose Us -->
-<section class="py-16 bg-white">
-  <div class="container">
-    <h2 class="section-title">Why Choose Us</h2>
-    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-center">
-
-      <!-- Exclusive Listings -->
-      <div class="why-card">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-             stroke-width="1.5" stroke="currentColor" class="why-icon">
-          <path stroke-linecap="round" stroke-linejoin="round" 
-                d="M2.25 12l8.954-8.955a1.125 1.125 0 011.591 0L21.75 12M4.5 
-                   9.75v10.125c0 .621.504 1.125 1.125 
-                   1.125H9.75v-4.875c0-.621.504-1.125 
-                   1.125-1.125h2.25c.621 0 1.125.504 
-                   1.125 1.125V21h4.125c.621 0 1.125-.504 
-                   1.125-1.125V9.75M8.25 21h8.25" />
-        </svg>
-        <h3 class="text-lg font-semibold mt-3">Exclusive Listings</h3>
-        <p class="mt-2 text-neutral-600">
-          Curated high-value properties not found on open marketplaces.
-        </p>
+        <a href="/types/short" class="category-tile bg-white/80 backdrop-blur-sm ring-1 ring-neutral-200 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 7.5l-9-5.25-9 5.25m18 0v9l-9 5.25m9-14.25l-9 5.25m0 0l-9-5.25m9 5.25v9"/></svg>
+          <span class="label">Short Stays</span>
+        </a>
       </div>
-
-      <!-- Faster Closings -->
-      <div class="why-card">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-             stroke-width="1.5" stroke="currentColor" class="why-icon">
-          <path stroke-linecap="round" stroke-linejoin="round" 
-                d="M12 3v4.5m6.364 1.136l-3.182 
-                   3.182M21 12h-4.5m-1.136 6.364l-3.182-3.182M12 
-                   21v-4.5m-6.364-1.136l3.182-3.182M3 
-                   12h4.5m1.136-6.364l3.182 3.182" />
-        </svg>
-        <h3 class="text-lg font-semibold mt-3">Faster Closings</h3>
-        <p class="mt-2 text-neutral-600">
-          Streamlined processes with vetted buyers and tenants.
-        </p>
-      </div>
-
-      <!-- Direct Owner Deals -->
-      <div class="why-card">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-             stroke-width="1.5" stroke="currentColor" class="why-icon">
-          <path stroke-linecap="round" stroke-linejoin="round" 
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 
-                   3h-9A2.25 2.25 0 002.25 
-                   5.25v9A2.25 2.25 0 004.5 
-                   16.5H9m6.75-7.5l5.25-5.25M21 
-                   3v5.25m0 0H15.75M15 18.75a3.75 
-                   3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-        </svg>
-        <h3 class="text-lg font-semibold mt-3">Direct Owner Deals</h3>
-        <p class="mt-2 text-neutral-600">
-          Better terms through direct relationships.
-        </p>
-      </div>
-
-      <!-- Market Insights -->
-      <div class="why-card">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-             stroke-width="1.5" stroke="currentColor" class="why-icon">
-          <path stroke-linecap="round" stroke-linejoin="round" 
-                d="M3 3v18h18M7.5 13.5l3 
-                   3L18 9" />
-        </svg>
-        <h3 class="text-lg font-semibold mt-3">Market Insights</h3>
-        <p class="mt-2 text-neutral-600">
-          Expert data and advisory for smarter decisions.
-        </p>
-      </div>
-
     </div>
-  </div>
-</section>
+  </section>
 
+  <!-- Explore by Area -->
+  <section class="relative py-16">
+    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-white via-neutral-50 to-white"></div>
+    <div class="container">
+      <h2 class="section-title">Explore by Area</h2>
 
+      <div class="relative">
+        <div class="flex overflow-x-auto gap-4 snap-x snap-mandatory scrollbar-hide py-2" role="list" aria-label="Browse areas">
+          {AREAS.map(({ href, label }) => (
+            <a href={href} class="area-card flex-shrink-0 w-48 snap-center focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]" role="listitem">
+              {label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- Knowledge Hub (Blog + Resources) -->
-<section class="py-16 bg-neutral-50">
-  <div class="container">
-    <h2 class="section-title">Knowledge Hub</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+  <!-- Why Choose Us -->
+  <section class="relative py-16">
+    <div class="absolute inset-0 -z-10 bg-gradient-to-b from-white to-neutral-50"></div>
+    <div class="container">
+      <h2 class="section-title">Why Choose Us</h2>
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-center">
+        <div class="why-card ring-1 ring-neutral-200 bg-white/90">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="why-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.125 1.125 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+          <p class="why-label">Exclusive Listings</p>
+          <p class="mt-2 text-sm text-neutral-600 text-center">Curated high-value properties.</p>
+        </div>
 
-      <!-- Featured Blog -->
-      <div>
-        {featuredPosts.slice(0,1).map((p, i) => (
-          <div class="card overflow-hidden">
-            <img 
-              src={pickBlogImg(p, i)} 
-              alt={p.data.title} 
-              class="w-full h-56 object-cover"
-            />
-            <div class="p-6">
-              <h3 class="text-xl font-semibold text-primary mb-3">{p.data.title}</h3>
-              <p class="text-neutral-600 mb-4">{p.data.excerpt}</p>
-              <a href={`/blog/${p.slug}`} class="btn-outline">Read More</a>
+        <div class="why-card ring-1 ring-neutral-200 bg-white/90">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="why-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v4.5m6.364 1.136-3.182 3.182M21 12h-4.5m-1.136 6.364-3.182-3.182M12 21v-4.5M5.636 16.364l3.182-3.182M3 12h4.5M8.636 5.636 11.818 8.818"/></svg>
+          <p class="why-label">Faster Closings</p>
+          <p class="mt-2 text-sm text-neutral-600 text-center">Streamlined and vetted.</p>
+        </div>
+
+        <div class="why-card ring-1 ring-neutral-200 bg-white/90">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="why-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-9A2.25 2.25 0 0 0 2.25 5.25v9A2.25 2.25 0 0 0 4.5 16.5H9m6.75-7.5 5.25-5.25M21 3v5.25H15.75M15 18.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0z"/></svg>
+          <p class="why-label">Direct Owner Deals</p>
+          <p class="mt-2 text-sm text-neutral-600 text-center">Better terms, fewer layers.</p>
+        </div>
+
+        <div class="why-card ring-1 ring-neutral-200 bg-white/90">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="why-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7.5 13.5l3 3L18 9"/></svg>
+          <p class="why-label">Market Insights</p>
+          <p class="mt-2 text-sm text-neutral-600 text-center">Advisory backed by data.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Knowledge Hub (Blog + Resources) -->
+  <section class="py-16 bg-neutral-50">
+    <div class="container">
+      <h2 class="section-title">Knowledge Hub</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Featured Blog -->
+        <div>
+          {featuredPosts.slice(0,1).map((p, i) => (
+            <div class="card overflow-hidden">
+              <img 
+                src={pickBlogImg(p, i)} 
+                alt={p.data.title} 
+                class="w-full h-56 object-cover"
+                loading="lazy" decoding="async" width="880" height="224"
+              />
+              <div class="p-6">
+                <h3 class="text-xl font-semibold text-primary mb-3">{p.data.title}</h3>
+                <p class="text-neutral-600 mb-4">{p.data.excerpt}</p>
+                <a href={`/blog/${p.slug}`} class="btn-outline">Read More</a>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        <!-- Latest Resources -->
+        <div class="grid gap-6">
+          {resourceItems.map(({ res, href, cover }) => (
+            <div class="card-tight flex items-start gap-4">
+              <div class="flex-shrink-0 w-20 h-20 bg-neutral-100 rounded-lg overflow-hidden">
+                <img src={cover} alt={res.data.title} class="w-full h-full object-cover" loading="lazy" decoding="async" width="80" height="80" />
+              </div>
+              <div>
+                <h4 class="font-semibold text-primary mb-1">{res.data.title}</h4>
+                <p class="text-sm text-neutral-600">{res.data.excerpt}</p>
+                <a href={href} class="text-cta text-sm font-medium mt-2 inline-block">
+                  View Resource →
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <!-- Latest Resources -->
-      <div class="grid gap-6">
-        {latestResources.slice(0,3).map((res) => (
-          <div class="card-tight flex items-start gap-4">
-            <div class="flex-shrink-0 w-20 h-20 bg-neutral-100 rounded-lg overflow-hidden">
-              {res.data.icon 
-                ? <img src={res.data.icon} alt={res.data.title} class="w-full h-full object-cover"/> 
-                : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-                       stroke-width="1.5" stroke="currentColor" 
-                       class="w-10 h-10 text-primary m-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" 
-                          d="M12 6v12m6-6H6" />
-                  </svg>
-              }
-            </div>
-            <div>
-              <h4 class="font-semibold text-primary mb-1">{res.data.title}</h4>
-              <p class="text-sm text-neutral-600">{res.data.excerpt}</p>
-              <a href={`/resources/${res.slug}`} class="text-cta text-sm font-medium mt-2 inline-block">
-                View Resource →
-              </a>
-            </div>
-          </div>
-        ))}
+      <div class="mt-10 text-center">
+        <a href="/resources" class="btn-cta">Explore all articles &amp; guides</a>
       </div>
     </div>
+  </section>
 
-    <!-- CTA -->
-    <div class="mt-10 text-center">
-      <a href="/resources" class="btn-primary">Explore all articles & guides</a>
-    </div>
-  </div>
-</section>
-
-
-
-
-
-
-  <!-- Testimonials -->
-  <section class="py-16 bg-white">
+  <!-- Testimonials: Infinite carousel -->
+  <section class="py-16">
     <div class="container">
       <h2 class="section-title">What Our Clients Say</h2>
-      <div class="grid gap-6 md:grid-cols-3">
-        <div class="testimonial"><p>“Professional and transparent. My house sold in less than a month!”</p><div class="author">Jane Mwangi</div><div class="role">Home Seller</div></div>
-        <div class="testimonial"><p>“They found us the perfect rental in Karen with zero stress.”</p><div class="author">David & Amina</div><div class="role">Tenants</div></div>
-        <div class="testimonial"><p>“Trusted partner for investment properties. Highly recommend.”</p><div class="author">Michael Otieno</div><div class="role">Investor</div></div>
+
+      <div id="ts-wrap" class="relative overflow-hidden">
+        <div id="ts-track" class="flex gap-4 md:gap-6 will-change-transform">
+          <article class="testimonial w-[85%] sm:w-[55%] md:w-[33%] 2xl:w-[28%] shrink-0 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+            <p>“Professional and transparent. My house sold in less than a month!”</p>
+            <div class="author">Jane Mwangi</div><div class="role">Home Seller</div>
+          </article>
+          <article class="testimonial w-[85%] sm:w-[55%] md:w-[33%] 2xl:w-[28%] shrink-0 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+            <p>“They found us the perfect rental in Karen with zero stress.”</p>
+            <div class="author">David &amp; Amina</div><div class="role">Tenants</div>
+          </article>
+          <article class="testimonial w-[85%] sm:w-[55%] md:w-[33%] 2xl:w-[28%] shrink-0 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+            <p>“Trusted partner for investment properties. Highly recommend.”</p>
+            <div class="author">Michael Otieno</div><div class="role">Investor</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="mt-4 flex items-center justify-center gap-3">
+        <button id="ts-prev" class="btn-outline rounded-full px-3 py-1" aria-label="Previous">‹</button>
+        <button id="ts-next" class="btn-outline rounded-full px-3 py-1" aria-label="Next">›</button>
       </div>
     </div>
+
+    <script>
+      (() => {
+        const wrap = document.getElementById('ts-wrap');
+        const track = document.getElementById('ts-track');
+        if (!wrap || !track) return;
+
+        track.innerHTML += track.innerHTML;
+
+        let x = 0, speed = 0.4, raf;
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const step = () => {
+          x -= speed;
+          const first = track.children[0];
+          if (first) {
+            const gap = parseFloat(getComputedStyle(track).columnGap || 16);
+            const cardW = first.getBoundingClientRect().width + (gap || 16);
+            if (Math.abs(x) >= cardW) {
+              x += cardW;
+              track.appendChild(track.children[0]);
+            }
+          }
+          track.style.transform = `translate3d(${x}px,0,0)`;
+          raf = requestAnimationFrame(step);
+        };
+        const start = () => { if (!prefersReduced) { cancelAnimationFrame(raf); raf = requestAnimationFrame(step); } };
+        const stop  = () => { cancelAnimationFrame(raf); };
+        start();
+
+        wrap.addEventListener('mouseenter', stop);
+        wrap.addEventListener('mouseleave', start);
+        wrap.addEventListener('focusin', stop);
+        wrap.addEventListener('focusout', start);
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) stop(); else start();
+        });
+
+        document.getElementById('ts-prev')?.addEventListener('click', () => { x += 220; });
+        document.getElementById('ts-next')?.addEventListener('click', () => { x -= 220; });
+      })();
+    </script>
   </section>
 
-
-
-
-  <!-- Lead Magnets -->
+  <!-- Lead Magnet: single, responsive -->
   <section class="py-16 max-w-3xl mx-auto">
     <div class="card p-6">
-      <h3 class="font-semibold mb-2">Get first access to new listings</h3>
-      <form action="/api/subscribe" method="POST" class="flex gap-3">
-        <input type="email" name="email" required placeholder="you@email.com" class="input flex-1" />
-        <button class="btn-primary">Get Alerts</button>
+      <h3 class="font-semibold mb-3">Get first access to new listings</h3>
+      <form action="/api/subscribe" method="POST" class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3" aria-label="Email signup">
+        <input type="email" name="email" required placeholder="you@email.com" class="input" />
+        <button class="btn-cta rounded-md whitespace-nowrap">Get Alerts</button>
       </form>
       <p class="text-xs text-neutral-500 mt-2">No spam. Unsubscribe anytime.</p>
-    </div>
-    <div class="card p-6 mt-6">
-      <h3 class="font-semibold mb-2">Request a Free Property Valuation</h3>
-      <form action="/api/valuation" method="POST" class="flex gap-3">
-        <input type="text" name="address" required placeholder="Property address" class="input flex-1" />
-        <button class="btn-cta">Request</button>
-      </form>
-    </div>
-  </section>
-
-
-
-
-
-  <!-- Final CTA -->
-  <section class="py-16 bg-primary text-white text-center">
-    <div class="container">
-      <h2 class="text-3xl font-bold mb-4">Ready to Sell or Rent Out Your Property?</h2>
-      <p class="mb-6">Join hundreds of property owners who trust Severino Realty.</p>
-      <a href="/list-property" class="btn-cta">List Your Property Today</a>
     </div>
   </section>
 </MainLayout>

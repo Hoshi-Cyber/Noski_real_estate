@@ -1,0 +1,151 @@
+---
+/**
+ * Header Search — desktop inline + mobile panel.
+ * Submits to /listings with names: q, beds, type, availability, minPrice, maxPrice.
+ */
+---
+<div id="hdr-search-root" class="relative">
+  <!-- Desktop inline search -->
+  <form action="/listings" method="get"
+        class="hidden md:flex items-center gap-2"
+        aria-label="Search properties">
+    <label for="hdr-q" class="sr-only">Search</label>
+    <input id="hdr-q" name="q" type="search" inputmode="search"
+           placeholder="Search location or keyword"
+           class="w-64 rounded-md border border-neutral-300 p-2 text-sm" />
+
+    <label for="hdr-beds" class="sr-only">Min bedrooms</label>
+    <select id="hdr-beds" name="beds" class="rounded-md border border-neutral-300 p-2 text-sm">
+      <option value="">Beds</option>
+      <option value="1">1+</option>
+      <option value="2">2+</option>
+      <option value="3">3+</option>
+      <option value="4">4+</option>
+      <option value="5">5+</option>
+    </select>
+
+    <label for="hdr-type" class="sr-only">Property type</label>
+    <select id="hdr-type" name="type" class="rounded-md border border-neutral-300 p-2 text-sm">
+      <option value="">Type</option>
+      <option value="apartment">Apartment</option>
+      <option value="bungalow">Bungalow</option>
+      <option value="cabin">Cabin</option>
+      <option value="cottage">Cottage</option>
+      <option value="house">House</option>
+      <option value="maisonette">Maisonette</option>
+      <option value="studio/bedsitter">Studio/Bedsitter</option>
+      <option value="suite">Suite</option>
+      <option value="townhouse">Townhouse</option>
+      <option value="villa">Villa</option>
+      <option value="land">Land</option>
+    </select>
+
+    <label for="hdr-avail" class="sr-only">Availability</label>
+    <select id="hdr-avail" name="availability" class="rounded-md border border-neutral-300 p-2 text-sm">
+      <option value="">Any</option>
+      <option value="for-sale">For Sale</option>
+      <option value="for-rent">For Rent</option>
+      <option value="short-stays">Short Stays</option>
+    </select>
+
+    <details class="relative">
+      <summary class="cursor-pointer select-none rounded-md border border-neutral-300 px-2 py-2 text-sm list-none">
+        More
+      </summary>
+      <div class="absolute right-0 z-50 mt-2 w-64 rounded-md border border-neutral-200 bg-white p-3 shadow-xl">
+        <div class="grid grid-cols-2 gap-2">
+          <label class="sr-only" for="hdr-min">Min price</label>
+          <input id="hdr-min" name="minPrice" inputmode="numeric" pattern="[0-9,]*"
+                 placeholder="Min price" class="rounded-md border border-neutral-300 p-2 text-sm" />
+          <label class="sr-only" for="hdr-max">Max price</label>
+          <input id="hdr-max" name="maxPrice" inputmode="numeric" pattern="[0-9,]*"
+                 placeholder="Max price" class="rounded-md border border-neutral-300 p-2 text-sm" />
+        </div>
+      </div>
+    </details>
+
+    <button class="btn-cta rounded-md px-3 py-2 text-sm">Search</button>
+  </form>
+
+  <!-- Mobile trigger -->
+  <button type="button" id="hdr-search-open"
+          class="md:hidden inline-flex items-center gap-2 rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          aria-controls="hdr-search-panel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true"><path d="M10 4a6 6 0 104.47 10.03l4.25 4.25 1.42-1.42-4.25-4.25A6 6 0 0010 4zm0 2a4 4 0 110 8 4 4 0 010-8z"/></svg>
+    Search
+  </button>
+
+  <!-- Mobile panel -->
+  <div id="hdr-search-panel" class="fixed inset-0 z-[70] hidden" aria-hidden="true">
+    <div id="hdr-search-backdrop" class="absolute inset-0 bg-black/40"></div>
+    <div class="relative ml-auto h-full w-[88%] max-w-sm bg-white shadow-xl flex flex-col">
+      <div class="flex items-center justify-between p-3 border-b border-neutral-100">
+        <strong>Search</strong>
+        <button type="button" id="hdr-search-close" class="p-2 rounded hover:bg-neutral-50" aria-label="Close search">✕</button>
+      </div>
+
+      <form action="/listings" method="get" class="p-3 grid gap-2" aria-label="Search properties (mobile)">
+        <input name="q" type="search" inputmode="search"
+               placeholder="Search location or keyword"
+               class="w-full rounded-md border border-neutral-300 p-2 text-sm" />
+        <div class="grid grid-cols-3 gap-2">
+          <select name="beds" class="rounded-md border border-neutral-300 p-2 text-sm">
+            <option value="">Beds</option><option value="1">1+</option><option value="2">2+</option>
+            <option value="3">3+</option><option value="4">4+</option><option value="5">5+</option>
+          </select>
+          <select name="type" class="rounded-md border border-neutral-300 p-2 text-sm">
+            <option value="">Type</option>
+            <option value="apartment">Apartment</option><option value="bungalow">Bungalow</option>
+            <option value="cabin">Cabin</option><option value="cottage">Cottage</option>
+            <option value="house">House</option><option value="maisonette">Maisonette</option>
+            <option value="studio/bedsitter">Studio/Bedsitter</option><option value="suite">Suite</option>
+            <option value="townhouse">Townhouse</option><option value="villa">Villa</option>
+            <option value="land">Land</option>
+          </select>
+          <select name="availability" class="rounded-md border border-neutral-300 p-2 text-sm">
+            <option value="">Any</option><option value="for-sale">For Sale</option>
+            <option value="for-rent">For Rent</option><option value="short-stays">Short Stays</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input name="minPrice" inputmode="numeric" pattern="[0-9,]*"
+                 placeholder="Min price" class="rounded-md border border-neutral-300 p-2 text-sm" />
+          <input name="maxPrice" inputmode="numeric" pattern="[0-9,]*"
+                 placeholder="Max price" class="rounded-md border border-neutral-300 p-2 text-sm" />
+        </div>
+        <button class="btn-cta rounded-md px-3 py-2 text-sm">Search</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="module" is:inline>
+  // Prefill fields from current URL
+  function prefill(form){
+    if(!form) return;
+    const sp = new URLSearchParams(location.search);
+    ['q','beds','type','availability','minPrice','maxPrice'].forEach(k=>{
+      const el = form.querySelector(`[name="${k}"]`);
+      if(el && sp.get(k) != null) el.value = sp.get(k);
+    });
+  }
+
+  const root = document.getElementById('hdr-search-root');
+  const desktopForm = root?.querySelector('form[action="/listings"].md\\:flex');
+  prefill(desktopForm);
+
+  const panel   = document.getElementById('hdr-search-panel');
+  const openBtn = document.getElementById('hdr-search-open');
+  const closeBtn= document.getElementById('hdr-search-close');
+  const backdrop= document.getElementById('hdr-search-backdrop');
+  const mobileForm = panel?.querySelector('form[action="/listings"]');
+  prefill(mobileForm);
+
+  function showPanel(){ panel?.classList.remove('hidden'); openBtn?.setAttribute('aria-expanded','true'); document.documentElement.classList.add('overflow-hidden'); }
+  function hidePanel(){ panel?.classList.add('hidden'); openBtn?.setAttribute('aria-expanded','false'); document.documentElement.classList.remove('overflow-hidden'); }
+
+  openBtn?.addEventListener('click', showPanel);
+  closeBtn?.addEventListener('click', hidePanel);
+  backdrop?.addEventListener('click', hidePanel);
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') hidePanel(); });
+</script>

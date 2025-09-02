@@ -10,6 +10,11 @@ export interface Props {
   variant?: 'visual' | 'compact' | 'horizontal';
   showImage?: boolean;
   highlight?: boolean; // featured styling
+
+  /** New: style hooks */
+  ctaClass?: string;                 // 'btn-cta' | 'btn-outline' | custom
+  imgAttrs?: Record<string, any>;    // { loading, decoding, width, height, ... }
+  linkFocusClass?: string;           // override focus ring classes
 }
 
 const {
@@ -23,12 +28,24 @@ const {
   variant = 'visual',
   showImage = true,
   highlight = false,
-} = Astro.props;
+
+  ctaClass = 'btn-outline',
+  imgAttrs,
+  linkFocusClass = 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[color:var(--color-cta)] rounded-xl',
+} = Astro.props as Props;
+
+/* Intrinsic size defaults by layout to reduce CLS */
+const defaultImgAttrs =
+  variant === 'horizontal'
+    ? { loading: 'lazy', decoding: 'async', width: 160, height: 160 }
+    : { loading: 'lazy', decoding: 'async', width: 1200, height: 576 };
+
+const finalImgAttrs = { ...defaultImgAttrs, ...(imgAttrs ?? {}) };
 ---
 
 <a 
   href={href} 
-  class="block group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[color:var(--color-cta)] rounded-xl"
+  class={`block group ${linkFocusClass}`}
 >
   <article
     class={`rounded-xl border bg-white overflow-hidden transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-1
@@ -43,11 +60,10 @@ const {
       <img
         src={img}
         alt={title}
-        loading="lazy"
-        decoding="async"
         class={`object-cover flex-shrink-0 transition-transform duration-300 group-hover:scale-105
           ${variant === 'horizontal' ? 'w-40 h-40' : 'h-48 w-full'}
         `}
+        {...finalImgAttrs}
       />
     )}
 
@@ -68,7 +84,8 @@ const {
       )}
 
       {cta && (
-        <span class="mt-3 inline-flex items-center text-sm font-medium text-[color:var(--color-cta)] group-hover:underline">
+        <!-- Render CTA as styled text inside the single-link card to avoid nested interactive elements -->
+        <span class={`${ctaClass} mt-3 text-sm inline-flex items-center`}>
           {cta}
         </span>
       )}

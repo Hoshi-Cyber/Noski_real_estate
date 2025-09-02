@@ -7,9 +7,20 @@ interface Props {
   slug: string;
   href?: string;
   compact?: boolean;
+  primaryCtaClass?: string;   // defaults to .btn-cta
+  secondaryCtaClass?: string; // available if needed later
+  imgProps?: Record<string, any>; // loading/decoding/width/height
 }
 
-const { listing, slug, href, compact = false } = Astro.props as Props;
+const {
+  listing,
+  slug,
+  href,
+  compact = false,
+  primaryCtaClass = 'btn-cta',
+  secondaryCtaClass = 'btn-outline',
+  imgProps = { loading: 'lazy', decoding: 'async', width: 768, height: 432 }
+} = Astro.props as Props;
 
 const finalHref = href || buildListingHref(listing.availability, slug);
 const finalImg = resolveListingImage(
@@ -51,7 +62,7 @@ const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
 
 <article 
   class="group border border-neutral-200 rounded-lg overflow-hidden shadow-sm bg-white transition 
-         hover:shadow-md focus-within:ring-2 focus-within:ring-primary"
+         hover:shadow-md focus-within:outline-none focus-within:ring-2 focus-within:ring-[color:var(--color-cta)]"
 >
   <a href={finalHref} class="block overflow-hidden focus:outline-none">
     <figure class={`w-full ${imgAspect} relative`}>
@@ -73,10 +84,7 @@ const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
         }
         alt={altText}
         class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
-        loading="lazy"
-        decoding="async"
-        width="768"
-        height="432"
+        {...imgProps}
       />
     </figure>
   </a>
@@ -85,7 +93,7 @@ const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
     <h3 class={`${titleSize} font-semibold text-primary mb-1`}>
       <a 
         href={finalHref} 
-        class="focus:outline-none focus:ring-2 focus:ring-primary rounded hover:text-primary-dark"
+        class="focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)] rounded hover:opacity-90"
       >
         {listing.title || 'Untitled Property'}
       </a>
@@ -111,9 +119,7 @@ const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
     <div class="mt-4">
       <a
         href={finalHref}
-        class={`inline-flex items-center rounded-md ${btnPad} text-sm font-medium text-white bg-primary shadow-sm 
-                hover:bg-primary-dark hover:-translate-y-0.5 transition-all duration-200 
-                focus:outline-none focus:ring-2 focus:ring-primary`}
+        class={`${primaryCtaClass} ${btnPad} text-sm rounded-md`}
       >
         View details
       </a>

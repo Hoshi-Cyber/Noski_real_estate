@@ -7,20 +7,20 @@ const {
   title,
   metrics = /** [{ name, value }] */ [],
   chart = /** { points: [{x,y}] } */ { points: [] },
-  downloadUrl = ''
+  downloadUrl = '',
 } = Astro.props;
 ---
 
 <section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
   <!-- Header -->
   <header class="mb-6 md:mb-8 flex items-center justify-between gap-3">
-    <div>
-      <h1 class="text-2xl md:text-3xl font-bold text-primary">{title}</h1>
-    </div>
+    <h1 class="text-2xl md:text-3xl font-bold text-primary">{title}</h1>
+
     {downloadUrl && (
       <a
         href={downloadUrl}
-        class="rounded-md px-4 py-2 bg-[color:var(--color-cta)] text-white text-sm font-medium shadow-sm hover:opacity-90 transition"
+        class="btn-outline rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+        aria-label="Download market report PDF"
       >
         Download PDF
       </a>
@@ -31,7 +31,7 @@ const {
   <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
     <!-- KPI Tiles -->
     <div class="grid grid-cols-2 sm:grid-cols-1 gap-3">
-      {metrics.map(m => (
+      {metrics.map((m) => (
         <KpiCard label={m.name} value={m.value} />
       ))}
     </div>
@@ -52,7 +52,7 @@ const {
     </p>
     <a
       href="/contact"
-      class="inline-block mt-4 px-5 py-2 rounded-md bg-[color:var(--color-cta)] text-white font-medium shadow hover:opacity-90 transition"
+      class="btn-cta rounded-md inline-block mt-4 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
     >
       Request Valuation →
     </a>

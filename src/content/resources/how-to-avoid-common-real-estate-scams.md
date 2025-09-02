@@ -1,8 +1,10 @@
 ---
 title: "How to Avoid Common Real Estate Scams"
 description: "Tips to identify and avoid fraud."
-category: "Legal & Regulatory Guides"
+section: guides
 pubDate: 2025-08-10
+imagesFolder: /images/resources/guides/how-to-avoid-common-real-estate-scams
+heroImage: /images/resources/guides/how-to-avoid-common-real-estate-scams/cover.webp
 download: "/docs/resources/how-to-avoid-common-real-estate-scams.pdf"
 ---
 

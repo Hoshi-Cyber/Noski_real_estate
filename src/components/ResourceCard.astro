@@ -1,20 +1,37 @@
 ---
-import BaseCard from './BaseCard.astro';
+import { buildResourceHref, resolveResourceImage } from '../lib/utils/paths';
 
 export interface Props {
   resource: {
     title: string;
     description?: string;
-    heroImage?: string;
+    excerpt?: string;
     slug?: string;
+    section?: string;
+    heroImage?: string;
+    image?: string;
+    imagesFolder?: string;
     pubDate?: string | Date;
-    highlight?: boolean; // NEW → allows special styling
+    highlight?: boolean;
   };
 }
 
 const { resource } = Astro.props;
-const href = resource.slug ? `/resources/${resource.slug}` : `/resources`;
-const img = resource.heroImage ?? '/images/placeholder.webp';
+
+const href = resource.slug
+  ? buildResourceHref({ slug: resource.slug, data: { section: resource.section } })
+  : '/resources';
+
+const img = resolveResourceImage(
+  resource.slug || '',
+  resource.section,
+  resource.imagesFolder,
+  resource.heroImage,
+  resource.image
+);
+
+const desc = resource.description ?? resource.excerpt ?? '';
+
 const date = resource.pubDate
   ? new Date(resource.pubDate).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -22,17 +39,41 @@ const date = resource.pubDate
       day: 'numeric',
     })
   : '';
+
+const tag =
+  resource.section?.toLowerCase().replace('_','-') === 'faqs' ? 'FAQs' :
+  resource.section?.toLowerCase().replace('_','-') === 'market-reports' ? 'Market Report' :
+  resource.section ? resource.section.charAt(0).toUpperCase() + resource.section.slice(1) :
+  'Resource';
 ---
 
-<BaseCard
-  title={resource.title}
-  desc={resource.description}
-  img={img}
-  href={href}
-  date={date}
-  tag="Resource"
-  cta="Read more →"
-  variant="horizontal"
-  showImage={true}
-  highlight={resource.highlight ?? false}
-/>
+<article class="border rounded-md shadow-sm hover:shadow-md transition bg-white overflow-hidden flex flex-col h-full">
+  <a href={href} class="block focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+    <img
+      src={img}
+      alt={resource.title}
+      loading="lazy"
+      decoding="async"
+      width="880"
+      height="224"
+      class="w-full h-48 object-cover"
+    />
+  </a>
+
+  <div class="flex flex-col flex-grow p-4">
+    <div class="text-xs text-gray-500 uppercase mb-1">{tag}</div>
+
+    <h3 class="text-lg font-semibold leading-snug mb-1">
+      <a href={href} class="hover:underline text-primary">
+        {resource.title}
+      </a>
+    </h3>
+
+    <p class="text-sm text-gray-600 flex-grow">{desc}</p>
+
+    <div class="mt-4 flex items-center justify-between text-sm text-gray-500">
+      {date && <time datetime={date}>{date}</time>}
+      <a href={href} class="text-primary font-medium hover:underline">Read more &rarr;</a>
+    </div>
+  </div>
+</article>

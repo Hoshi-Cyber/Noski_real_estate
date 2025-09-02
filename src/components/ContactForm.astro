@@ -1,29 +1,205 @@
 ---
-// Contact form component configured for Netlify submissions.
+/**
+ * Production-ready contact form for Severino Realty.
+ * - Covers lead types from header/footer.
+ * - Accessible, validated, spam-protected hook (honeypot), UTM capture.
+ * - Conditional sections for Viewing vs Listing.
+ * - Replace `POST /api/contact` with your handler.
+ */
+const today = new Date().toISOString().slice(0,10);
 ---
-<form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="space-y-4">
-  <!-- Hidden input for Netlify -->
-  <input type="hidden" name="form-name" value="contact" />
-  <p class="hidden">
-    <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
-  </p>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<form id="contact-form" method="post" action="/api/contact" class="space-y-6">
+  <!-- 0. Spam trap -->
+  <input type="text" name="company" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+  <!-- 1. User information -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
-      <label class="block mb-1 text-sm font-medium text-primary" for="name">Name</label>
-      <input type="text" id="name" name="name" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+      <label for="fullName" class="block text-sm font-medium">Full name*</label>
+      <input id="fullName" name="fullName" type="text" required autocomplete="name" />
     </div>
     <div>
-      <label class="block mb-1 text-sm font-medium text-primary" for="email">Email</label>
-      <input type="email" id="email" name="email" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
+      <label for="email" class="block text-sm font-medium">Email*</label>
+      <input id="email" name="email" type="email" required autocomplete="email" />
     </div>
-    <div class="sm:col-span-2">
-      <label class="block mb-1 text-sm font-medium text-primary" for="phone">Phone</label>
-      <input type="tel" id="phone" name="phone" class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta" />
-    </div>
-    <div class="sm:col-span-2">
-      <label class="block mb-1 text-sm font-medium text-primary" for="message">Message</label>
-      <textarea id="message" name="message" rows="4" required class="w-full border border-neutral-300 rounded-md p-2 focus:ring-cta focus:border-cta"></textarea>
+    <div class="md:col-span-2">
+      <label for="phone" class="block text-sm font-medium">Phone (with country code)*</label>
+      <input id="phone" name="phone" type="tel" required placeholder="+2547..." autocomplete="tel" />
+      <p class="text-xs text-neutral-500 mt-1">WhatsApp-enabled preferred.</p>
     </div>
   </div>
-  <button type="submit" class="bg-cta text-white px-6 py-2 rounded-md font-medium hover:bg-accent transition-colors">Submit</button>
+
+  <!-- 2. Inquiry details -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label for="reason" class="block text-sm font-medium">Reason for contact*</label>
+      <select id="reason" name="reason" required>
+        <option value="">Select…</option>
+        <option>General Inquiry</option>
+        <option>Property Viewing Request</option>
+        <option>Sell / List My Property</option>
+        <option>Rental Inquiry</option>
+        <option>Short Stays</option>
+        <option>Market Report Request</option>
+        <option>Request Callback</option>
+        <option>Partnership / Media</option>
+      </select>
+    </div>
+    <div>
+      <label for="preferredTime" class="block text-sm font-medium">Best time to reach you</label>
+      <select id="preferredTime" name="preferredTime">
+        <option>Anytime</option>
+        <option>Morning</option>
+        <option>Afternoon</option>
+        <option>Evening</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 3. Property-specific (conditional) -->
+  <fieldset id="viewingFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+    <legend class="sr-only">Viewing details</legend>
+    <div>
+      <label for="propertyRef" class="block text-sm font-medium">Property reference / URL</label>
+      <input id="propertyRef" name="propertyRef" type="text" placeholder="e.g., SR-2025-0147" />
+    </div>
+    <div>
+      <label for="viewDate" class="block text-sm font-medium">Preferred viewing date</label>
+      <input id="viewDate" name="viewDate" type="date" min={today} />
+    </div>
+    <div class="md:col-span-2">
+      <label for="preferredLocation" class="block text-sm font-medium">Preferred location</label>
+      <input id="preferredLocation" name="preferredLocation" type="text" placeholder="Karen, Runda, Lavington…" />
+    </div>
+    <div>
+      <label for="budgetMin" class="block text-sm font-medium">Budget min (KES)</label>
+      <input id="budgetMin" name="budgetMin" type="number" inputmode="numeric" min="0" />
+    </div>
+    <div>
+      <label for="budgetMax" class="block text-sm font-medium">Budget max (KES)</label>
+      <input id="budgetMax" name="budgetMax" type="number" inputmode="numeric" min="0" />
+    </div>
+  </fieldset>
+
+  <fieldset id="listingFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+    <legend class="sr-only">Listing details</legend>
+    <div>
+      <label for="propertyType" class="block text-sm font-medium">Property type</label>
+      <select id="propertyType" name="propertyType">
+        <option>House</option><option>Apartment</option><option>Townhouse</option>
+        <option>Land</option><option>Commercial</option>
+      </select>
+    </div>
+    <div>
+      <label for="listLocation" class="block text-sm font-medium">Location</label>
+      <input id="listLocation" name="listLocation" type="text" />
+    </div>
+    <div>
+      <label for="bedrooms" class="block text-sm font-medium">Bedrooms</label>
+      <input id="bedrooms" name="bedrooms" type="number" min="0" />
+    </div>
+    <div>
+      <label for="bathrooms" class="block text-sm font-medium">Bathrooms</label>
+      <input id="bathrooms" name="bathrooms" type="number" min="0" />
+    </div>
+    <div class="md:col-span-2">
+      <label for="targetDate" class="block text-sm font-medium">Target listing date</label>
+      <input id="targetDate" name="targetDate" type="date" />
+    </div>
+  </fieldset>
+
+  <!-- 4. Preferred channels -->
+  <fieldset>
+    <legend class="block text-sm font-medium mb-2">How should we contact you?</legend>
+    <div class="flex flex-wrap gap-4">
+      <label class="inline-flex items-center gap-2">
+        <input type="checkbox" name="contactVia" value="WhatsApp"> <span>WhatsApp</span>
+      </label>
+      <label class="inline-flex items-center gap-2">
+        <input type="checkbox" name="contactVia" value="Phone Call"> <span>Phone call</span>
+      </label>
+      <label class="inline-flex items-center gap-2">
+        <input type="checkbox" name="contactVia" value="Email" checked> <span>Email</span>
+      </label>
+    </div>
+  </fieldset>
+
+  <!-- 5. Message -->
+  <div>
+    <label for="message" class="block text-sm font-medium">Additional details</label>
+    <textarea id="message" name="message" rows="5" placeholder="Tell us what matters: timing, amenities, schools, security, etc."></textarea>
+  </div>
+
+  <!-- 6. Compliance -->
+  <div class="space-y-3">
+    <label class="flex items-start gap-3">
+      <input type="checkbox" name="consent" required>
+      <span class="text-sm">
+        I agree to the <a href="/privacy-policy" class="underline">Privacy Policy</a> and
+        <a href="/terms" class="underline">Terms &amp; Conditions</a>.
+      </span>
+    </label>
+    <label class="flex items-start gap-3">
+      <input type="checkbox" name="newsletter">
+      <span class="text-sm">Subscribe me to market updates and new listings.</span>
+    </label>
+  </div>
+
+  <!-- 7. Hidden UTM fields -->
+  <input type="hidden" name="utm_source" id="utm_source">
+  <input type="hidden" name="utm_medium" id="utm_medium">
+  <input type="hidden" name="utm_campaign" id="utm_campaign">
+  <input type="hidden" name="page" value="contact">
+
+  <!-- 8. Submit + status -->
+  <div class="flex items-center gap-4">
+    <button type="submit" class="btn-cta">Send inquiry</button>
+    <p id="form-status" class="text-sm text-neutral-600" role="status" aria-live="polite"></p>
+  </div>
 </form>
+
+<script>
+  // Conditional sections
+  const reason = document.getElementById('reason');
+  const viewing = document.getElementById('viewingFields');
+  const listing = document.getElementById('listingFields');
+  function toggle() {
+    const v = reason.value;
+    viewing.classList.toggle('hidden', !(v === 'Property Viewing Request' || v === 'Rental Inquiry' || v === 'Short Stays'));
+    listing.classList.toggle('hidden', v !== 'Sell / List My Property');
+  }
+  reason.addEventListener('change', toggle); toggle();
+
+  // Basic min/max validation
+  const min = document.getElementById('budgetMin');
+  const max = document.getElementById('budgetMax');
+  function clamp() {
+    if (min && max && min.value && max.value && +min.value > +max.value) max.setCustomValidity('Max must be ≥ Min');
+    else if (max) max.setCustomValidity('');
+  }
+  if (min) min.addEventListener('input', clamp);
+  if (max) max.addEventListener('input', clamp);
+
+  // Capture UTM
+  const params = new URLSearchParams(location.search);
+  ['utm_source','utm_medium','utm_campaign'].forEach(k=>{
+    const el = document.getElementById(k); if (el) el.value = params.get(k) || '';
+  });
+
+  // Optional fetch submission with inline status
+  const form = document.getElementById('contact-form');
+  const statusEl = document.getElementById('form-status');
+  form?.addEventListener('submit', async (e) => {
+    if (form.getAttribute('action') !== '/api/contact') return; // server-post if you change action
+    e.preventDefault();
+    statusEl.textContent = 'Sending…';
+    try {
+      const resp = await fetch('/api/contact', { method:'POST', body: new FormData(form) });
+      if (!resp.ok) throw new Error('Failed');
+      form.reset(); toggle();
+      statusEl.textContent = 'Thanks. We will reach out shortly.';
+    } catch {
+      statusEl.textContent = 'Error sending. Try again or call/WhatsApp.';
+    }
+  });
+</script>

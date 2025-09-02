@@ -1,9 +1,150 @@
 ---
+/** Static, layout-driven Guides homepage */
+import { getCollection } from 'astro:content';
 import MainLayout from '../../../layouts/MainLayout.astro';
-import GuidesHub from '../../../components/resources/GuidesHub.astro';
-const title = 'Guides | Severino Reality';
-const description = 'Step-by-step buying, selling, renting/landlord, and investment guides.';
+import Breadcrumbs from '../../../components/resources/Breadcrumbs.astro';
+
+const title = 'Guides | Severino Realty';
+const description = 'Step-by-step help for buying, selling, renting/landlord, and investment.';
+
+/** Popular Articles: pull a few recent blog posts if available */
+let posts: Array<any> = [];
+try {
+  const allPosts = await getCollection('blog');
+  posts = allPosts
+    .sort((a, b) => {
+      const da = a?.data?.pubDate ? new Date(a.data.pubDate).getTime() : 0;
+      const db = b?.data?.pubDate ? new Date(b.data.pubDate).getTime() : 0;
+      return db - da || String(a.data?.title || '').localeCompare(String(b.data?.title || ''));
+    })
+    .slice(0, 4);
+} catch (_) {
+  posts = [];
+}
+
+/** Subcategory tiles (exactly four) */
+const tiles = [
+  { title: 'Buying Guide',          href: '/resources/guides/buying',           desc: 'From search to ownership.' },
+  { title: 'Selling Guide',         href: '/resources/guides/selling',          desc: 'Prep, pricing, marketing, closing.' },
+  { title: 'Renting & Landlord',    href: '/resources/guides/renting-landlord', desc: 'Screening, leases, compliance.' },
+  { title: 'Investment',            href: '/resources/guides/investment',       desc: 'Yields, financing, exits.' },
+];
+
+/** Lead magnet — use /docs/resources path */
+const lead = {
+  text: 'Get our free property buying checklist',
+  note: 'Instant PDF download',
+  href: '/docs/resources/buyer-checklist.pdf',
+};
+
+/** Quick Downloads (PDFs in /public/docs/resources) */
+const downloads = [
+  { label: 'Property Viewing Checklist (PDF)',          file: 'property-viewing-checklist.pdf' },
+  { label: 'Tenant Handover Form (PDF)',                file: 'tenant-handover-form.pdf' },
+  { label: 'Rental Application Template (PDF)',         file: 'rental-application-template.pdf' },
+  { label: 'Real Estate Glossary – Kenya (PDF)',        file: 'real-estate-glossary-kenya-edition.pdf' },
+  { label: 'How to Avoid Real Estate Scams (PDF)',      file: 'how-to-avoid-common-real-estate-scams.pdf' },
+  { label: 'Title Deeds & Ownership (PDF)',             file: 'understanding-title-deeds-and-land-ownership.pdf' },
+];
 ---
+
 <MainLayout {title} {description}>
-  <GuidesHub />
+  <!-- Hero -->
+  <section class="section container">
+    <header class="mb-6 md:mb-8">
+      <!-- Breadcrumbs placed directly above the page title for tight spacing -->
+      <Breadcrumbs
+        class="mb-3"
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Resources', href: '/resources' },
+          { label: 'Guides' }
+        ]}
+      />
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">Guides</h1>
+      <p class="mt-2 text-neutral-700">
+        Step-by-step help for buying, selling, renting/landlord, and investment.
+      </p>
+      <div class="mt-4">
+        <a href={lead.href} class="btn-cta rounded-md">
+          Download Free Buying Checklist
+        </a>
+      </div>
+    </header>
+
+    <!-- Subcategory Cards (exactly four) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {tiles.map((t) => (
+        <a href={t.href} class="category-tile tile-accent" aria-label={t.title}>
+          <div class="tile-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6" />
+            </svg>
+          </div>
+          <h3 class="tile-title">{t.title}</h3>
+          <p class="tile-sub">{t.desc}</p>
+        </a>
+      ))}
+    </div>
+
+    <!-- Quick Downloads (PDF) -->
+    <div class="mt-8">
+      <h2 class="section-subtitle mb-3">Quick Downloads</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {downloads.map((d) => (
+          <a href={`/docs/resources/${d.file}`} class="chip-link" rel="noopener">
+            {d.label}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Lead Magnet Banner -->
+    <div class="mt-8 rounded-2xl ring-1 ring-neutral-200 bg-white shadow-sm hover:shadow-md transition p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div class="text-sm text-neutral-700">
+        <strong class="text-primary">{lead.text}</strong>
+        <span class="ml-2 text-neutral-500">{lead.note}</span>
+      </div>
+      <a href={lead.href} class="btn-cta rounded-md">Download</a>
+    </div>
+  </section>
+
+  <!-- Popular Articles -->
+  {posts.length > 0 && (
+    <section class="section container">
+      <h2 class="section-title">Popular Articles</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {posts.map((p) => {
+          const href = `/blog/${p.slug}`;
+          const dateISO = p?.data?.pubDate ? new Date(p.data.pubDate) : null;
+          const date = dateISO
+            ? dateISO.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+            : '';
+          return (
+            <article class="post-card">
+              <a href={href} class="block focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+                <img
+                  src={p?.data?.image || '/images/placeholder.webp'}
+                  alt={p?.data?.title || 'Blog post'}
+                  loading="lazy"
+                  decoding="async"
+                  class="post-media"
+                />
+              </a>
+              <div class="post-body">
+                <h3 class="post-title">
+                  <a href={href} class="hover:underline">{p?.data?.title}</a>
+                </h3>
+                {p?.data?.description && <p class="post-desc">{p.data.description}</p>}
+                <div class="post-meta">
+                  {date && <time datetime={dateISO?.toISOString()}>{date}</time>}
+                  <a href={href} class="link-decor">Read more &rarr;</a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  )}
 </MainLayout>

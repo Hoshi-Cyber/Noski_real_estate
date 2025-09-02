@@ -1,8 +1,10 @@
 ---
 title: "Real Estate Agent Questions List"
 description: "Key questions to ask before hiring an agent."
-category: "Checklists & Templates"
+section: guides
 pubDate: 2025-08-01
+imagesFolder: /images/resources/guides/real-estate-agent-questions-list
+heroImage: /images/resources/guides/real-estate-agent-questions-list/cover.webp
 download: "/docs/resources/real-estate-agent-questions-list.pdf"
 ---
 

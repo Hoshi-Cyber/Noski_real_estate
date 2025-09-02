@@ -3,7 +3,7 @@ title: "Kenya First-Time Buyer Checklist 2025: Costs, Documents, Timelines"
 description: "Everything a first-time buyer in Kenya needs to budget, prepare, and verify—from stamp duty and legal fees to title searches, approvals, and closing timelines."
 pubDate: 2025-07-10
 category: "Buyer & Renter Tips"
-heroImage: "/images/placeholders/hero-house-1.webp"
+heroImage: "/images/blog/9.webp"
 tone: "Practical, reassuring, step-by-step"
 audience: "First-time homebuyers in Kenya and diaspora buyers assisting family"
 seoKeywords: ["first time buyer Kenya", "buy house Kenya checklist", "Kenya stamp duty 2025", "title search Kenya", "sale agreement Kenya", "conveyancing Kenya costs"]

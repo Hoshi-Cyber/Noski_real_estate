@@ -1,11 +1,13 @@
 ---
 title: "Step-by-Step Guide to Buying Property in Kenya"
-description: "Overview of the legal process for purchasing property in Kenya."
-category: "Legal & Regulatory Guides"
-pubDate: 2025-08-02
+description: "From search and offers to due diligence, conveyancing and registration."
+section: guides
+pubDate: 2025-08-03
+imagesFolder: /images/resources/guides/step-by-step-guide-to-buying-property-in-kenya
+heroImage: /images/resources/guides/step-by-step-guide-to-buying-property-in-kenya/cover.webp
 download: "/docs/resources/step-by-step-guide-to-buying-property-in-kenya.pdf"
 ---
 
-Purchasing land or a home in Kenya involves several legal and administrative steps. This guide demystifies the process from initial search to final transfer. You’ll learn how to conduct due diligence on the property and seller, engage a licensed advocate and apply for approval from the Land Control Board where necessary.
+Buying safely requires a clear process. This guide walks you through budgeting, area and property shortlist, viewings, and offer strategy. We detail essential due diligence (title searches, charges/caveats, survey/boundaries, compliance) before you commit any funds.
 
-We cover the importance of title searches at the Ministry of Lands, obtaining a valuation report and negotiating a sale agreement that protects your interests. The guide also explains payment of stamp duty and registration of the transfer, ensuring you become the legal owner. Following these steps helps you avoid costly mistakes and illegal transactions.
+Next, follow the conveyancing timeline—sale agreement, deposits and escrows, consents, stamp duty and registration—plus closing day checks. A printable checklist helps you track documents and responsibilities so nothing slips through the cracks.

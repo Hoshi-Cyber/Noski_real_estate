@@ -1,164 +1,299 @@
 // src/lib/pagination.js
 
-// ---- Internal: feature-detect window for SSR safety ----
+// ===== SSR guard =====
 const hasWindow = typeof window !== 'undefined';
 
-// Helper to update URL query params (no navigation)
-function updateQueryParams(params) {
-  if (!hasWindow) return;
-  const url = new URL(window.location.href);
-  Object.keys(params).forEach((key) => {
-    const val = params[key];
-    if (val !== '' && val !== null && val !== undefined) {
-      url.searchParams.set(key, String(val));
+/**
+ * @typedef {Object} FilterSelectors
+ * @property {string=} q        // text search input
+ * @property {string=} location // location select/input
+ * @property {string=} beds     // min beds (preferred key)
+ * @property {string=} bedrooms // alias: some pages used "bedrooms"
+ * @property {string=} type     // exact match
+ */
+
+/**
+ * @typedef {Object} InitOptions
+ * @property {number=} pageSize
+ * @property {FilterSelectors=} filterSelectors
+ * @property {string=} clearSelector
+ * @property {string} cardSelector      // e.g. '#cards .card'
+ * @property {string} pagerSelector     // e.g. '#pager'
+ * @property {string} emptySelector     // e.g. '#empty'
+ * @property {string=} resultCountSelector // e.g. '#result-count'
+ */
+
+const bySel = (sel, root = document) => (sel ? root.querySelector(sel) : null);
+const bySelAll = (sel, root = document) => (sel ? Array.from(root.querySelectorAll(sel)) : []);
+const getURL = () => new URL(window.location.href);
+
+function setQuery(params, replace = true) {
+  const url = getURL();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '' || (typeof v === 'number' && !v)) {
+      url.searchParams.delete(k);
     } else {
-      url.searchParams.delete(key);
+      url.searchParams.set(k, String(v));
     }
   });
-  window.history.replaceState({}, '', url);
+  (replace ? window.history.replaceState : window.history.pushState).call(
+    window.history,
+    {},
+    '',
+    url
+  );
 }
 
-// Read a form field value by name (scoped to root/form if provided)
-function readField(name, root = document) {
-  const el = root.querySelector(`[name="${name}"]`);
-  if (!el) return '';
-  if (el instanceof HTMLInputElement) {
-    if (el.type === 'checkbox') return el.checked ? (el.value || 'on') : '';
-    return el.value || '';
+function readQuery() {
+  const url = getURL();
+  return {
+    q: (url.searchParams.get('q') || '').trim(),
+    location: (url.searchParams.get('location') || '').trim(),
+    beds: (url.searchParams.get('beds') || '').trim(),
+    type: (url.searchParams.get('type') || '').trim(),
+    page: Math.max(1, parseInt(url.searchParams.get('page') || '1', 10)),
+  };
+}
+
+function setFieldValue(sel, value) {
+  if (!sel) return;
+  const el = bySel(sel);
+  if (!el) return;
+  if ('value' in el) el.value = value ?? '';
+}
+
+function cardSearchText(node) {
+  const dt = node.getAttribute('data-title');
+  return (dt || node.textContent || '').toLowerCase();
+}
+
+function cardMeta(node) {
+  return {
+    location: (node.getAttribute('data-loc') || '').toLowerCase(),
+    type: (node.getAttribute('data-type') || '').toLowerCase(),
+    beds: parseInt(node.getAttribute('data-beds') || '0', 10) || 0,
+    avail: (node.getAttribute('data-avail') || '').toLowerCase(),
+  };
+}
+
+function renderPager(container, currentPage, totalPages, makeHref, onClick) {
+  if (!container) return;
+  if (totalPages <= 1) {
+    container.innerHTML = '';
+    return;
   }
-  if (el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement) {
-    return el.value || '';
-  }
-  return '';
-}
 
-// ---------------------------------------------------------------------------
-// Public API (kept for backward compatibility)
-// ---------------------------------------------------------------------------
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const html = [
+    `<nav aria-label="Pagination" class="mt-8 flex items-center justify-center gap-2">`,
+    `<a href="${makeHref(Math.max(1, currentPage - 1))}" data-pg="${Math.max(1, currentPage - 1)}" rel="prev" class="pg-btn ${currentPage === 1 ? 'pg-disabled' : ''}" aria-disabled="${currentPage === 1}">Prev</a>`,
+    ...pages.map((p) => {
+      const active = p === currentPage;
+      return `<a href="${makeHref(p)}" data-pg="${p}" class="pg-num ${active ? 'pg-active' : ''}" ${active ? 'aria-current="page"' : ''}>${p}</a>`;
+    }),
+    `<a href="${makeHref(Math.min(totalPages, currentPage + 1))}" data-pg="${Math.min(totalPages, currentPage + 1)}" rel="next" class="pg-btn ${currentPage === totalPages ? 'pg-disabled' : ''}" aria-disabled="${currentPage === totalPages}">Next</a>`,
+    `</nav>`,
+  ].join('');
 
-// Apply filters + reset page to 1 (updates URL, no navigation)
-export function applyFilters(opts = {}) {
-  if (!hasWindow) return;
+  container.innerHTML = html;
 
-  const root = opts.root || document;
-
-  const availability = readField('availability', root);
-  const q = readField('q', root);
-  const beds = readField('beds', root);
-  const type = readField('type', root);
-  const minPrice = readField('minPrice', root);
-  const maxPrice = readField('maxPrice', root);
-
-  updateQueryParams({ availability, q, beds, type, minPrice, maxPrice, page: 1 });
-
-  // If you prefer a full navigation instead of history replace, uncomment:
-  // const url = new URL(window.location.href);
-  // window.location.href = url.toString();
-}
-
-// Handle pagination clicks
-export function setupPagination(selector = '[data-page]') {
-  if (!hasWindow) return;
-
-  document.querySelectorAll(selector).forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const page = btn.getAttribute('data-page') || '1';
-      const url = new URL(window.location.href);
-      url.searchParams.set('page', page);
-      window.location.href = url.toString(); // navigate so page content refreshes
-    });
-  });
-
-  // Fallback for rel="next|prev"
-  document.querySelectorAll('a[rel="next"], a[rel="prev"]').forEach((a) => {
+  container.querySelectorAll('a[data-pg]').forEach((a) => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      const rel = a.getAttribute('rel');
-      const url = new URL(window.location.href);
-      const current = parseInt(url.searchParams.get('page') || '1', 10);
-      const next = rel === 'next' ? current + 1 : Math.max(1, current - 1);
-      url.searchParams.set('page', String(next));
-      window.location.href = url.toString();
+      const page = parseInt(a.getAttribute('data-pg') || '1', 10);
+      onClick(page);
     });
   });
 }
 
-// Prefill filters from URL when page loads
-export function prefillFiltersFromURL(opts = {}) {
-  if (!hasWindow) return;
-
-  const root = opts.root || document;
-  const url = new URL(window.location.href);
-
-  const availability = url.searchParams.get('availability') || '';
-  const q = url.searchParams.get('q') || '';
-  const beds = url.searchParams.get('beds') || '';
-  const type = url.searchParams.get('type') || '';
-  const minPrice = url.searchParams.get('minPrice') || '';
-  const maxPrice = url.searchParams.get('maxPrice') || '';
-
-  const setVal = (name, value) => {
-    const el = root.querySelector(`[name="${name}"]`);
-    if (el) el.value = value;
-  };
-
-  setVal('availability', availability);
-  setVal('q', q);
-  setVal('beds', beds);
-  setVal('type', type);
-  setVal('minPrice', minPrice);
-  setVal('maxPrice', maxPrice);
-}
-
-// ---------------------------------------------------------------------------
-// New helper expected by pages: initPaginationAndFilters
-// Wires up: prefill -> form listeners -> reset buttons -> pagination
-// ---------------------------------------------------------------------------
-export function initPaginationAndFilters(options = {}) {
-  if (!hasWindow) return;
-
+function makeEngine(opts) {
   const {
-    formSelector = '#filters',
-    pageLinkSelector = '[data-page]',
-    resetSelector = '[data-reset]',
-    submitOnChange = true, // change selects/inputs triggers applyFilters
-  } = options;
+    pageSize = 12,
+    filterSelectors = {},
+    clearSelector,
+    cardSelector,
+    pagerSelector,
+    emptySelector,
+    resultCountSelector,
+  } = opts;
 
-  prefillFiltersFromURL();
+  const pagerEl = bySel(pagerSelector);
+  const emptyEl = bySel(emptySelector);
+  const resultCountEl = bySel(resultCountSelector);
 
-  const form = document.querySelector(formSelector);
-  if (form) {
-    // Submit -> apply filters (and reset page=1)
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      applyFilters({ root: form });
-      // Navigate to ensure static content updates:
-      const url = new URL(window.location.href);
-      window.location.href = url.toString();
+  let cards = [];
+  let filtered = [];
+  let currentPage = 1;
+
+  function readCards() {
+    cards = bySelAll(cardSelector);
+  }
+
+  function readFilters() {
+    const qCtrl = filterSelectors.q && bySel(filterSelectors.q);
+    const locCtrl = filterSelectors.location && bySel(filterSelectors.location);
+    const bedsSel = filterSelectors.beds || filterSelectors.bedrooms; // accept both
+    const bedsCtrl = bedsSel && bySel(bedsSel);
+    const typeCtrl = filterSelectors.type && bySel(filterSelectors.type);
+
+    const fromURL = readQuery();
+
+    const q = (qCtrl ? qCtrl.value : fromURL.q).trim();
+    const location = (locCtrl ? locCtrl.value : fromURL.location).trim();
+    const bedsStr = (bedsCtrl ? bedsCtrl.value : fromURL.beds).trim();
+    const type = (typeCtrl ? typeCtrl.value : fromURL.type).trim();
+
+    return {
+      q: q.toLowerCase(),
+      location: location.toLowerCase(),
+      beds: bedsStr ? parseInt(bedsStr, 10) || 0 : 0,
+      type: type.toLowerCase(),
+    };
+  }
+
+  function applyFilters() {
+    const { q, location, beds, type } = readFilters();
+
+    filtered = cards.filter((node) => {
+      const meta = cardMeta(node);
+
+      const passQ = !q || cardSearchText(node).includes(q);
+      const passLoc = !location || meta.location.includes(location);
+      const passBeds = !beds || meta.beds >= beds;
+      const passType = !type || meta.type === type;
+
+      return passQ && passLoc && passBeds && passType;
     });
 
-    // Live update on change (optional)
-    if (submitOnChange) {
-      form.addEventListener('change', (e) => {
-        const el = e.target;
-        if (el && (el.matches('select') || el.matches('input'))) {
-          applyFilters({ root: form });
-        }
+    if (resultCountEl) {
+      const n = filtered.length;
+      resultCountEl.textContent = `${n} listing${n === 1 ? '' : 's'}`;
+    }
+  }
+
+  function showPage(page) {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    currentPage = Math.min(Math.max(1, page), totalPages);
+
+    // Hide all first
+    cards.forEach((n) => {
+      n.style.display = 'none';
+      n.setAttribute('aria-hidden', 'true');
+    });
+
+    if (filtered.length === 0) {
+      if (emptyEl) emptyEl.classList.remove('hidden'); // class-based toggle
+    } else {
+      if (emptyEl) emptyEl.classList.add('hidden');
+      const start = (currentPage - 1) * pageSize;
+      const slice = filtered.slice(start, start + pageSize);
+      slice.forEach((n) => {
+        n.style.display = '';
+        n.removeAttribute('aria-hidden');
       });
     }
 
-    // Reset buttons
-    form.querySelectorAll(resetSelector).forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        form.reset();
-        const url = new URL(window.location.href);
-        url.search = '';
-        window.location.href = url.toString();
-      });
+    const makeHref = (p) => {
+      const url = getURL();
+      url.searchParams.set('page', String(p));
+      const { q, location, beds, type } = readFilters();
+      q ? url.searchParams.set('q', q) : url.searchParams.delete('q');
+      location ? url.searchParams.set('location', location) : url.searchParams.delete('location');
+      beds ? url.searchParams.set('beds', String(beds)) : url.searchParams.delete('beds');
+      type ? url.searchParams.set('type', type) : url.searchParams.delete('type');
+      return url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '');
+    };
+
+    renderPager(pagerEl, currentPage, totalPages, makeHref, (p) => {
+      setQuery({ page: p }, true); // update URL without reload
+      showPage(p);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
-  setupPagination(pageLinkSelector);
+  function hydrateFieldsFromURL() {
+    const q = readQuery();
+    setFieldValue(filterSelectors.q, q.q);
+    setFieldValue(filterSelectors.location, q.location);
+    setFieldValue(filterSelectors.beds || filterSelectors.bedrooms, q.beds);
+    setFieldValue(filterSelectors.type, q.type);
+  }
+
+  function syncURL(resetPage = false) {
+    const { q, location, beds, type } = readFilters();
+    const params = { q, location, type };
+    if (beds) params.beds = beds;
+    params.page = resetPage ? 1 : currentPage;
+    setQuery(params, true);
+  }
+
+  function refresh(resetPage = false) {
+    readCards();
+    applyFilters();
+    if (resetPage) currentPage = 1;
+    const q = readQuery();
+    showPage(resetPage ? 1 : q.page);
+  }
+
+  return {
+    refresh,
+    hookUI() {
+      hydrateFieldsFromURL();
+
+      // Filter change handlers
+      ['q', 'location', 'beds', 'bedrooms', 'type'].forEach((key) => {
+        const sel = filterSelectors[key];
+        const el = sel ? bySel(sel) : null;
+        if (!el) return;
+        const handler = () => {
+          syncURL(true);
+          refresh(true);
+        };
+        el.addEventListener('input', handler);
+        el.addEventListener('change', handler);
+      });
+
+      // Clear button
+      const clearBtn = bySel(clearSelector);
+      if (clearBtn) {
+        clearBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          ['q', 'location', 'beds', 'bedrooms', 'type'].forEach((key) =>
+            setFieldValue(filterSelectors[key], '')
+          );
+          setQuery({ q: '', location: '', beds: '', type: '', page: 1 }, true);
+          refresh(true);
+        });
+      }
+
+      // Back/forward
+      window.addEventListener('popstate', () => {
+        hydrateFieldsFromURL();
+        refresh(false);
+      });
+    },
+  };
 }
+
+export function initPaginationAndFilters(options = {}) {
+  if (!hasWindow) return;
+  if (!options.cardSelector || !options.pagerSelector || !options.emptySelector) {
+    console.warn('[pagination] Missing required selectors (card/pager/empty).');
+    return;
+  }
+
+  const engine = makeEngine(options);
+  engine.hookUI();
+  engine.refresh(false);
+
+  // Optional global handle
+  window.ListingPager = {
+    refresh: () => engine.refresh(false),
+    resetAndRefresh: () => engine.refresh(true),
+  };
+}
+
+// Legacy no-ops for backward compatibility
+export function applyFilters() {}
+export function setupPagination() {}
+export function prefillFiltersFromURL() {}

@@ -1,0 +1,28 @@
+---
+interface Crumb {
+  label: string;
+  href?: string;
+}
+const { segments = [] }: { segments: Crumb[] } = Astro.props;
+---
+
+<nav class="text-sm text-neutral-500 mb-4" aria-label="Breadcrumb">
+  <ol class="flex flex-wrap items-center gap-1">
+    <li>
+      <a href="/" class="hover:underline text-neutral-600">Home</a>
+    </li>
+
+    {segments.map((seg, index) => (
+      <>
+        <li aria-hidden="true" class="text-neutral-400">/</li>
+        <li>
+          {seg.href ? (
+            <a href={seg.href} class="hover:underline text-neutral-600">{seg.label}</a>
+          ) : (
+            <span class="text-neutral-800 font-medium">{seg.label}</span>
+          )}
+        </li>
+      </>
+    ))}
+  </ol>
+</nav>
