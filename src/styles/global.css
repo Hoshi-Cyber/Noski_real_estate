@@ -230,6 +230,16 @@ footer.bg-primary a:focus-visible {
   outline-offset: 2px;
 }
 
+/* ---- Footer (on-dark) heading overrides ---- */
+footer.bg-primary h1,
+footer.bg-primary h2,
+footer.bg-primary h3,
+footer.bg-primary h4,
+footer.bg-primary h5,
+footer.bg-primary h6 {
+  color: var(--color-neutral-100);
+}
+
 /* ---- Responsive Adjustments ---- */
 @media (max-width: 480px) {
   .section-title { @apply text-xl; }
