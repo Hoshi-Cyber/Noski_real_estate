@@ -1,7 +1,6 @@
-# Netlify configuration for Severino Realty microsite
 [build]
   command = "npm run build"
   publish = "dist"
 
-[dev]
-  command = "npm run dev"
+[build.environment]
+  NODE_VERSION = "20"
