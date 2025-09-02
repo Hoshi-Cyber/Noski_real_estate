@@ -1,7 +1,8 @@
 ---
 import MainLayout from '../../../../layouts/MainLayout.astro';
+import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
 
-const title = 'Local Area Spotlights | Severino Reality';
+const title = 'Local Area Spotlights | Severino Realty';
 const description = 'Neighborhood-by-neighborhood pricing, speed, and supply with quick links to listings.';
 
 const areas = [
@@ -26,18 +27,32 @@ const ld = {
 };
 ---
 <MainLayout {title} {description}>
-  <section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
+  <section class="section container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Resources', href: '/resources' },
+        { label: 'Market Reports', href: '/resources/market-reports' },
+        { label: 'Local Spotlights' }
+      ]}
+      class="mb-6"
+    />
+
     <header class="mb-6 md:mb-8">
       <h1 class="text-2xl md:text-3xl font-bold text-primary">Local Area Spotlights</h1>
       <p class="mt-2 text-neutral-700">Scan key KPIs per neighborhood and jump to live listings.</p>
 
       <div class="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
-        <input id="area-search" type="search" placeholder="Search neighborhoods"
-               class="w-full sm:max-w-xs rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm"
-               aria-label="Search neighborhoods" />
+        <input
+          id="area-search"
+          type="search"
+          placeholder="Search neighborhoods"
+          class="w-full sm:max-w-xs rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cta"
+          aria-label="Search neighborhoods"
+        />
         <label class="inline-flex items-center gap-2 text-sm text-neutral-600">
           <span>Sort</span>
-          <select id="area-sort" class="rounded-md ring-1 ring-neutral-300 px-2 py-2 text-sm">
+          <select id="area-sort" class="rounded-md ring-1 ring-neutral-300 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cta">
             <option value="name">Name (A–Z)</option>
             <option value="price">Median Price</option>
             <option value="dom">Days on Market</option>
@@ -48,10 +63,11 @@ const ld = {
 
     <div id="area-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {areas.map(a => (
-        <article class="rounded-md ring-1 ring-neutral-200 bg-white p-4" data-name={a.name} data-price={a.price} data-dom={a.dom}>
+        <article class="rounded-2xl ring-1 ring-neutral-200 bg-white p-4 hover:shadow-md transition"
+                 data-name={a.name} data-price={a.price} data-dom={a.dom}>
           <header class="mb-2 flex items-center justify-between gap-3">
             <h2 class="text-lg font-semibold text-primary">{a.name}</h2>
-            <a href={a.href} class="text-sm text-[color:var(--color-cta)] hover:underline">View listings →</a>
+            <a href={a.href} class="text-sm text-cta hover:underline">View listings →</a>
           </header>
           <p class="text-sm text-neutral-600">{a.blurb}</p>
           <dl class="mt-3 grid grid-cols-3 gap-2 text-center">
@@ -73,7 +89,7 @@ const ld = {
     </div>
 
     <div class="mt-8 flex flex-wrap gap-3">
-      <a href="/contact" class="rounded-md px-3 py-2 bg-[color:var(--color-cta)] text-white text-sm">Request custom market analysis</a>
+      <a href="/contact" class="btn-cta text-sm">Request custom market analysis</a>
       <a href="/resources/market-reports/quarterly" class="rounded-md px-3 py-2 ring-1 ring-neutral-200 bg-white text-sm">View quarterly archive</a>
     </div>
 
@@ -85,7 +101,6 @@ const ld = {
       const select = document.getElementById('area-sort');
 
       function normalizeNum(v){
-        // Expect formats like "—" or "KES 12.5M"; returns NaN when not numeric
         const n = String(v).replace(/[^\d.]/g,'');
         return n ? parseFloat(n) : NaN;
       }

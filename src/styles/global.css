@@ -151,6 +151,14 @@ a:disabled {
   .tile-title { @apply text-lg font-semibold text-primary; }
   .tile-sub   { @apply text-sm text-neutral-600 mt-1; }
 
+  /* FAQ tile enhancements */
+  .tile-hover { @apply hover:-translate-y-0.5 hover:shadow-md transition; }
+  .tile-badge {
+    @apply w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center text-primary mb-4 ring-1 ring-neutral-200;
+  }
+  .tile-icon-svg { width: 20px; height: 20px; display: block; }
+  .category-tile:hover .tile-badge { @apply bg-cta text-white ring-cta; }
+
   /* ---- Area Card ---- */
   .area-card {
     @apply shrink-0 snap-start basis-2/3 sm:basis-1/3 md:basis-1/4 lg:basis-1/5

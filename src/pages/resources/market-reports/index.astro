@@ -1,15 +1,16 @@
 ---
 import { getCollection } from 'astro:content';
 import MainLayout from '../../../layouts/MainLayout.astro';
+import Breadcrumbs from '../../../components/resources/Breadcrumbs.astro';
 import ResourceCard from '../../../components/ResourceCard.astro';
 
 const title = 'Market Reports | Severino Realty';
 const description = 'Local trends, quarterly reports, and neighborhood spotlights.';
 
 const normalize = (s = '') => {
-  const v = s.toLowerCase().trim();
+  const v = s.toLowerCase().replace(/_/g, '-').trim();
   if (v === 'faqs' || v === 'faq') return 'faqs';
-  if (v === 'market-reports' || v === 'market' || v === 'reports' || v === 'market_reports') return 'market-reports';
+  if (['market-reports','market','reports'].includes(v)) return 'market-reports';
   return 'guides';
 };
 
@@ -21,45 +22,156 @@ const reports = all
     const db = b.data?.pubDate ? new Date(b.data.pubDate).getTime() : 0;
     return db - da || String(a.data?.title || '').localeCompare(String(b.data?.title || ''));
   });
+
+const latest = reports[0];
+const archive = reports.slice(1);
+
+// Simple inline trend preview (placeholder)
+const points = [ {x:0,y:98},{x:1,y:102},{x:2,y:101},{x:3,y:105},{x:4,y:107},{x:5,y:106},{x:6,y:110} ];
+function toPath(pts){
+  if (!pts?.length) return '';
+  const yVals = pts.map(p=>p.y);
+  const yMin = Math.min(...yVals), yMax = Math.max(...yVals) || 1;
+  const xMax = pts.length - 1 || 1;
+  const norm = pts.map((p,i)=>({ x:(i/xMax)*100, y:(1 - (p.y - yMin)/(yMax - yMin || 1))*100 }));
+  return norm.map((p,i)=> i===0?`M ${p.x},${p.y}`:` L ${p.x},${p.y}`).join('');
+}
+const pathD = toPath(points);
+
+// JSON-LD archive list
+const ld = {
+  '@context':'https://schema.org',
+  '@type':'ItemList',
+  itemListElement: reports.map((r,i)=>({
+    '@type':'ListItem',
+    position:i+1,
+    item:{ '@type':'CreativeWork', name:r.data?.title || r.slug, url:`/resources/market-reports/${r.slug}` }
+  }))
+};
 ---
 
 <MainLayout {title} {description}>
-  <section class="container py-10">
+  <section class="section container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Resources', href: '/resources' },
+        { label: 'Market Reports' }
+      ]}
+      class="mb-6"
+    />
+
+    <!-- Hero: snapshot + latest highlight -->
     <header class="mb-8">
-      <h1 class="text-3xl font-bold text-primary">Market Reports</h1>
-      <p class="text-neutral-600 mt-1">
+      <h1 class="section-title">Market Reports</h1>
+      <p class="text-neutral-600 mt-2 max-w-2xl">
         Local trends, quarterly reports, and neighborhood spotlights.
       </p>
+
+      <div class="mt-6 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+        <!-- Snapshot KPIs + mini trend -->
+        <aside class="rounded-2xl ring-1 ring-neutral-200 bg-white p-4">
+          <h2 class="section-subtitle">Market snapshot</h2>
+          <div class="mt-3 grid grid-cols-3 gap-3">
+            <div class="rounded-md ring-1 ring-neutral-200 p-3 text-center">
+              <div class="text-xs text-neutral-500">Median Price</div>
+              <div class="text-lg font-semibold text-primary">—</div>
+            </div>
+            <div class="rounded-md ring-1 ring-neutral-200 p-3 text-center">
+              <div class="text-xs text-neutral-500">Days on Market</div>
+              <div class="text-lg font-semibold text-primary">—</div>
+            </div>
+            <div class="rounded-md ring-1 ring-neutral-200 p-3 text-center">
+              <div class="text-xs text-neutral-500">Active Inventory</div>
+              <div class="text-lg font-semibold text-primary">—</div>
+            </div>
+          </div>
+          <figure class="mt-4 rounded-md ring-1 ring-neutral-200 bg-white p-3">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-36" role="img" aria-label="Trend line preview">
+              <rect x="0" y="0" width="100" height="100" fill="none" />
+              <path d={pathD} fill="none" stroke="currentColor" class="text-[color:var(--color-primary)]" stroke-width="1.5"/>
+            </svg>
+            <figcaption class="mt-2 text-xs text-neutral-500">Directional trend preview. Replace with live data when ready.</figcaption>
+          </figure>
+        </aside>
+
+        <!-- Latest report highlight -->
+        <div class="rounded-2xl ring-1 ring-neutral-200 bg-white p-4">
+          <h2 class="section-subtitle">Latest report</h2>
+          {latest ? (
+            <div class="mt-3">
+              <ResourceCard
+                resource={{
+                  title: latest.data.title,
+                  description: latest.data.description,
+                  slug: latest.slug,
+                  section: latest.data.section || 'market-reports',
+                  heroImage: latest.data.heroImage,
+                  image: latest.data.image,
+                  imagesFolder: latest.data.imagesFolder,
+                  pubDate: latest.data.pubDate
+                }}
+              />
+            </div>
+          ) : (
+            <p class="text-neutral-600 mt-2">Add a report with <code>section: "market-reports"</code> to populate this area.</p>
+          )}
+
+          <div class="mt-4 flex flex-wrap gap-3">
+            <a href="/resources/market-reports/current" class="rounded-md px-3 py-2 ring-1 ring-neutral-200 bg-white text-sm">Current snapshot</a>
+            <a href="/resources/market-reports/quarterly" class="rounded-md px-3 py-2 ring-1 ring-neutral-200 bg-white text-sm">Quarterly archive</a>
+            <a href="/resources/market-reports/local-spotlights" class="rounded-md px-3 py-2 ring-1 ring-neutral-200 bg-white text-sm">Local spotlights</a>
+            <a href="/contact" class="btn-cta text-sm">Request custom market analysis</a>
+          </div>
+        </div>
+      </div>
     </header>
 
-    {reports.length === 0 ? (
-      <p class="text-neutral-600">No reports yet. Please check back soon.</p>
-    ) : (
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {reports.map((e) => (
-          <ResourceCard
-            resource={{
-              title: e.data.title,
-              description: e.data.description,
-              slug: e.slug,
-              section: e.data.section || 'market-reports',
-              heroImage: e.data.heroImage,
-              image: e.data.image,
-              imagesFolder: e.data.imagesFolder,
-              pubDate: e.data.pubDate
-            }}
-          />
-        ))}
+    <!-- Archive grid with search -->
+    <section class="mt-4">
+      <div class="mb-4 flex items-center gap-3">
+        <input id="report-search" type="search" placeholder="Search reports (e.g., 'Q2 2025', 'Kilimani')"
+               class="w-full max-w-xl rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cta"
+               aria-label="Search market reports" />
       </div>
-    )}
 
-    <div class="mt-8 flex flex-wrap gap-3">
-      <a href="/contact" class="rounded-md px-3 py-2 bg-[color:var(--color-cta)] text-white text-sm">
-        Request custom market analysis
-      </a>
-      <a href="/blog" class="rounded-md px-3 py-2 ring-1 ring-neutral-200 bg-white text-sm">
-        Read latest insights
-      </a>
-    </div>
+      {reports.length === 0 ? (
+        <p class="text-neutral-600">No reports found.</p>
+      ) : (
+        <div id="archive-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {archive.map((e) => (
+            <article class="report-card" data-title={`${e.data?.title || ''} ${e.data?.description || ''}`.toLowerCase()}>
+              <ResourceCard
+                resource={{
+                  title: e.data.title,
+                  description: e.data.description,
+                  slug: e.slug,
+                  section: e.data.section || 'market-reports',
+                  heroImage: e.data.heroImage,
+                  image: e.data.image,
+                  imagesFolder: e.data.imagesFolder,
+                  pubDate: e.data.pubDate
+                }}
+              />
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+
+    <script type="application/ld+json">{JSON.stringify(ld)}</script>
   </section>
+
+  <script>
+    // Simple archive search filter
+    const input = document.getElementById('report-search');
+    const grid = document.getElementById('archive-grid');
+    input?.addEventListener('input', () => {
+      const q = (input.value || '').toLowerCase().trim();
+      grid?.querySelectorAll('.report-card').forEach((card) => {
+        const t = card.getAttribute('data-title') || '';
+        card.classList.toggle('hidden', !!q && !t.includes(q));
+      });
+    });
+  </script>
 </MainLayout>

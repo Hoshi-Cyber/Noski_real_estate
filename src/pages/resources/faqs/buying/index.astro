@@ -1,7 +1,8 @@
 ---
 import MainLayout from '../../../../layouts/MainLayout.astro';
+import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
 
-const title = 'Buying FAQs | Severino Reality';
+const title = 'Buying FAQs | Severino Realty';
 const description = 'Common questions about buying property.';
 const guideUrl = '/resources/guides/buying';
 
@@ -13,16 +14,28 @@ const faqs = [
 ];
 ---
 <MainLayout {title} {description}>
-  <section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
+  <section class="section container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Resources', href: '/resources' },
+        { label: 'FAQs', href: '/resources/faqs' },
+        { label: 'Buying FAQs' }
+      ]}
+      class="mb-6"
+    />
+
     <header class="mb-6 md:mb-8">
       <h1 class="text-2xl md:text-3xl font-bold text-primary">Buying FAQs</h1>
       <div class="mt-3 flex items-center gap-3">
-        <input id="faq-q" type="search" placeholder="Search Buying FAQs"
-               class="w-full max-w-lg rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm"
-               aria-label="Search Buying FAQs" />
-        <a href={guideUrl} class="rounded-md px-3 py-2 bg-[color:var(--color-cta)] text-white text-sm">
-          Read full Guide
-        </a>
+        <input
+          id="faq-q"
+          type="search"
+          placeholder="Search Buying FAQs"
+          class="w-full max-w-lg rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cta"
+          aria-label="Search Buying FAQs"
+        />
+        <a href={guideUrl} class="btn-cta text-sm">Read full Guide</a>
       </div>
     </header>
 
@@ -40,12 +53,10 @@ const faqs = [
       ))}
     </div>
 
-    <!-- One-open-only behavior + search filter -->
     <script type="module" client:load>
       const q = document.getElementById('faq-q');
       const list = document.getElementById('faq-list');
 
-      // Filter by text
       q?.addEventListener('input', () => {
         const term = q.value.toLowerCase();
         list.querySelectorAll('details').forEach(d => {
@@ -54,7 +65,6 @@ const faqs = [
         });
       });
 
-      // Only one <details> open at a time
       function closeOthers(except){
         list.querySelectorAll('details[open]').forEach(d => { if (d !== except) d.removeAttribute('open'); });
       }
@@ -64,7 +74,6 @@ const faqs = [
         if (d.open) closeOthers(d);
       }, true);
 
-      // Optional: open item from hash
       const hash = decodeURIComponent(location.hash.slice(1));
       if (hash && list) {
         const match = [...list.querySelectorAll('details')].find(d =>
