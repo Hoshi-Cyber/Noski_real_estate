@@ -1,23 +1,38 @@
 ---
-title: Parklands 2BR En-suite
+title: "Parklands 2BR En-suite"
+slug: "parklands-2br-ensuite-stay"
+availability: "Short Stays"
+location: "Parklands, Nairobi"
 price: 11000
-location: Parklands, Nairobi
 bedrooms: 2
 bathrooms: 2
-type: Apartment
-availability: Short Stays
-imagesFolder: /images/properties/parklands-2br-ensuite-stay
+type: "Apartment"
+images:
+  - /images/listings/parklands-2br-ensuite-stay/hero.webp
+  - /images/listings/parklands-2br-ensuite-stay/1.webp
+  - /images/listings/parklands-2br-ensuite-stay/2.webp
+  - /images/listings/parklands-2br-ensuite-stay/3.webp
+  - /images/listings/parklands-2br-ensuite-stay/4.webp
+  - /images/listings/parklands-2br-ensuite-stay/5.webp
 amenities:
-- Fast Wi-Fi
-- Hot Shower
-- Secure Parking
-- Backup Power
-description: 'Comfortable 2-bed apartment in Parklands, Nairobi. Ideal for business
-  or leisure. Flexible check-in and friendly support.
+  - Fast Wi-Fi and smart TV
+  - Ensuite bedrooms with wardrobes
+  - Modern fitted kitchenette
+  - Hot shower and clean linens
+  - Secure parking within gated compound
+  - Backup power and reliable water
+  - Flexible check-in/out
+neighborhoodHighlights:
+  - Prime Parklands address near Diamond Plaza
+  - Proximity to Aga Khan and MP Shah Hospitals
+  - Easy access to CBD and Westlands
+  - Nearby malls, restaurants, and cafes
+description: |
+  This furnished 2-bedroom serviced apartment in Parklands is designed for 
+  short stays. Both bedrooms are ensuite, with a lounge, fitted kitchenette, 
+  and Wi-Fi-enabled entertainment.  
 
-  '
-area: Parklands
-category: Residential
+  Guests enjoy backup power, secure parking, and flexible check-in options.  
+  Its location ensures easy access to hospitals, malls, and business districts.  
 ---
-
-Well-appointed interiors, clean linens and easy access to shops and transport. Book your stay today.
+Serviced Parklands short-stay apartment offering convenience and comfort.

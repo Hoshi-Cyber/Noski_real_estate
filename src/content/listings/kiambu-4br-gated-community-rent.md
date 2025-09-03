@@ -1,22 +1,40 @@
 ---
-title: Kiambu 4BR Gated Community
+title: "Kiambu 4BR Gated Community"
+slug: "kiambu-4br-gated-community-rent"
+availability: "For Rent"
+location: "Kiambu, Nairobi"
 price: 110000
-location: Kiambu, Kiambu
 bedrooms: 4
 bathrooms: 3
-type: House
-availability: For Rent
-imagesFolder: /images/properties/kiambu-4br-gated-community-rent
+type: "House"
+images:
+  - /images/listings/kiambu-4br-gated-community-rent/hero.webp
+  - /images/listings/kiambu-4br-gated-community-rent/1.webp
+  - /images/listings/kiambu-4br-gated-community-rent/2.webp
+  - /images/listings/kiambu-4br-gated-community-rent/3.webp
+  - /images/listings/kiambu-4br-gated-community-rent/4.webp
+  - /images/listings/kiambu-4br-gated-community-rent/5.webp
 amenities:
-- Secure Parking
-- Reliable Water
-- Good Road Access
-description: 'Well-kept 4-bedroom house in Kiambu, Kiambu. Convenient access to amenities
-  and transport. Book a viewing.
+  - Spacious living room with balcony
+  - Modern fitted kitchen with pantry
+  - Ensuite master bedroom
+  - Built-in wardrobes in all rooms
+  - 2 parking bays and visitor parking
+  - Reliable water and electricity
+  - Secure gated community with CCTV
+  - Landscaped compound with play areas
+neighborhoodHighlights:
+  - Peaceful gated estate environment
+  - Close to Ridgeways, Thindigua, and malls
+  - Easy CBD access via Thika Road
+  - Near leading schools and hospitals
+description: |
+  This 4-bedroom rental in Kiambu provides a secure home within a gated 
+  community. It features a spacious lounge, fitted kitchen, ensuite master, 
+  and balconies.  
 
-  '
-area: Kiambu
-category: Residential
+  With 2 parking bays, landscaped grounds, and reliable services, the home 
+  offers comfort and security. Its location ensures quick access to Nairobi 
+  while maintaining a suburban lifestyle.
 ---
-
-Spacious living areas with natural light. Modern finishes and a practical layout for families or professionals.
+Family-friendly Kiambu rental home with gated estate security.

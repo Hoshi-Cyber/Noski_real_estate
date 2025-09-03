@@ -1,22 +1,39 @@
 ---
-title: Westlands 2BR Skyline Apartment
+title: "Westlands 2BR Skyline Apartment"
+slug: "westlands-2br-skyline-apartment-rent"
+availability: "For Rent"
+location: "Westlands, Nairobi"
 price: 140000
-location: Westlands, Nairobi
 bedrooms: 2
 bathrooms: 2
-type: Apartment
-availability: For Rent
-imagesFolder: /images/properties/westlands-2br-skyline-apartment-rent
+type: "Apartment"
+images:
+  - /images/listings/westlands-2br-skyline-apartment-rent/hero.webp
+  - /images/listings/westlands-2br-skyline-apartment-rent/1.webp
+  - /images/listings/westlands-2br-skyline-apartment-rent/2.webp
+  - /images/listings/westlands-2br-skyline-apartment-rent/3.webp
+  - /images/listings/westlands-2br-skyline-apartment-rent/4.webp
+  - /images/listings/westlands-2br-skyline-apartment-rent/5.webp
 amenities:
-- Secure Parking
-- Reliable Water
-- Good Road Access
-description: 'Well-kept 2-bedroom apartment in Westlands, Nairobi. Convenient access
-  to amenities and transport. Book a viewing.
+  - Spacious lounge with balcony
+  - Modern fitted kitchen
+  - Ensuite bedrooms with wardrobes
+  - High-speed internet ready
+  - Secure parking for residents
+  - Reliable water and backup generator
+  - Gated compound with 24/7 security
+neighborhoodHighlights:
+  - Located in central Westlands near Sarit and Westgate
+  - Close to offices, hospitals, and schools
+  - Proximity to CBD with easy transport links
+  - Surrounded by restaurants and entertainment hubs
+description: |
+  This 2-bedroom skyline apartment in Westlands for rent offers spacious 
+  interiors with modern finishes. Ensuite bedrooms and a fitted kitchen enhance 
+  convenience.  
 
-  '
-area: Westlands
-category: Residential
+  Residents enjoy secure parking, reliable utilities, and internet readiness.  
+  Its location provides strong connectivity to Nairobi’s business and lifestyle 
+  districts.  
 ---
-
-Spacious living areas with natural light. Modern finishes and a practical layout for families or professionals.
+Westlands rental apartment with skyline views and modern amenities.

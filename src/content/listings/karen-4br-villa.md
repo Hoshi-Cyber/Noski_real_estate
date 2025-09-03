@@ -1,21 +1,49 @@
 ---
-title: Luxury 4BR Villa in Karen
-price: 220000
-location: Karen, Nairobi
+title: "Luxury 4BR Villa in Karen"
+slug: "karen-4br-villa"
+availability: "For Sale"
+location: "Karen, Nairobi"
+price: 150000000
 bedrooms: 4
 bathrooms: 3
-type: Villa
-availability: For Sale
-imagesFolder: /images/properties/luxury-4br-villa-in-karen
+type: "Villa"
+images:
+  - /images/listings/karen-4br-villa/hero.webp
+  - /images/listings/karen-4br-villa/1.webp
+  - /images/listings/karen-4br-villa/2.webp
+  - /images/listings/karen-4br-villa/3.webp
+  - /images/listings/karen-4br-villa/4.webp
+  - /images/listings/karen-4br-villa/5.webp
 amenities:
-- Large Garden
-- Gated Community
-- Detached Staff Quarters
-- Fireplace
-area: Karen
-category: Residential
+  - Half-acre manicured garden with mature trees
+  - Formal lounge with fireplace and dining area
+  - Modern kitchen with breakfast island and pantry
+  - Ensuite master with walk-in closet and balcony
+  - Detached DSQ with separate entry
+  - High ceilings and expansive patios
+  - Backup generator and borehole water supply
+  - Secure gated community with 24/7 security patrols
+  - Ample parking for 5+ cars
+  - Entertainment terrace and landscaped outdoor spaces
+neighborhoodHighlights:
+  - Located in Karen’s exclusive gated communities
+  - Close to The Hub, Galleria, and Karen Crossroads malls
+  - Easy access to top international schools: Hillcrest, Brookhouse, Banda
+  - Near Nairobi National Park and Karen Blixen Museum
+  - Proximity to Karen Hospital and other leading health facilities
+  - Leafy, serene environment with strong security presence
+description: |
+  This luxurious 4-bedroom villa in Karen is set on half an acre of manicured 
+  grounds. The design combines open-plan living with elegant details, including 
+  a formal lounge with stone fireplace, high ceilings, and expansive terraces.  
+
+  The master suite features a walk-in closet and balcony, while all other 
+  bedrooms are ensuite with fitted wardrobes. The kitchen is modern and 
+  spacious, complete with breakfast island and pantry.  
+
+  Outdoors, landscaped gardens, entertainment patios, and a detached DSQ 
+  complement the home’s functional design. With borehole water, backup 
+  generator, and top-tier security, this villa guarantees secure, 
+  uninterrupted living in one of Nairobi’s most desirable suburbs.
 ---
-
-Set on half an acre of manicured grounds, this elegant four-bedroom villa offers luxury living in the exclusive Karen neighbourhood. The property features a flowing open-plan layout with high ceilings, a gourmet kitchen and expansive patios overlooking a landscaped garden.
-
-On the ground floor, the formal living room centres around a stone fireplace while the dining area opens out to a covered terrace ideal for entertaining. Upstairs, the master suite includes a walk-in closet and balcony. The villa is located in a secure gated community close to international schools, shopping malls and the Nairobi National Park.
+Prestigious Karen villa offering elegance, privacy, and high-end comfort.

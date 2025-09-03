@@ -1,23 +1,39 @@
 ---
-title: Nyari Guest Wing (Private Entry)
+title: "Nyari Guest Wing (Private Entry)"
+slug: "nyari-guest-wing-stay"
+availability: "Short Stays"
+location: "Nyari, Nairobi"
 price: 9000
-location: Nyari, Nairobi
 bedrooms: 1
 bathrooms: 1
-type: House
-availability: Short Stays
-imagesFolder: /images/properties/nyari-guest-wing-stay
+type: "House"
+images:
+  - /images/listings/nyari-guest-wing-stay/hero.webp
+  - /images/listings/nyari-guest-wing-stay/1.webp
+  - /images/listings/nyari-guest-wing-stay/2.webp
+  - /images/listings/nyari-guest-wing-stay/3.webp
+  - /images/listings/nyari-guest-wing-stay/4.webp
+  - /images/listings/nyari-guest-wing-stay/5.webp
 amenities:
-- Fast Wi-Fi
-- Hot Shower
-- Secure Parking
-- Backup Power
-description: 'Comfortable 1-bed house in Nyari, Nairobi. Ideal for business or leisure.
-  Flexible check-in and friendly support.
+  - Private entry for full privacy
+  - Fast Wi-Fi and smart TV
+  - Modern fitted kitchenette
+  - Hot shower and fresh linens
+  - Backup power and reliable water
+  - Secure parking within compound
+  - Flexible check-in/out
+  - Housekeeping and laundry available
+neighborhoodHighlights:
+  - Exclusive Nyari neighborhood near UN and embassies
+  - Close to Village Market and Gigiri shopping hubs
+  - Proximity to international schools and hospitals
+  - Secure, leafy environment with quiet ambiance
+description: |
+  This 1-bedroom guest wing in Nyari offers a private-entry setup perfect for 
+  short stays. It includes a kitchenette, lounge area, Wi-Fi, and modern bathroom.  
 
-  '
-area: Nyari
-category: Short-Stay
+  Guests enjoy secure parking, backup utilities, and flexible check-in/out.  
+  Its location near diplomatic zones and malls ensures convenience while 
+  providing a peaceful retreat.  
 ---
-
-Well-appointed interiors, clean linens and easy access to shops and transport. Book your stay today.
+Private Nyari guest wing stay offering security, comfort, and privacy.

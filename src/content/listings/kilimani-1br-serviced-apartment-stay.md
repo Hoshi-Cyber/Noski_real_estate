@@ -1,23 +1,42 @@
 ---
-title: Kilimani 1BR Serviced Apartment
+title: "Kilimani 1BR Serviced Apartment"
+slug: "kilimani-1br-serviced-apartment-stay"
+availability: "Short Stays"
+location: "Kilimani, Nairobi"
 price: 8000
-location: Kilimani, Nairobi
 bedrooms: 1
 bathrooms: 1
-type: Apartment
-availability: Short Stays
-imagesFolder: /images/properties/kilimani-1br-serviced-apartment-stay
+type: "Apartment"
+images:
+  - /images/listings/kilimani-1br-serviced-apartment-stay/hero.webp
+  - /images/listings/kilimani-1br-serviced-apartment-stay/1.webp
+  - /images/listings/kilimani-1br-serviced-apartment-stay/2.webp
+  - /images/listings/kilimani-1br-serviced-apartment-stay/3.webp
+  - /images/listings/kilimani-1br-serviced-apartment-stay/4.webp
+  - /images/listings/kilimani-1br-serviced-apartment-stay/5.webp
 amenities:
-- Fast Wi-Fi
-- Hot Shower
-- Secure Parking
-- Backup Power
-description: 'Comfortable 1-bed apartment in Kilimani, Nairobi. Ideal for business
-  or leisure. Flexible check-in and friendly support.
+  - Fast Wi-Fi and smart TV
+  - Fully equipped kitchenette
+  - Hot shower and clean linens
+  - Secure on-site parking
+  - Backup power and constant water
+  - Laundry and housekeeping services
+  - Flexible check-in/out
+neighborhoodHighlights:
+  - Located in Kilimani near Yaya Centre and Prestige Plaza
+  - Easy access to CBD, Upper Hill, and Westlands
+  - Surrounded by cafes, restaurants, and nightlife spots
+  - Proximity to Nairobi Hospital and clinics
+  - Vibrant, secure community ideal for short stays
+description: |
+  This fully serviced 1-bedroom apartment in Kilimani offers modern convenience 
+  for business and leisure travelers. It features a lounge with smart TV, 
+  kitchenette, hot shower, and fast Wi-Fi.  
 
-  '
-area: Kilimani
-category: Residential
+  Guests benefit from housekeeping, laundry, backup utilities, and secure 
+  parking. Flexible check-in/out options add convenience.  
+
+  The central location ensures quick access to Nairobi’s business hubs, 
+  hospitals, malls, and entertainment options.
 ---
-
-Well-appointed interiors, clean linens and easy access to shops and transport. Book your stay today.
+Serviced Kilimani apartment designed for comfort, convenience, and flexibility.

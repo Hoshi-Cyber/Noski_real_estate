@@ -1,22 +1,47 @@
 ---
-title: Kilimani 2BR Modern Apartment
+title: "Kilimani 2BR Modern Apartment"
+slug: "kilimani-2br-modern-apartment-rent"
+availability: "For Rent"
+location: "Kilimani, Nairobi"
 price: 120000
-location: Kilimani, Nairobi
 bedrooms: 2
 bathrooms: 2
-type: Apartment
-availability: For Rent
-imagesFolder: /images/properties/kilimani-2br-modern-apartment-rent
+type: "Apartment"
+images:
+  - /images/listings/kilimani-2br-modern-apartment-rent/hero.webp
+  - /images/listings/kilimani-2br-modern-apartment-rent/1.webp
+  - /images/listings/kilimani-2br-modern-apartment-rent/2.webp
+  - /images/listings/kilimani-2br-modern-apartment-rent/3.webp
+  - /images/listings/kilimani-2br-modern-apartment-rent/4.webp
+  - /images/listings/kilimani-2br-modern-apartment-rent/5.webp
 amenities:
-- Secure Parking
-- Reliable Water
-- Good Road Access
-description: 'Well-kept 2-bedroom apartment in Kilimani, Nairobi. Convenient access
-  to amenities and transport. Book a viewing.
+  - Rooftop lounge with panoramic views
+  - Residents’ gym and fitness area
+  - High-speed lifts with backup power
+  - Borehole water with storage tanks
+  - Backup generator covering entire block
+  - Ensuite bedrooms with fitted wardrobes
+  - Modern fitted kitchen with pantry
+  - Spacious lounge with balcony
+  - Secure parking for 2 cars per unit
+  - 24/7 manned security and CCTV coverage
+neighborhoodHighlights:
+  - Walking distance to Yaya Centre and Prestige Plaza
+  - Surrounded by top restaurants, cafes, and entertainment spots
+  - Close to Nairobi Hospital and top medical facilities
+  - Easy access to CBD, Upper Hill, and Westlands
+  - Nearby international schools including Cavina and French School
+  - Vibrant lifestyle hub with shopping and nightlife
+description: |
+  This modern 2-bedroom apartment for rent in Kilimani combines convenience, 
+  style, and comfort. It features ensuite bedrooms, a modern kitchen, and a 
+  spacious living area with a balcony.  
 
-  '
-area: Kilimani
-category: Residential
+  The development offers premium amenities including a rooftop lounge, gym, 
+  secure parking, borehole water, and backup power. With round-the-clock 
+  security, residents enjoy peace of mind.  
+
+  Its central location ensures quick access to malls, schools, hospitals, and 
+  business hubs, making it a top choice for professionals and families.
 ---
-
-Spacious living areas with natural light. Modern finishes and a practical layout for families or professionals.
+Contemporary Kilimani rental offering lifestyle amenities and prime location.

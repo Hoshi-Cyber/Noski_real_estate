@@ -1,22 +1,39 @@
 ---
-title: Parklands 3BR Family Apartment
+title: "Parklands 3BR Family Apartment"
+slug: "parklands-3br-family-apartment-rent"
+availability: "For Rent"
+location: "Parklands, Nairobi"
 price: 135000
-location: Parklands, Nairobi
 bedrooms: 3
 bathrooms: 2
-type: Apartment
-availability: For Rent
-imagesFolder: /images/properties/parklands-3br-family-apartment-rent
+type: "Apartment"
+images:
+  - /images/listings/parklands-3br-family-apartment-rent/hero.webp
+  - /images/listings/parklands-3br-family-apartment-rent/1.webp
+  - /images/listings/parklands-3br-family-apartment-rent/2.webp
+  - /images/listings/parklands-3br-family-apartment-rent/3.webp
+  - /images/listings/parklands-3br-family-apartment-rent/4.webp
+  - /images/listings/parklands-3br-family-apartment-rent/5.webp
 amenities:
-- Secure Parking
-- Reliable Water
-- Good Road Access
-description: 'Well-kept 3-bedroom apartment in Parklands, Nairobi. Convenient access
-  to amenities and transport. Book a viewing.
+  - Spacious lounge and dining area
+  - Modern fitted kitchen with pantry
+  - Ensuite master bedroom with wardrobe
+  - Built-in wardrobes in all rooms
+  - Secure parking for residents
+  - Reliable water and backup power
+  - High-speed internet ready
+  - 24/7 gated security with CCTV
+neighborhoodHighlights:
+  - Located in central Parklands with quick CBD access
+  - Close to Diamond Plaza, Westgate, and Sarit Centre
+  - Near Aga Khan and MP Shah Hospitals
+  - Surrounded by schools, banks, and worship centers
+description: |
+  This 3-bedroom apartment in Parklands for rent provides modern finishes and 
+  functional layouts. The master is ensuite, while other bedrooms offer 
+  fitted wardrobes. The kitchen and lounge are designed for family living.  
 
-  '
-area: Parklands
-category: Residential
+  Residents enjoy reliable utilities, internet readiness, and round-the-clock 
+  security. Its location ensures convenience for families and professionals.  
 ---
-
-Spacious living areas with natural light. Modern finishes and a practical layout for families or professionals.
+Spacious Parklands rental apartment ideal for families and professionals.

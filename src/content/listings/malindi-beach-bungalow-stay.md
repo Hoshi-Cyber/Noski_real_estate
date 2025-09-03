@@ -1,23 +1,44 @@
 ---
-title: Malindi Beach Bungalow
+title: "Malindi Beach Bungalow"
+slug: "malindi-beach-bungalow-stay"
+availability: "Short Stays"
+location: "Malindi, Kilifi"
 price: 13000
-location: Malindi, Kilifi
 bedrooms: 2
 bathrooms: 2
-type: Bungalow
-availability: Short Stays
-imagesFolder: /images/properties/malindi-beach-bungalow-stay
+type: "Bungalow"
+images:
+  - /images/listings/malindi-beach-bungalow-stay/hero.webp
+  - /images/listings/malindi-beach-bungalow-stay/1.webp
+  - /images/listings/malindi-beach-bungalow-stay/2.webp
+  - /images/listings/malindi-beach-bungalow-stay/3.webp
+  - /images/listings/malindi-beach-bungalow-stay/4.webp
+  - /images/listings/malindi-beach-bungalow-stay/5.webp
 amenities:
-- Fast Wi-Fi
-- Hot Shower
-- Secure Parking
-- Backup Power
-description: 'Comfortable 2-bed bungalow in Malindi, Kilifi. Ideal for business or
-  leisure. Flexible check-in and friendly support.
+  - Beachfront access with ocean views
+  - Fast Wi-Fi and smart TV
+  - Modern kitchen with appliances
+  - Outdoor veranda and garden
+  - Backup power and borehole water
+  - Hot showers and clean linens
+  - Secure on-site parking
+  - Flexible check-in/out options
+  - Daily housekeeping available
+neighborhoodHighlights:
+  - Prime beachfront location near Malindi town
+  - Close to marine parks, diving, and fishing spots
+  - Proximity to shopping, restaurants, and nightlife
+  - Easy access to Malindi Airport
+  - Peaceful, secure area with coastal charm
+description: |
+  This beachfront 2-bedroom bungalow in Malindi is designed for short stays, 
+  offering direct access to the ocean, modern amenities, and a relaxed coastal 
+  setting.  
 
-  '
-area: Malindi
-category: Short-Stay
+  Guests enjoy outdoor living with a private veranda and garden, while fast Wi-Fi, 
+  backup power, and daily housekeeping ensure comfort.  
+
+  Its location combines the tranquility of the beach with proximity to Malindi’s 
+  vibrant lifestyle.  
 ---
-
-Well-appointed interiors, clean linens and easy access to shops and transport. Book your stay today.
+Beachfront Malindi stay offering comfort, views, and relaxation.

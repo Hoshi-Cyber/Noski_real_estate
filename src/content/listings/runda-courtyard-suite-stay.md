@@ -1,23 +1,38 @@
 ---
-title: Runda Courtyard Suite
+title: "Runda Courtyard Suite"
+slug: "runda-courtyard-suite-stay"
+availability: "Short Stays"
+location: "Runda, Nairobi"
 price: 10000
-location: Runda, Nairobi
 bedrooms: 1
 bathrooms: 1
-type: Suite
-availability: Short Stays
-imagesFolder: /images/properties/runda-courtyard-suite-stay
+type: "Suite"
+images:
+  - /images/listings/runda-courtyard-suite-stay/hero.webp
+  - /images/listings/runda-courtyard-suite-stay/1.webp
+  - /images/listings/runda-courtyard-suite-stay/2.webp
+  - /images/listings/runda-courtyard-suite-stay/3.webp
+  - /images/listings/runda-courtyard-suite-stay/4.webp
+  - /images/listings/runda-courtyard-suite-stay/5.webp
 amenities:
-- Fast Wi-Fi
-- Hot Shower
-- Secure Parking
-- Backup Power
-description: 'Comfortable 1-bed suite in Runda, Nairobi. Ideal for business or leisure.
-  Flexible check-in and friendly support.
+  - Private courtyard with seating
+  - Fast Wi-Fi and smart TV
+  - Modern kitchenette with utensils
+  - Hot shower and fresh linens
+  - Backup power and reliable water
+  - Secure parking within compound
+  - Flexible check-in/out
+neighborhoodHighlights:
+  - Prime Runda setting near UN offices and embassies
+  - Close to Village Market and Rosslyn Riviera Mall
+  - Leafy, quiet environment with top security
+description: |
+  This 1-bedroom courtyard suite in Runda provides a private and modern 
+  short-stay option. It includes a lounge, kitchenette, Wi-Fi, and outdoor 
+  courtyard seating.  
 
-  '
-area: Runda
-category: Short-Stay
+  Guests enjoy backup utilities, secure parking, and flexible check-in/out.  
+  The property’s location ensures easy access to malls, embassies, and Nairobi’s 
+  diplomatic hubs.  
 ---
-
-Well-appointed interiors, clean linens and easy access to shops and transport. Book your stay today.
+Modern Runda courtyard suite for short stays, balancing privacy and access.

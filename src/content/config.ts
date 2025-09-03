@@ -23,7 +23,7 @@ const strNullish = z.string().optional().nullable();
 const urlNullish = urlish.optional().nullable();
 
 /* --------------------------------
-   Listings (existing)
+   Listings (tolerant schema)
 --------------------------------- */
 const listingsSchema = z.object({
   title: z.string(),
@@ -37,19 +37,45 @@ const listingsSchema = z.object({
   image: z.string().optional(),
   images: z.array(z.string()).optional(),
   imagesFolder: z.string().optional(),
+
   amenities: z.array(z.string()).optional(),
+  features: z.array(z.string()).optional(),
+
+  // Accept either strings or objects like:
+  // - Easy access to international schools: Brookhouse, Hillcrest, Banda
+  neighborhoodHighlights: z
+    .array(z.union([z.string(), z.record(z.any())]))
+    .optional()
+    .transform((arr) =>
+      (arr ?? []).map((item) => {
+        if (typeof item === 'string') return item;
+        // flatten { key: value } -> "key: value" (and arrays -> comma list)
+        return Object.entries(item)
+          .map(([k, v]) =>
+            v == null || v === ''
+              ? String(k)
+              : `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`
+          )
+          .join(', ');
+      })
+    ),
+
+  // Optional grouped variants (used by the UI when provided)
+  amenitiesCategories: z.record(z.array(z.string())).optional(),
+  neighborhoodCategories: z.record(z.array(z.string())).optional(),
+
   description: z.string().optional(),
 });
 
 const listings = defineCollection({ type: 'content', schema: listingsSchema });
 
 /* --------------------------------
-   Featured Listings (existing)
+   Featured Listings (reuse)
 --------------------------------- */
 const featured = defineCollection({ type: 'content', schema: listingsSchema });
 
 /* --------------------------------
-   Blog (existing)
+   Blog
 --------------------------------- */
 const blog = defineCollection({
   type: 'content',
@@ -63,7 +89,7 @@ const blog = defineCollection({
 });
 
 /* --------------------------------
-   Resources (existing)
+   Resources
 --------------------------------- */
 const resources = defineCollection({
   type: 'content',
@@ -99,7 +125,7 @@ const mediaSchema = z.object({
 
 const ctaSchema = z.object({
   label: z.string(),
-  href: urlNullish, // absolute or relative; allow null/omitted
+  href: urlNullish,
   action: z.enum(['link', 'download', 'lead', 'whatsapp']).default('link'),
 });
 
@@ -117,7 +143,6 @@ const developmentBase = z.object({
   ctas: z.array(ctaSchema).default([]),
 });
 
-/** New Developments */
 const newDevelopmentSchema = developmentBase.extend({
   category: z.literal('new_development'),
   developer_name: z.string().min(1),
@@ -136,7 +161,6 @@ const newDevelopmentSchema = developmentBase.extend({
     .default([]),
 });
 
-/** Unfinished Projects */
 const unfinishedProjectSchema = developmentBase.extend({
   category: z.literal('unfinished_project'),
   completion_stage: strNullish,
@@ -145,8 +169,8 @@ const unfinishedProjectSchema = developmentBase.extend({
   est_completion_cost_max: z.number().optional(),
   boq_url: urlNullish,
   permits_status: strNullish,
-  risk_notes: strNullish,                 // allow null/omitted
-  structural_report_url: urlNullish,      // allow null/omitted
+  risk_notes: strNullish,
+  structural_report_url: urlNullish,
   owner_name: strNullish,
 });
 

@@ -1,22 +1,37 @@
 ---
-title: Ruaka 2BR New Build
+title: "Ruaka 2BR New Build"
+slug: "ruaka-2br-new-build-rent"
+availability: "For Rent"
+location: "Ruaka, Kiambu"
 price: 70000
-location: Ruaka, Kiambu
 bedrooms: 2
 bathrooms: 2
-type: Apartment
-availability: For Rent
-imagesFolder: /images/properties/ruaka-2br-new-build-rent
+type: "Apartment"
+images:
+  - /images/listings/ruaka-2br-new-build-rent/hero.webp
+  - /images/listings/ruaka-2br-new-build-rent/1.webp
+  - /images/listings/ruaka-2br-new-build-rent/2.webp
+  - /images/listings/ruaka-2br-new-build-rent/3.webp
+  - /images/listings/ruaka-2br-new-build-rent/4.webp
+  - /images/listings/ruaka-2br-new-build-rent/5.webp
 amenities:
-- Secure Parking
-- Reliable Water
-- Good Road Access
-description: 'Well-kept 2-bedroom apartment in Ruaka, Kiambu. Convenient access to
-  amenities and transport. Book a viewing.
+  - Spacious lounge with balcony
+  - Modern fitted kitchen
+  - Ensuite bedrooms with wardrobes
+  - Reliable water and backup power
+  - Secure parking for 2 cars
+  - Gated compound with 24/7 security
+  - High-speed internet ready
+neighborhoodHighlights:
+  - Located in Ruaka near Two Rivers Mall
+  - Proximity to Limuru Road and Northern Bypass
+  - Access to top schools and hospitals
+  - Growing suburb with modern amenities
+description: |
+  This 2-bedroom new-build apartment in Ruaka offers modern finishes, ensuite 
+  bedrooms, and a lounge with balcony.  
 
-  '
-area: Ruaka
-category: Residential
+  Secure parking, reliable water, and backup power add convenience. Its 
+  location near malls, schools, and roads ensures accessibility for residents.  
 ---
-
-Spacious living areas with natural light. Modern finishes and a practical layout for families or professionals.
+Modern Ruaka rental combining comfort, access, and suburban convenience.
