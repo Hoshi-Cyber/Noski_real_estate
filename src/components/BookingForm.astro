@@ -17,6 +17,8 @@ interface Props {
   ctaLabel: string;
   action?: string;
   method?: 'get' | 'post';
+  /** Compact mobile-friendly density (smaller text, tighter gaps) */
+  compact?: boolean;
 }
 
 const {
@@ -27,10 +29,15 @@ const {
   ctaLabel,
   action = '/list-property',
   method = 'get',
+  compact = false,
 } = Astro.props;
+
+const formCls = `${compact ? 'text-sm space-y-3' : 'space-y-4'}`;
+const gridGap = compact ? 'gap-2 sm:gap-3' : 'gap-3';
+const helpCls = compact ? 'help text-xs' : 'help';
 ---
 
-<form id="enquiry-form" action={action} method={method} class="space-y-3" novalidate>
+<form id="enquiry-form" action={action} method={method} class={formCls} novalidate>
   <input type="hidden" name="serviceType" value={serviceType} />
   <input type="hidden" name="property" value={propertyTitle} />
   <input type="hidden" name="propertyUrl" value={propertyUrl} />
@@ -41,36 +48,36 @@ const {
     <input name="name" required />
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <div class={`grid grid-cols-1 sm:grid-cols-2 ${gridGap}`}>
     <div>
       <label class="block text-sm mb-1">Phone</label>
       <input
         name="phone"
         type="tel"
         inputmode="tel"
-        pattern="^\+?[1-9]\d{7,14}$"
+        pattern="^\\+?[1-9]\\d{7,14}$"
         placeholder="+2547XXXXXXXX"
         required
       />
-      <p class="help">Use country code, e.g. +254712345678.</p>
+      <p class={helpCls}>Use country code, e.g. +254712345678.</p>
     </div>
     <div>
       <label class="block text-sm mb-1">Email</label>
       <input name="email" type="email" placeholder="you@example.com" required />
-      <p class="help">Use a valid email, e.g. you@example.com.</p>
+      <p class={helpCls}>Use a valid email, e.g. you@example.com.</p>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <div class={`grid grid-cols-1 sm:grid-cols-2 ${gridGap}`}>
     <div>
       <label class="block text-sm mb-1">Preferred date</label>
       <input id="visit_date" name="visit_date" type="date" required />
-      <p class="help">Business hours: {availability.startHour}:00–{availability.endHour}:00</p>
+      <p class={helpCls}>Business hours: {availability.startHour}:00–{availability.endHour}:00</p>
     </div>
     <div>
       <label class="block text-sm mb-1">Available time</label>
       <div id="slot-wrap" class="flex flex-wrap gap-2"></div>
-      <p id="slot-help" class="help"></p>
+      <p id="slot-help" class={helpCls}></p>
     </div>
   </div>
 
@@ -78,7 +85,7 @@ const {
     <span class="block text-sm mb-1">Contact method</span>
     <label class="mr-4"><input type="radio" name="contact_method" value="Call" required /> Call</label>
     <label><input type="radio" name="contact_method" value="WhatsApp" /> WhatsApp</label>
-    <p class="help">We’ll confirm your booking via Call or WhatsApp.</p>
+    <p class={helpCls}>We’ll confirm your booking via Call or WhatsApp.</p>
   </div>
 
   <div>
@@ -86,9 +93,12 @@ const {
     <textarea name="message" rows="3" placeholder={`I’d like to ${ctaLabel.toLowerCase()}...`}></textarea>
   </div>
 
-  <div class="flex items-center justify-end gap-3 pt-1">
+  <!-- Actions wrapper: parent can move #bf-submit-wrap into a sticky footer on mobile -->
+  <div class="flex items-center justify-end gap-3 pt-1 bf-actions" data-bf-actions>
     <button type="button" class="btn-outline rounded-md" data-close-modal>Cancel</button>
-    <button id="submit-btn" type="submit" class="btn-cta rounded-md">{ctaLabel}</button>
+    <div id="bf-submit-wrap" data-bf-submit-wrap>
+      <button id="submit-btn" type="submit" class="btn-cta rounded-md">{ctaLabel}</button>
+    </div>
   </div>
 </form>
 
@@ -222,12 +232,11 @@ const {
       if (!any && slotHelp) slotHelp.textContent = 'No future slots left for this date. Pick another date.';
     }
 
-    // Initial build (force-trigger a change so we definitely render)
+    // Initial build
     if (visitDate && visitDate instanceof HTMLInputElement){
       buildSlots(visitDate.value);
       visitDate.addEventListener('change', ()=> buildSlots(visitDate.value));
       visitDate.addEventListener('input',  ()=> buildSlots(visitDate.value));
-      // ensure any browser that didn’t reflect value yet will rebuild
       setTimeout(()=> {
         if (visitDate && !visitDate.value) {
           try { visitDate.valueAsDate = new Date(); } catch {}

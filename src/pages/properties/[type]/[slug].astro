@@ -22,9 +22,7 @@ const { type, slug } = Astro.params;
 const norm = (s: string = '') => s.toLowerCase().replace(/\s+/g, '-');
 
 const all = await getCollection('listings');
-const entry = all.find(
-  (e) => e.slug === slug && norm(e.data.availability || '') === type
-);
+const entry = all.find((e) => e.slug === slug && norm(e.data.availability || '') === type);
 const data = entry?.data as any | undefined;
 const notFound = !entry;
 
@@ -69,17 +67,18 @@ if (!Array.isArray(images) || images.length === 0) {
 images = images.map(withV);
 
 /* Derived fields & SEO */
-const priceNumber: number | undefined =
-  typeof data?.price === 'number' ? data.price : undefined;
-const priceText =
-  typeof data?.price === 'number' ? `KSh ${data.price.toLocaleString()}` : 'N/A';
+const priceNumber: number | undefined = typeof data?.price === 'number' ? data.price : undefined;
+const priceText = typeof data?.price === 'number' ? `KSh ${data.price.toLocaleString()}` : 'N/A';
 
 const avail = (data?.availability || '').toLowerCase();
 const serviceType =
   avail.includes('rent') ? 'rent' :
   avail.includes('sale') ? 'sale' : 'short-stays';
 
-/* Secondary routing for listings index */
+const isRent = avail.includes('rent');
+const isSale = avail.includes('sale');
+
+/* Secondary routing */
 const listHref =
   serviceType === 'rent' ? '/for-rent' :
   serviceType === 'sale' ? '/for-sale' : '/short-stays';
@@ -96,7 +95,7 @@ const intersectCount = (a: any[], b: any[]) => {
   return (a || []).reduce((acc, v) => acc + (setB.has(String(v).toLowerCase()) ? 1 : 0), 0);
 };
 
-/* Related listings: similarity score then top 4 */
+/* Related listings */
 const pool = notFound ? [] : all.filter(
   (e) => e.slug !== slug && norm(e.data.availability || '') === norm(data?.availability || '')
 );
@@ -132,15 +131,18 @@ const isYouTube = typeof videoUrl === 'string' && /youtube\.com|youtu\.be/.test(
 const isVimeo = typeof videoUrl === 'string' && /vimeo\.com/.test(videoUrl);
 
 /* Content blocks */
+const amenitiesArr: string[] = Array.isArray(data?.amenities) ? data.amenities : [];
+const amenitiesCategories = (data as any)?.amenitiesCategories as Record<string, string[]> | undefined;
+
 const neighborhood: string[] =
   (Array.isArray(data?.neighborhoodHighlights) && data.neighborhoodHighlights) ||
   (Array.isArray(data?.neighborhood) && data.neighborhood) ||
-  (Array.isArray(data?.nearby) && data.nearby) ||
-  [];
+  (Array.isArray(data?.nearby) && data.nearby) || [];
 
-const amenities: string[] = Array.isArray(data?.amenities) ? data.amenities : [];
+const neighborhoodCategories =
+  ((data as any)?.neighborhoodCategories || (data as any)?.neighborhoodByType) as Record<string, string[]> | undefined;
 
-const floorPlans: string[] = (Array.isArray(data?.floorPlans) ? data.floorPlans : []).map(withV);
+const features: string[] = Array.isArray((data as any)?.features) ? (data as any).features : [];
 
 /* Canonical */
 const canonicalPath = notFound ? '/properties' : `/properties/${norm(data?.availability || '')}/${slug}`;
@@ -157,7 +159,7 @@ const share = {
   sms:`sms:?&body=${enc((data?.title || '') + ' ' + canonicalUrl)}`
 };
 
-/* JSON-LD */
+/* JSON-LD + breadcrumb (All Listings) */
 const offerAvailability =
   avail.includes('rent') || avail.includes('sale')
     ? 'https://schema.org/InStock'
@@ -203,28 +205,32 @@ const breadcrumbLD = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site ? new URL('/', Astro.site).toString() : '/' },
-    { '@type': 'ListItem', position: 2, name: 'Properties', item: Astro.site ? new URL('/properties', Astro.site).toString() : '/properties' },
-    !notFound && { '@type': 'ListItem', position: 3, name: data?.availability, item: canonicalUrl.replace(`/${slug}`, '') },
+    { '@type': 'ListItem', position: 2, name: 'All Listings', item: Astro.site ? new URL('/listings', Astro.site).toString() : '/listings' },
+    !notFound && { '@type': 'ListItem', position: 3, name: data?.availability, item: Astro.site ? new URL(listHref, Astro.site).toString() : listHref },
     !notFound && { '@type': 'ListItem', position: 4, name: data?.title, item: canonicalUrl },
   ].filter(Boolean)
 };
 
-/* CTA label */
+/* CTAs */
 const ctaLabel =
   serviceType === 'rent' ? 'Book Viewing' :
   serviceType === 'sale' ? 'Enquire' : 'Book Stay';
 
-/* Strategic secondary CTAs */
-const BUSINESS_PHONE = import.meta.env.PUBLIC_BUSINESS_PHONE || ''; // e.g. +254712345678
+const BUSINESS_PHONE = import.meta.env.PUBLIC_BUSINESS_PHONE || '';
 const waText = `Hello, I'm interested in ${data?.title || 'the listing'} – ${canonicalUrl}`;
 const telHref = BUSINESS_PHONE ? `tel:${BUSINESS_PHONE}` : '';
 const waHref  = BUSINESS_PHONE ? `https://wa.me/${BUSINESS_PHONE.replace(/\D/g,'')}?text=${enc(waText)}` : '';
+const waUiHref = waHref || share.wa;   // fallback if phone missing
 
-/* Prefiltered “Get similar in {Location}” link */
-const similarHref = `${listHref}?location=${enc(data?.location || '')}&type=${enc(norm(data?.type || ''))}&beds=${enc(String(data?.bedrooms ?? ''))}`;
+/* Investor signal */
+const marketRent = typeof (data as any)?.marketRent === 'number' ? (data as any).marketRent : undefined;
+const grossYield = (marketRent && typeof data?.price === 'number') ? ((marketRent * 12) / data.price * 100) : undefined;
 
-const pillColors = ['pill-blue','pill-amber','pill-emerald','pill-purple','pill-slate'];
-const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
+/* Description segmentation */
+const fullDesc: string = String(data?.description || '');
+const sentences = fullDesc.split(/(?<=[.!?])\s+/).filter(Boolean);
+const descCount = Math.min(Math.max(3, sentences.length), 5);
+const shortDesc = sentences.slice(0, descCount).join(' ');
 ---
 
 <MainLayout
@@ -248,9 +254,22 @@ const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
     </section>
   ) : (
     <>
+      <!-- BREADCRUMB: lighter text, wraps on mobile -->
+      <nav class="max-w-6xl mx-auto px-4 py-3 text-sm">
+        <ol class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-neutral-50 ring-1 ring-neutral-200 px-3 py-2">
+          <li><a href="/" class="link-decor text-neutral-700 hover:text-cta">Home</a></li>
+          <li class="text-neutral-400">/</li>
+          <li><a href="/listings" class="link-decor text-neutral-700 hover:text-cta">All Listings</a></li>
+          <li class="text-neutral-400">/</li>
+          <li><a href={listHref} class="link-decor text-neutral-700 hover:text-cta capitalize">{isSale ? 'For Sale' : isRent ? 'For Rent' : 'Short Stays'}</a></li>
+          <li class="text-neutral-400">/</li>
+          <li class="text-neutral-800">{data.title}</li>
+        </ol>
+      </nav>
+
       <!-- HERO / CAROUSEL -->
       <section class="relative">
-        <div id="carousel" class="relative aspect-[16/9] max-h-[70vh] overflow-hidden bg-black">
+        <div id="carousel" class="relative aspect-[16/9] max-h-[70vh] overflow-hidden bg-black" aria-label="Property images" role="region">
           {images.map((src, idx) => (
             <img
               src={src}
@@ -260,59 +279,75 @@ const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
               loading={idx === 0 ? 'eager' : 'lazy'}
             />
           ))}
-          <button id="prev" class="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-md">‹</button>
-          <button id="next" class="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-md">›</button>
 
-          <div id="dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+          <button id="prev" class="carousel-btn absolute left-3 top-1/2 -translate-y-1/2" aria-label="Previous image">‹</button>
+          <button id="next" class="carousel-btn absolute right-3 top-1/2 -translate-y-1/2" aria-label="Next image">›</button>
+
+          <div id="dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2" aria-label="Select image">
             {images.map((_, i) => (
-              <button class={`h-2.5 w-2.5 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/60'}`} aria-label={`Go to slide ${i+1}`}></button>
+              <button class={`h-2.5 w-2.5 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/60'}`} aria-label={`Go to image ${i+1}`}></button>
             ))}
           </div>
+
+          <div id="count" class="absolute bottom-3 right-3 text-xs text-white/90 bg-black/40 px-2 py-1 rounded">
+            1 / {images.length}
+          </div>
+
+          <div id="swipe-hint" class="absolute bottom-14 left-1/2 -translate-x-1/2 text-[11px] text-white/90 bg-black/40 px-2 py-1 rounded pointer-events-none">
+            ‹ › swipe
+          </div>
+
+          <button id="zoom-open" class="absolute inset-0" aria-label="Open image in full-screen"></button>
         </div>
       </section>
 
       <!-- HEADER / TITLE & PRIMARY FACTS -->
       <section class="max-w-6xl mx-auto px-4 py-8">
         <div class="flex flex-wrap items-start gap-3">
-          <span class={`text-xs text-white px-2 py-1 rounded ${badgeClass}`}>{data.availability}</span>
+          <span class={`text-xs text-white px-2 py-1 rounded ${badgeClass}`} aria-label="Availability">{data.availability}</span>
           <h1 class="text-2xl md:text-3xl font-semibold">{data.title}</h1>
         </div>
-        <p class="mt-1">{data.location}</p>
+        <p class="mt-1 text-neutral-700">{data.location}</p>
 
         <div class="mt-4 flex flex-wrap items-center gap-3">
-          <span class="text-xl font-bold">{priceText}</span>
-          <span class="text-sm text-neutral-700">
-            {data.bedrooms ?? '—'} bd • {data.bathrooms ?? '—'} ba{data.area ? ` • ${data.area}` : ''}
-          </span>
+          <span class="text-xl font-bold text-cta">{priceText}</span>
+          {data.area && <span class="fact-label">{data.area}</span>}
 
-          <!-- Primary CTA (desktop/tablet) -->
-          <button data-open-modal class="ml-auto hidden sm:inline-flex bg-cta text-white px-5 py-2 rounded-md">
+          <!-- Desktop/tablet CTAs -->
+          <button data-open-modal class="ml-auto hidden sm:inline-flex bg-cta text-white px-5 py-2 rounded-md" aria-label={ctaLabel}>
             {ctaLabel}
           </button>
+          <a href={waUiHref} class="hidden sm:inline-flex btn-wa px-4 py-2 rounded-md" aria-label="Chat on WhatsApp" data-track="wa_click">
+            WhatsApp
+          </a>
 
-          <!-- Strategic secondary CTAs -->
-          {BUSINESS_PHONE && (
-            <>
-              <a href={telHref} class="btn-outline">Call</a>
-              <a href={waHref}  class="btn-outline">WhatsApp</a>
-            </>
-          )}
-          <a href={similarHref} class="text-sm underline underline-offset-2 text-primary">Get similar in {data.location}</a>
+          <!-- Mobile CTAs (side-by-side: primary + WA icon) -->
+          <div class="w-full sm:hidden flex items-center gap-2 mt-2">
+            <button data-open-modal class="flex-1 bg-primary text-white px-4 py-2 rounded-md" aria-label={ctaLabel}>{ctaLabel}</button>
+            <a href={waUiHref} aria-label="WhatsApp" class="inline-flex items-center justify-center w-10 h-10 rounded-full text-white shadow focus:outline-none focus:ring-2 focus:ring-[#25D366]" style="background:#25D366" data-track="wa_click">
+              <!-- WhatsApp SVG -->
+              <svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M19.11 17.41c-.27-.14-1.57-.77-1.82-.85-.24-.09-.42-.14-.6.14-.17.27-.68.85-.83 1.02-.15.17-.31.2-.58.07-.27-.14-1.14-.42-2.18-1.34-.8-.71-1.34-1.58-1.5-1.85-.16-.27-.02-.42.12-.56.12-.12.27-.31.4-.46.14-.15.18-.25.27-.42.09-.17.05-.31-.02-.45-.07-.14-.6-1.44-.82-1.97-.22-.53-.44-.46-.6-.46-.16 0-.34-.02-.52-.02-.18 0-.45.07-.68.31-.24.24-.89.87-.89 2.11 0 1.24.91 2.44 1.04 2.61.12.17 1.79 2.73 4.33 3.82.61.26 1.08.42 1.45.54.61.19 1.17.16 1.61.1.49-.07 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.11-.24-.18-.51-.32z"/><path d="M26.7 5.3C24.1 2.7 20.65 1.3 17 1.3 9.94 1.3 4.3 6.94 4.3 14c0 2.25.59 4.45 1.71 6.39L4 28l7.79-2c1.84 1 3.92 1.52 6.04 1.52 7.06 0 12.7-5.64 12.7-12.7 0-3.38-1.32-6.56-3.83-9.08zM17.83 25.3c-1.87 0-3.69-.5-5.28-1.45l-.38-.23-4.63 1.19 1.24-4.51-.25-.38C7.43 18.2 6.9 16.13 6.9 14 6.9 8.49 11.49 3.9 17 3.9c3.09 0 6 .1 8.2 2.31 2.2 2.2 3.5 5.12 3.5 8.2 0 6.51-4.59 11.9-10.87 10.89z"/></svg>
+            </a>
+          </div>
         </div>
 
-        <!-- SHARE BAR (adaptive) -->
+        <!-- SHARE -->
         <div class="mt-4 share-bar" aria-label="Share this listing">
-          <span class="share-label">Share this listing:</span>
-          <button id="share-native" class="share-btn" type="button" title="Open your device share options">Share</button>
-          <!-- Fallback (revealed when native share is not available) -->
-          <div id="share-fallback" class="hidden flex gap-2 flex-wrap" role="group" aria-label="Share via">
-            <a class="share-btn" href={share.fb} target="_blank" rel="noopener" title="Share on Facebook">Facebook</a>
-            <a class="share-btn" href={share.x}  target="_blank" rel="noopener" title="Share on X">X</a>
-            <a class="share-btn" href={share.li} target="_blank" rel="noopener" title="Share on LinkedIn">LinkedIn</a>
-            <a class="share-btn" href={share.wa} target="_blank" rel="noopener" title="Share on WhatsApp">WhatsApp</a>
-            <a class="share-btn" href={share.em} title="Share by Email">Email</a>
-            <a class="share-btn" href={share.sms} title="Share by Text">Text</a>
-            <button id="share-copy" class="share-btn" type="button" title="Copy link to clipboard">Copy link</button>
+          <span class="share-label">Share:</span>
+          <div class="relative inline-block">
+            <button id="share-trigger" class="share-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="share-pop">Share</button>
+            <!-- Popover (for !navigator.share) -->
+            <div id="share-pop" class="hidden absolute left-0 mt-2 w-56 bg-white ring-1 ring-neutral-200 rounded-md shadow-lg p-2 z-20" role="menu" aria-label="Share options">
+              <div class="grid grid-cols-2 gap-2">
+                <a class="share-btn justify-center" href={share.fb} target="_blank" rel="noopener">Facebook</a>
+                <a class="share-btn justify-center" href={share.x}  target="_blank" rel="noopener">X</a>
+                <a class="share-btn justify-center" href={share.li} target="_blank" rel="noopener">LinkedIn</a>
+                <a class="share-btn justify-center" href={share.wa} target="_blank" rel="noopener">WhatsApp</a>
+                <a class="share-btn justify-center" href={share.em}>Email</a>
+                <a class="share-btn justify-center" href={share.sms}>Text</a>
+              </div>
+              <button id="share-copy" class="share-btn w-full mt-2" type="button">Copy link</button>
+            </div>
           </div>
         </div>
       </section>
@@ -320,39 +355,97 @@ const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
       <!-- DETAILS GRID -->
       <section class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8 pb-24 md:pb-10">
         <article class="md:col-span-2 space-y-6">
-          {data.description && <p class="leading-relaxed text-neutral-800">{data.description}</p>}
-
-          {amenities.length > 0 && (
-            <div>
-              <h2 class="text-lg font-semibold mb-2">Amenities</h2>
-              <div class="flex flex-wrap gap-2">
-                {amenities.map((a, i) => <span class={pillClass(i)}><span class="pill-dot"></span>{a}</span>)}
-              </div>
+          {fullDesc && (
+            <div class="card p-4 space-y-2">
+              <h2 class="text-lg font-semibold">Property Description</h2>
+              <p class="leading-relaxed text-neutral-800">{shortDesc}</p>
             </div>
           )}
 
-          {neighborhood.length > 0 && (
-            <div>
-              <h2 class="text-lg font-semibold mb-2">Neighborhood highlights</h2>
-              <ul class="list-disc pl-5 space-y-1">
-                {neighborhood.map((x) => <li>{x}</li>)}
+          {features.length > 0 && (
+            <div class="card p-4 space-y-2">
+              <h2 class="text-lg font-semibold">Key Features</h2>
+              <ul class="grid md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-5">
+                {features.slice(0, 8).map((f) => <li>{f}</li>)}
               </ul>
             </div>
           )}
 
-          {floorPlans.length > 0 && (
-            <div>
-              <h2 class="text-lg font-semibold mb-2">Floor plans</h2>
+          {(amenitiesCategories && Object.keys(amenitiesCategories).length > 0) ? (
+            <div class="card p-4 space-y-3">
+              <h2 class="text-lg font-semibold">Amenities</h2>
+              <div class="grid md:grid-cols-2 gap-6">
+                {Object.entries(amenitiesCategories).map(([cat, items]) => (
+                  <div>
+                    <h3 class="text-sm text-primary mb-1">{cat}</h3>
+                    <ul class="list-disc pl-5 space-y-1">
+                      {items.map((x) => <li>{x}</li>)}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            amenitiesArr.length > 0 && (
+              <div class="card p-4 space-y-2">
+                <h2 class="text-lg font-semibold">Amenities</h2>
+                <ul class="grid md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-5">
+                  {amenitiesArr.map((a) => <li>{a}</li>)}
+                </ul>
+              </div>
+            )
+          )}
+
+          {(neighborhoodCategories && Object.keys(neighborhoodCategories).length > 0) ? (
+            <div class="card p-4 space-y-3">
+              <h2 class="text-lg font-semibold">Neighborhood Highlights</h2>
+              <div class="grid md:grid-cols-3 gap-6">
+                {Object.entries(neighborhoodCategories).map(([cat, items]) => (
+                  <div>
+                    <h3 class="text-sm text-primary mb-1">{cat}</h3>
+                    <ul class="list-disc pl-5 space-y-1">
+                      {items.slice(0, 8).map((x) => <li>{x}</li>)}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            neighborhood.length > 0 && (
+              <div class="card p-4 space-y-2">
+                <h2 class="text-lg font-semibold">Neighborhood Highlights</h2>
+                <ul class="grid md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-5">
+                  {neighborhood.slice(0, 8).map((x) => <li>{x}</li>)}
+                </ul>
+              </div>
+            )
+          )}
+
+          {(data?.deposit || data?.serviceCharge || data?.utilitiesIncluded !== undefined || data?.petsAllowed !== undefined) && (
+            <div class="card p-4 space-y-2">
+              <h2 class="text-lg font-semibold">Fees & Policies</h2>
+              <ul class="list-disc pl-5 space-y-1 text-neutral-800">
+                {data?.deposit && <li>Deposit: {fmtPrice(data.deposit)}</li>}
+                {data?.serviceCharge && <li>Service Charge: {fmtPrice(data.serviceCharge)}/mo</li>}
+                {data?.utilitiesIncluded !== undefined && <li>Utilities: {data.utilitiesIncluded ? 'Included' : 'Pay as per use'}</li>}
+                {data?.petsAllowed !== undefined && <li>Pets: {data.petsAllowed ? 'Allowed' : 'Not allowed'}</li>}
+              </ul>
+            </div>
+          )}
+
+          {Array.isArray(data?.floorPlans) && data.floorPlans.length > 0 && (
+            <div class="card p-4 space-y-2">
+              <h2 class="text-lg font-semibold">Documents</h2>
               <ul class="list-disc pl-5 space-y-1">
-                {floorPlans.map((f) => (
-                  <li><a href={f} class="text-primary underline" target="_blank" rel="noopener">View plan</a></li>
+                {data.floorPlans.map((f: string) => (
+                  <li><a href={withV(f)} class="text-primary underline" target="_blank" rel="noopener">Floor plan</a></li>
                 ))}
               </ul>
             </div>
           )}
 
           {videoUrl && (
-            <div class="aspect-video w-full">
+            <div class="aspect-video w-full card p-0">
               {isYouTube ? (
                 <iframe
                   src={`https://www.youtube.com/embed/${videoUrl.split('v=')[1] || ''}`}
@@ -360,6 +453,7 @@ const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowfullscreen
                   loading="lazy"
+                  title="Listing video"
                 />
               ) : isVimeo ? (
                 <iframe
@@ -368,6 +462,7 @@ const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
                   allow="autoplay; fullscreen; picture-in-picture"
                   allowfullscreen
                   loading="lazy"
+                  title="Listing video"
                 />
               ) : (
                 <video controls class="h-full w-full">
@@ -376,43 +471,43 @@ const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
               )}
             </div>
           )}
-
-          {(data?.deposit || data?.serviceCharge || data?.utilitiesIncluded !== undefined || data?.petsAllowed !== undefined) && (
-            <div>
-              <h2 class="text-lg font-semibold mb-2">Fees & policies</h2>
-              <ul class="list-disc pl-5 space-y-1 text-neutral-800">
-                {data?.deposit && <li>Deposit: {fmtPrice(data.deposit)}</li>}
-                {data?.serviceCharge && <li>Service charge: {fmtPrice(data.serviceCharge)}</li>}
-                {data?.utilitiesIncluded !== undefined && <li>Utilities included: {String(data.utilitiesIncluded)}</li>}
-                {data?.petsAllowed !== undefined && <li>Pets allowed: {String(data.petsAllowed)}</li>}
-              </ul>
-            </div>
-          )}
         </article>
 
         <aside class="space-y-4">
-          <div class="rounded-xl border p-4">
-            <h3 class="font-semibold mb-2">Quick facts</h3>
+          <div class="rounded-xl border p-4 card">
+            <h3 class="font-semibold mb-2">Quick Facts</h3>
             <ul class="space-y-1 text-sm text-neutral-700">
+              <li><strong>{isRent ? 'Monthly Rent' : 'Price'}:</strong> {priceText}</li>
               <li><strong>Type:</strong> {data.type ?? '—'}</li>
               <li><strong>Bedrooms:</strong> {data.bedrooms ?? '—'}</li>
               <li><strong>Bathrooms:</strong> {data.bathrooms ?? '—'}</li>
-              <li><strong>Parking:</strong> {data.parking ?? '—'}</li>
-              <li><strong>Area:</strong> {data.area ?? '—'}</li>
+              {data.parking && <li><strong>Parking:</strong> {data.parking}</li>}
+              {data.location && <li><strong>Location:</strong> {data.location}</li>}
+              {data.condition && <li><strong>Condition:</strong> {data.condition}</li>}
+              {data.serviceCharge && <li><strong>Service Charge:</strong> {fmtPrice(data.serviceCharge)}/mo</li>}
+              {data.titleStatus && <li><strong>Title Status:</strong> {data.titleStatus}</li>}
+              {isSale && data.tenure && <li><strong>Tenure:</strong> {data.tenure}{data.tenureYears ? ` (${data.tenureYears} yrs)` : ''}</li>}
+              {data.floor && <li><strong>Floor:</strong> {data.floor}</li>}
+              {isRent && data.deposit && <li><strong>Deposit:</strong> {fmtPrice(data.deposit)}</li>}
+              {isRent && (data.utilitiesIncluded !== undefined) && (
+                <li><strong>Utilities:</strong> {data.utilitiesIncluded ? 'Included' : 'Pay as per use'}</li>
+              )}
+              {data.furnishing && <li><strong>Furnishing:</strong> {data.furnishing}</li>}
+              {data.internet && <li><strong>Internet:</strong> {data.internet}</li>}
+              {data.security && <li><strong>Security:</strong> {data.security}</li>}
+              {data.availabilityDate && <li><strong>Available:</strong> {data.availabilityDate}</li>}
+              {data.petsAllowed !== undefined && <li><strong>Pets:</strong> {data.petsAllowed ? 'Allowed' : 'Not allowed'}</li>}
+              {data.ref && <li><strong>Ref ID:</strong> {data.ref}</li>}
+              {grossYield && <li><strong>Est. Gross Yield:</strong> {grossYield.toFixed(1)}%</li>}
             </ul>
           </div>
-
-          <!-- Desktop/Tablet CTA -->
-          <button data-open-modal class="w-full text-center bg-primary text-white px-5 py-3 rounded-md">
-            {ctaLabel}
-          </button>
         </aside>
       </section>
 
       <!-- RELATED -->
       {related.length > 0 && (
         <section class="max-w-6xl mx-auto px-4 pb-16">
-          <h2 class="text-xl font-semibold mb-4">You might also like</h2>
+          <h2 class="text-xl font-semibold mb-4">You Might Also Like</h2>
           <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {related.map((e) => {
               const href = `/properties/${norm(e.data.availability || '')}/${e.slug}`;
@@ -439,31 +534,55 @@ const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
       <!-- MOBILE STICKY CTA BAR -->
       <div class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t safe-bottom">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-          <div class="flex-1">
-            <div class="text-sm text-neutral-700">{data.title}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm text-neutral-700 truncate">{data.title}</div>
             <div class="text-base font-semibold">{priceText}</div>
           </div>
-          <button data-open-modal class="btn-cta px-4 py-2 rounded-md">{ctaLabel}</button>
+          <button data-open-modal class="btn-cta rounded-md px-3 py-2" aria-label={ctaLabel}>{ctaLabel}</button>
+          <a href={waUiHref} aria-label="WhatsApp" class="inline-flex items-center justify-center w-10 h-10 rounded-full text-white shadow focus:outline-none focus:ring-2 focus:ring-[#25D366]" style="background:#25D366" data-track="wa_click">
+            <svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M19.11 17.41c-.27-.14-1.57-.77-1.82-.85-.24-.09-.42-.14-.6.14-.17.27-.68.85-.83 1.02-.15.17-.31.2-.58.07-.27-.14-1.14-.42-2.18-1.34-.8-.71-1.34-1.58-1.5-1.85-.16-.27-.02-.42.12-.56.12-.12.27-.31.4-.46.14-.15.18-.25.27-.42.09-.17.05-.31-.02-.45-.07-.14-.6-1.44-.82-1.97-.22-.53-.44-.46-.6-.46-.16 0-.34-.02-.52-.02-.18 0-.45.07-.68.31-.24.24-.89.87-.89 2.11 0 1.24.91 2.44 1.04 2.61.12.17 1.79 2.73 4.33 3.82.61.26 1.08.42 1.45.54.61.19 1.17.16 1.61.1.49-.07 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.11-.24-.18-.51-.32z"/><path d="M26.7 5.3C24.1 2.7 20.65 1.3 17 1.3 9.94 1.3 4.3 6.94 4.3 14c0 2.25.59 4.45 1.71 6.39L4 28l7.79-2c1.84 1 3.92 1.52 6.04 1.52 7.06 0 12.7-5.64 12.7-12.7 0-3.38-1.32-6.56-3.83-9.08zM17.83 25.3c-1.87 0-3.69-.5-5.28-1.45l-.38-.23-4.63 1.19 1.24-4.51-.25-.38C7.43 18.2 6.9 16.13 6.9 14 6.9 8.49 11.49 3.9 17 3.9c3.09 0 6 .1 8.2 2.31 2.2 2.2 3.5 5.12 3.5 8.2 0 6.51-4.59 11.9-10.87 10.89z"/></svg>
+          </a>
         </div>
       </div>
 
-      <!-- ENQUIRY MODAL -->
-      <div id="enquire-modal" class="fixed inset-0 z-50 hidden">
+      <!-- ENQUIRY MODAL (mobile = bottom sheet) -->
+      <div id="enquire-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="enquire-title">
         <div class="absolute inset-0 bg-black/50" data-close-modal></div>
-        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-lg mx-auto bg-white rounded-xl shadow p-5">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold">Enquiry – {data.title}</h3>
-            <button class="w-8 h-8 rounded-md border text-neutral-600" aria-label="Close" data-close-modal>✕</button>
+
+        <!-- Sheet container: mobile bottom sheet, desktop centered -->
+        <div id="enquire-sheet"
+             class="absolute left-0 right-0 bottom-0 bg-white rounded-t-2xl shadow-lg max-h-[85vh] overflow-auto
+                    sm:inset-x-4 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto sm:max-w-lg sm:mx-auto sm:rounded-xl"
+             tabindex="-1">
+          <!-- Sheet header -->
+          <div class="sticky top-0 z-10 bg-white px-4 py-3 border-b flex items-center justify-between">
+            <h3 id="enquire-title" class="text-base font-semibold">Enquiry – {data.title}</h3>
+            <button class="w-9 h-9 inline-flex items-center justify-center rounded-md border text-neutral-700" aria-label="Close" data-close-modal>✕</button>
           </div>
-          <BookingForm
-            serviceType={serviceType}
-            propertyTitle={data.title}
-            propertyUrl={canonicalUrl}
-            availability={defaultAvailability}
-            ctaLabel={ctaLabel}
-            action="/list-property"
-            method="get"
-          />
+
+          <!-- Sheet body -->
+          <div class="p-4">
+            <BookingForm
+              serviceType={serviceType}
+              propertyTitle={data.title}
+              propertyUrl={canonicalUrl}
+              availability={defaultAvailability}
+              ctaLabel={ctaLabel}
+              action="/list-property"
+              method="get"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- LIGHTBOX -->
+      <div id="lightbox" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-label="Image viewer">
+        <div class="absolute inset-0 bg-black/80" data-lightbox-close></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+          <img id="lightbox-img" src={images[0]} alt={data.title} class="max-h-[90vh] max-w-[90vw] object-contain" />
+          <button id="lightbox-prev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-3xl" aria-label="Previous image">‹</button>
+          <button id="lightbox-next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-3xl" aria-label="Next image">›</button>
+          <button id="lightbox-close" class="absolute top-4 right-4 text-white text-2xl" aria-label="Close">✕</button>
         </div>
       </div>
     </>
@@ -471,74 +590,169 @@ const pillClass = (i: number) => `pill ${pillColors[i % pillColors.length]}`;
 </MainLayout>
 
 <script is:inline>
-  (function(){
-    /* Carousel */
-    const root = document.getElementById('carousel');
-    if (root) {
-      const slides = Array.from(root.querySelectorAll('img'));
-      const dotsWrap = document.getElementById('dots');
-      const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('button')) : [];
-      const prev = document.getElementById('prev');
-      const next = document.getElementById('next');
+(function(){
+  /* -------- Carousel -------- */
+  const root = document.getElementById('carousel');
+  if (root) {
+    const slides = Array.from(root.querySelectorAll('img'));
+    const dotsWrap = document.getElementById('dots');
+    const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('button')) : [];
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    const count = document.getElementById('count');
+    const zoomOpen = document.getElementById('zoom-open');
+    const swipeHint = document.getElementById('swipe-hint');
 
-      let i = 0, t;
-      const show = (n) => {
-        i = (n + slides.length) % slides.length;
-        slides.forEach((img, idx) => img.style.opacity = idx === i ? '1' : '0');
-        dots.forEach((d, idx) => d.className = 'h-2.5 w-2.5 rounded-full ' + (idx===i ? 'bg-white' : 'bg-white/60'));
-      };
-      const start = () => { stop(); t = setInterval(()=>show(i+1), 4500); };
-      const stop  = () => { if (t) clearInterval(t); };
+    let i = 0, t;
+    const updateCount = () => { if (count) count.textContent = (i+1) + ' / ' + slides.length; };
+    const show = (n) => {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((img, idx) => img.style.opacity = idx === i ? '1' : '0');
+      dots.forEach((d, idx) => d.className = 'h-2.5 w-2.5 rounded-full ' + (idx===i ? 'bg-white' : 'bg-white/60'));
+      updateCount();
+    };
+    const start = () => { stop(); t = setInterval(()=>show(i+1), 4500); };
+    const stop  = () => { if (t) clearInterval(t); };
 
-      prev && prev.addEventListener('click', () => { show(i-1); start(); });
-      next && next.addEventListener('click', () => { show(i+1); start(); });
-      dots.forEach((d, idx) => d.addEventListener('click', () => { show(idx); start(); }));
+    prev && prev.addEventListener('click', () => { show(i-1); start(); });
+    next && next.addEventListener('click', () => { show(i+1); start(); });
+    dots.forEach((d, idx) => d.addEventListener('click', () => { show(idx); start(); }));
 
-      let sx=0;
-      root.addEventListener('touchstart', e=>{ sx = e.touches[0].clientX; stop(); }, {passive:true});
-      root.addEventListener('touchend', e=>{
-        const dx = e.changedTouches[0].clientX - sx;
-        if (Math.abs(dx) > 40) show(i + (dx<0?1:-1));
-        start();
-      }, {passive:true});
-
+    let sx=0;
+    root.addEventListener('touchstart', e=>{ sx = e.touches[0].clientX; stop(); }, {passive:true});
+    root.addEventListener('touchend', e=>{
+      const dx = e.changedTouches[0].clientX - sx;
+      if (Math.abs(dx) > 40) show(i + (dx<0?1:-1));
       start();
-    }
+    }, {passive:true});
 
-    /* Adaptive Share */
-    const nativeBtn = document.getElementById('share-native');
-    const fallbackRow = document.getElementById('share-fallback');
-    const copyBtn = document.getElementById('share-copy');
+    document.addEventListener('keydown', (e)=>{
+      if (document.activeElement && /input|textarea|select/i.test(document.activeElement.tagName)) return;
+      if (e.key === 'ArrowLeft') { show(i-1); start(); }
+      if (e.key === 'ArrowRight') { show(i+1); start(); }
+    });
 
-    if (nativeBtn && navigator.share) {
-      nativeBtn.addEventListener('click', () => {
+    const hideHint = () => { if (swipeHint) swipeHint.style.display = 'none'; };
+    setTimeout(hideHint, 3000);
+    ['click','touchstart','keydown'].forEach(ev => root.addEventListener(ev, hideHint, { once: true }));
+
+    /* Lightbox */
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+    const lbPrev = document.getElementById('lightbox-prev');
+    const lbNext = document.getElementById('lightbox-next');
+    const lbClose = document.getElementById('lightbox-close');
+    const lbBackdrop = document.querySelector('[data-lightbox-close]');
+
+    const lbShow = (n) => {
+      i = (n + slides.length) % slides.length;
+      if (lb && lbImg) {
+        lbImg.setAttribute('src', slides[i].getAttribute('src') || '');
+        lb.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+    };
+    const lbHide = () => {
+      if (lb) {
+        lb.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    };
+
+    zoomOpen && zoomOpen.addEventListener('click', () => lbShow(i));
+    lbPrev && lbPrev.addEventListener('click', () => lbShow(i-1));
+    lbNext && lbNext.addEventListener('click', () => lbShow(i+1));
+    lbClose && lbClose.addEventListener('click', lbHide);
+    lbBackdrop && lbBackdrop.addEventListener('click', lbHide);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lbHide(); });
+
+    updateCount();
+    show(0);
+    start();
+  }
+
+  /* -------- Share: native vs popover -------- */
+  const shareTrigger = document.getElementById('share-trigger');
+  const sharePop = document.getElementById('share-pop');
+  const copyBtn = document.getElementById('share-copy');
+
+  const closePop = () => { sharePop && sharePop.classList.add('hidden'); shareTrigger?.setAttribute('aria-expanded','false'); };
+  const openPop  = () => { sharePop && sharePop.classList.remove('hidden'); shareTrigger?.setAttribute('aria-expanded','true'); };
+
+  if (shareTrigger) {
+    if (navigator.share) {
+      shareTrigger.addEventListener('click', () => {
         navigator.share({ title: document.title, url: window.location.href }).catch(()=>{});
       });
-      // keep fallback hidden
     } else {
-      if (fallbackRow) fallbackRow.classList.remove('hidden');
-      if (nativeBtn) nativeBtn.style.display = 'none';
-    }
-    if (copyBtn) {
-      copyBtn.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText(window.location.href);
-          copyBtn.textContent = 'Copied';
-          setTimeout(()=>copyBtn.textContent='Copy link', 1500);
-        } catch {}
+      // Popover behaviour
+      shareTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (sharePop?.classList.contains('hidden')) openPop(); else closePop();
       });
+      document.addEventListener('click', (e) => {
+        if (!sharePop) return;
+        if (!sharePop.contains(e.target) && e.target !== shareTrigger) closePop();
+      });
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closePop(); });
     }
+  }
 
-    /* Enquiry modal open/close */
-    const modal = document.getElementById('enquire-modal');
-    const openers = Array.from(document.querySelectorAll('[data-open-modal]'));
-    const closers = Array.from(document.querySelectorAll('[data-close-modal]'));
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        copyBtn.textContent = 'Copied';
+        setTimeout(()=>copyBtn.textContent='Copy link', 1500);
+      } catch {}
+    });
+  }
 
-    const open = () => { if (modal){ modal.classList.remove('hidden'); document.body.style.overflow='hidden'; } };
-    const close = () => { if (modal){ modal.classList.add('hidden'); document.body.style.overflow=''; } };
+  /* -------- Enquiry modal: open/close + focus trap -------- */
+  const modal = document.getElementById('enquire-modal');
+  const sheet = document.getElementById('enquire-sheet');
+  const openers = Array.from(document.querySelectorAll('[data-open-modal]'));
+  const closers = Array.from(document.querySelectorAll('[data-close-modal]'));
 
-    openers.forEach(btn => btn.addEventListener('click', open));
-    closers.forEach(btn => btn.addEventListener('click', close));
-    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
-  })();
+  const getTabbables = (root) =>
+    Array.from(root.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])'))
+      .filter(el => !el.hasAttribute('disabled'));
+
+  const trap = (e) => {
+    if (!sheet || sheet.classList.contains('hidden')) return;
+    if (e.key !== 'Tab') return;
+    const t = getTabbables(sheet);
+    if (!t.length) return;
+    const first = t[0], last = t[t.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+
+  const open = () => {
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    document.body.style.overflow='hidden';
+    // focus first field
+    setTimeout(()=>{
+      const first = sheet && getTabbables(sheet)[0];
+      first && first.focus();
+    }, 50);
+    document.addEventListener('keydown', trap);
+  };
+
+  const close = () => {
+    if (!modal) return;
+    modal.classList.add('hidden');
+    document.body.style.overflow='';
+    document.removeEventListener('keydown', trap);
+  };
+
+  openers.forEach(btn => btn.addEventListener('click', open));
+  closers.forEach(btn => btn.addEventListener('click', close));
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+
+})();
+</script>
+<script is:inline>
+  console.log('PUBLIC_BUSINESS_PHONE =', import.meta.env.PUBLIC_BUSINESS_PHONE);
 </script>

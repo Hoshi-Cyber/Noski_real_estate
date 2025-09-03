@@ -29,6 +29,11 @@
   --font-serif: "Merriweather", Georgia, serif;
   --font-mono: "Fira Code", monospace;
 
+  /* Accent palette for pills */
+  --emerald: #10B981;
+  --purple:  #7C3AED;
+  --slate:   #334155;
+
   /* Spacing */
   --space-section: 4rem;
 
@@ -92,6 +97,12 @@ a:disabled {
   .surface          { @apply bg-white ring-1 ring-neutral-200; }
   .surface-muted    { @apply bg-neutral-50 ring-1 ring-neutral-200; }
   .surface-translucent { background-color: rgb(255 255 255 / .9); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+
+  /* Subtle fact label text (used beside price) */
+  .fact-label { @apply text-sm text-neutral-700; }
+
+  /* Single-line ellipsis */
+  .truncate-1 { @apply truncate; }
 }
 
 /* ---- Components ---- */
@@ -133,7 +144,39 @@ a:disabled {
   .btn-outline:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
   .btn-outline:disabled{ color: var(--color-neutral-500); border-color: var(--color-neutral-300); }
 
-  /* ---- Badges (NEW) ---- */
+  /* WhatsApp CTA (text button) */
+  .btn-wa{
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 font-semibold text-white transition;
+    background:#25D366;
+  }
+  .btn-wa:hover{ background:#1fb257; }
+  .btn-wa:focus-visible{ outline:2px solid #25D366; outline-offset:2px; }
+  .btn-wa svg{ width:16px; height:16px; display:block; }
+
+  /* Icon button (40×40 circular) */
+  .icon-btn{
+    @apply inline-flex items-center justify-center w-10 h-10 rounded-full bg-white text-neutral-700 shadow ring-1 ring-neutral-200;
+  }
+  .icon-btn:focus-visible{ @apply outline-none ring-2 ring-cta; }
+
+  /* WhatsApp icon button */
+  .btn-wa-icon{
+    @apply icon-btn text-white;
+    background:#25D366;
+  }
+  .btn-wa-icon:hover{ background:#1fb257; }
+  .btn-wa-icon:focus-visible{ outline:2px solid #25D366; outline-offset:2px; }
+
+  /* Unified carousel buttons */
+  .carousel-btn {
+    @apply inline-flex items-center justify-center rounded-md px-3 py-2 text-white
+           focus:outline-none transition;
+    background-color: rgb(0 0 0 / .45);
+  }
+  .carousel-btn:hover { background-color: rgb(0 0 0 / .6); }
+  .carousel-btn:focus-visible { outline: 2px solid var(--color-cta); outline-offset: 2px; }
+
+  /* ---- Badges ---- */
   .badge{
     @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium
            ring-1 ring-neutral-200 bg-neutral-50 text-neutral-700;
@@ -151,6 +194,40 @@ a:disabled {
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent);
   }
 
+  /* ---- Pills (legacy; use bullets for amenities now) ---- */
+  .pill {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium select-none;
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-800);
+    box-shadow: inset 0 0 0 1px var(--color-neutral-200);
+  }
+  .pill-dot { @apply w-1.5 h-1.5 rounded-full; background: var(--color-cta); }
+  .pill-blue {
+    color: var(--color-cta);
+    background-color: color-mix(in srgb, var(--color-cta) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-cta) 28%, transparent);
+  }
+  .pill-amber {
+    color: var(--color-accent);
+    background-color: color-mix(in srgb, var(--color-accent) 14%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 32%, transparent);
+  }
+  .pill-emerald {
+    color: var(--emerald);
+    background-color: color-mix(in srgb, var(--emerald) 14%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--emerald) 32%, transparent);
+  }
+  .pill-purple {
+    color: var(--purple);
+    background-color: color-mix(in srgb, var(--purple) 14%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--purple) 32%, transparent);
+  }
+  .pill-slate {
+    color: var(--slate);
+    background-color: color-mix(in srgb, var(--slate) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--slate) 30%, transparent);
+  }
+
   /* ---- Cards ---- */
   .card           { @apply bg-white rounded-xl shadow ring-1 ring-neutral-200 hover:shadow-md transition; }
   .card-tight     { @apply bg-white rounded-lg shadow p-4 ring-1 ring-neutral-200; }
@@ -159,7 +236,25 @@ a:disabled {
   .card-horizontal img { @apply w-40 h-40 object-cover; }
   .card-horizontal .content { @apply flex flex-col justify-between p-4 flex-1; }
 
-  /* ---- Category Tile (ENHANCED) ---- */
+  /* ---- Breadcrumbs ---- */
+  .breadcrumb { @apply max-w-6xl mx-auto px-4 py-3 text-sm md:text-[15px]; }
+  .breadcrumb-ol {
+    @apply flex items-center gap-1.5 flex-wrap rounded-md bg-neutral-50 ring-1 ring-neutral-200 px-3 py-2;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .breadcrumb-ol::-webkit-scrollbar { display: none; }
+  .breadcrumb a { @apply text-primary font-normal no-underline hover:text-cta; }
+  .breadcrumb-sep { @apply text-neutral-400 px-1; }
+  .breadcrumb-current { @apply text-neutral-700 font-normal; }
+
+  /* ---- Bulleted grids (for Amenities / Neighborhood) ---- */
+  .bullets { @apply grid gap-y-1 gap-x-8 list-disc pl-5; }
+  .bullets-2 { @apply md:grid-cols-2; }
+  .bullets-3 { @apply md:grid-cols-2 lg:grid-cols-3; }
+
+  /* ---- Category Tile ---- */
   .category-tile {
     @apply relative flex flex-col items-start p-6 rounded-2xl bg-white shadow-sm
            ring-1 ring-neutral-200 transition hover:shadow-md hover:-translate-y-0.5
@@ -174,7 +269,6 @@ a:disabled {
   .tile-title { @apply text-lg font-semibold text-primary; }
   .tile-sub   { @apply text-sm text-neutral-600 mt-1; }
 
-  /* FAQ tile enhancements */
   .tile-hover { @apply hover:-translate-y-0.5 hover:shadow-md transition; }
   .tile-badge {
     @apply w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center text-primary mb-4 ring-1 ring-neutral-200;
@@ -196,16 +290,16 @@ a:disabled {
            text-neutral-700 hover:bg-neutral-100 transition whitespace-nowrap;
   }
 
-  /* ---- TOC (NEW) ---- */
+  /* ---- TOC ---- */
   .toc-card { @apply rounded-2xl ring-1 ring-neutral-200 bg-white p-4 text-sm shadow-sm lg:sticky lg:top-20; }
   .toc-list a { @apply block rounded px-2 py-1 hover:underline hover:text-cta transition focus:outline-none focus:ring-2 focus:ring-cta; }
 
-  /* ---- PDF Badge (NEW) ---- */
+  /* ---- PDF Badge ---- */
   .pdf-badge {
     @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-50 text-red-700 border border-red-200;
   }
 
-  /* ---- Related Guides (reuse post-card) ---- */
+  /* ---- Related Guides ---- */
   .related-card { @apply post-card; }
 
   /* ---- Why Choose Us ---- */
@@ -229,13 +323,51 @@ a:disabled {
   .section-title { @apply text-2xl md:text-3xl font-bold text-primary mb-8 text-center; }
   .section-subtitle { @apply text-sm font-semibold text-neutral-700 uppercase tracking-wide; }
 
-  /* ---- Popular Articles (ENHANCED) ---- */
+  /* ---- Popular Articles ---- */
   .post-card  { @apply bg-white rounded-2xl shadow ring-1 ring-neutral-200 overflow-hidden hover:shadow-md transition; }
   .post-media { @apply w-full h-44 object-cover; }
   .post-body  { @apply p-4; }
   .post-title { @apply font-semibold leading-snug text-primary; }
   .post-desc  { @apply text-sm text-neutral-600 mt-1; }
   .post-meta  { @apply mt-3 text-sm text-neutral-500 flex items-center justify-between; }
+
+  /* ---- Dialog / Sheet ---- */
+  .sheet{
+    @apply bg-white rounded-xl shadow-xl ring-1 ring-neutral-200 max-h-[85vh] overflow-auto;
+  }
+  .sheet--mobile{
+    @apply fixed inset-x-0 bottom-0 rounded-t-2xl shadow-xl ring-1 ring-neutral-200 bg-white max-h-[85vh] overflow-auto;
+  }
+  .sheet__header{
+    @apply sticky top-0 z-10 bg-white px-4 py-3 border-b flex items-center justify-between;
+  }
+  .sheet__body{ @apply p-4; }
+  .sheet__footer--sticky{ @apply sticky bottom-0 bg-white p-3 border-t; }
+
+  /* ---- Popover ---- */
+  .popover{
+    @apply absolute mt-2 min-w-[12rem] bg-white ring-1 ring-neutral-200 rounded-md shadow-lg p-2 z-20;
+  }
+  .popover-arrow{
+    position:absolute; width:10px; height:10px; transform:rotate(45deg);
+    background:#fff; border-left:1px solid rgb(229 231 235); border-top:1px solid rgb(229 231 235);
+    top:-5px; left:16px;
+  }
+
+  /* ---- Share bars ---- */
+  .share-bar{ @apply mt-4 flex items-center gap-2 flex-wrap; }
+  .share-label{ @apply text-sm text-neutral-700 mr-1; }
+  .share-btn{
+    appearance:none; -webkit-appearance:none;
+    @apply inline-flex items-center gap-2 px-2.5 py-2 rounded-md border border-neutral-300 bg-white text-neutral-800 text-sm transition;
+    text-decoration: none;
+  }
+  .share-btn:hover{ @apply bg-neutral-100 border-neutral-400; }
+  .share-btn:focus{ outline:2px solid var(--color-cta); outline-offset:2px; }
+  .share-btn svg{ width:16px; height:16px; display:block; }
+
+  /* Icon-only variant (optional helper) */
+  .share-btn-icon{ @apply w-9 h-9 p-0 justify-center; }
 }
 
 /* Field validation */
@@ -273,6 +405,12 @@ footer.bg-primary h6 {
   .why-icon      { @apply w-10 h-10; }
 }
 
+/* Very small screens: compact share bar */
+@media (max-width: 380px) {
+  .share-bar .share-label{ display:none; }
+  .share-bar .share-btn{ padding: .375rem .5rem; }
+}
+
 /* ---- In-article link decoration ---- */
 .link-decor {
   text-decoration: none;
@@ -282,20 +420,6 @@ footer.bg-primary h6 {
 }
 .link-decor:hover { border-bottom-style: solid; }
 .link-decor:focus-visible { outline: 2px solid var(--color-cta); outline-offset: 2px; }
-
-/* ---- Share bars ---- */
-@layer components {
-  .share-bar{ @apply mt-4 flex items-center gap-2 flex-wrap; }
-  .share-label{ @apply text-sm text-neutral-700 mr-1; }
-  .share-btn{
-    appearance:none; -webkit-appearance:none;
-    @apply inline-flex items-center gap-2 px-2.5 py-2 rounded-md border border-neutral-300 bg-white text-neutral-800 text-sm transition;
-    text-decoration: none;
-  }
-  .share-btn:hover{ @apply bg-neutral-100 border-neutral-400; }
-  .share-btn:focus{ outline:2px solid var(--color-cta); outline-offset:2px; }
-  .share-btn svg{ width:16px; height:16px; display:block; }
-}
 
 /* Safe-area padding for sticky bars */
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
