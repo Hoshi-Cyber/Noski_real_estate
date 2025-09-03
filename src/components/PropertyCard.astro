@@ -1,6 +1,5 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { resolveListingImage, buildListingHref } from '../lib/utils/paths';
 
 interface Props {
   listing: CollectionEntry<'listings'>['data'] | CollectionEntry<'featured'>['data'];
@@ -22,14 +21,39 @@ const {
   imgProps = { loading: 'lazy', decoding: 'async', width: 768, height: 432 }
 } = Astro.props as Props;
 
-const finalHref = href || buildListingHref(listing.availability, slug);
-const finalImg = resolveListingImage(
+/* ---------- Helpers ---------- */
+const norm = (s: string = '') => s.toLowerCase().replace(/\s+/g, '-');
+
+const finalHref =
+  href || `/properties/${norm(String(listing.availability || ''))}/${slug}`;
+
+function resolveCardImage(
+  slug: string,
+  imagesFolder?: string,
+  images?: string[] | undefined,
+  image?: string | undefined
+): string {
+  const base = (imagesFolder ? imagesFolder.replace(/^\/+|\/+$/g, '') : `images/listings/${slug}`);
+  const candidates = [
+    `/${base}/hero.webp`,
+    `/${base}/cover.webp`,
+    `/${base}/main.webp`,
+    `/${base}/1.webp`,
+    ...(Array.isArray(images) ? images : []),
+    image,
+    '/images/placeholder.webp'
+  ].filter(Boolean) as string[];
+  return candidates[0];
+}
+
+const finalImg = resolveCardImage(
   slug,
-  listing.imagesFolder,
-  listing.images,
-  listing.image
+  (listing as any).imagesFolder,
+  (listing as any).images,
+  (listing as any).image
 );
 
+/* Responsive srcset */
 const srcset = `
   ${finalImg}?w=480 480w,
   ${finalImg}?w=768 768w,
@@ -41,13 +65,13 @@ const altText = listing.title && listing.location
   : listing.title || 'Property image';
 
 const statusColors: Record<string, string> = {
-  'for sale': 'bg-green-600',
-  'for rent': 'bg-blue-600',
-  'short-stays': 'bg-orange-500',
-  'short-stay': 'bg-orange-500'
+  'for sale': 'bg-blue-600',
+  'for rent': 'bg-emerald-600',
+  'short-stays': 'bg-neutral-800',
+  'short-stay': 'bg-neutral-800'
 };
-const availSeg = (listing.availability || '').toLowerCase().replace(/\s+/g, '-');
-const statusClass = statusColors[availSeg] || 'bg-gray-500';
+const availSeg = norm(String(listing.availability || ''));
+const statusClass = statusColors[availSeg] || 'bg-neutral-800';
 
 const priceText =
   typeof listing.price === 'number'
@@ -60,15 +84,17 @@ const pad = compact ? 'p-3' : 'p-4';
 const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
 ---
 
-<article 
-  class="group border border-neutral-200 rounded-lg overflow-hidden shadow-sm bg-white transition 
-         hover:shadow-md focus-within:outline-none focus-within:ring-2 focus-within:ring-[color:var(--color-cta)]"
+<article
+  class="card group border border-neutral-200 overflow-hidden bg-white transition will-change-transform
+         hover:shadow-md focus-within:ring-2 focus-within:ring-cta"
+  role="article"
 >
-  <a href={finalHref} class="block overflow-hidden focus:outline-none">
+  <!-- Media -->
+  <a href={finalHref} class="block overflow-hidden focus:outline-none" aria-label={`Open ${listing.title || 'property'} details`}>
     <figure class={`w-full ${imgAspect} relative`}>
       {listing.availability && (
         <span
-          class={`absolute top-2 left-2 ${statusClass} text-white text-xs font-medium px-2 py-1 rounded z-10`}
+          class={`absolute top-2 left-2 ${statusClass} text-white text-[11px] font-medium px-2 py-1 rounded z-10`}
           aria-label={`Status: ${listing.availability}`}
         >
           {listing.availability}
@@ -77,11 +103,7 @@ const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
       <img
         src={finalImg}
         srcset={srcset}
-        sizes={
-          compact
-            ? "(min-width:1024px) 25vw, (min-width:640px) 50vw, 100vw"
-            : "(min-width:768px) 33vw, 100vw"
-        }
+        sizes={compact ? "(min-width:1024px) 25vw, (min-width:640px) 50vw, 100vw" : "(min-width:768px) 33vw, 100vw"}
         alt={altText}
         class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
         {...imgProps}
@@ -89,47 +111,54 @@ const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
     </figure>
   </a>
 
-  <div class={pad}>
-    <h3 class={`${titleSize} font-semibold text-primary mb-1`}>
-      <a 
-        href={finalHref} 
-        class="focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)] rounded hover:opacity-90"
+  <!-- Body -->
+  <div class={`flex flex-col ${pad} gap-2`}>
+    <h3 class={`${titleSize} font-semibold text-primary leading-snug`}>
+      <a
+        href={finalHref}
+        class="rounded focus:outline-none focus:ring-2 focus:ring-cta hover:opacity-90"
       >
         {listing.title || 'Untitled Property'}
       </a>
     </h3>
 
-    <p class="text-sm text-neutral-600 mb-2">
-      {listing.location || 'Unknown Location'}
-    </p>
+    <p class="text-sm text-neutral-600">{listing.location || 'Unknown Location'}</p>
 
-    <div class="text-sm text-neutral-900 font-semibold">{priceText}</div>
+    <div class="flex items-baseline justify-between">
+      <div class="text-sm text-neutral-700 fact-label">
+        {listing.bedrooms ? `${listing.bedrooms} bd` : '— bd'}
+        {' • '}
+        {listing.bathrooms ? `${listing.bathrooms} ba` : '— ba'}
+      </div>
+      <div class="text-sm md:text-base font-semibold text-neutral-900">{priceText}</div>
+    </div>
 
     {(listing.bedrooms || listing.bathrooms) && (
-      <div class="mt-2 flex flex-wrap gap-2">
+      <div class="mt-1 flex flex-wrap gap-2">
         {listing.bedrooms && (
-          <span class="chip">{listing.bedrooms} {listing.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}</span>
+          <span class="pill pill-slate">
+            <span class="pill-dot"></span>
+            {listing.bedrooms} {listing.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
+          </span>
         )}
         {listing.bathrooms && (
-          <span class="chip">{listing.bathrooms} {listing.bathrooms === 1 ? 'Bathroom' : 'Bathrooms'}</span>
+          <span class="pill pill-emerald">
+            <span class="pill-dot"></span>
+            {listing.bathrooms} {listing.bathrooms === 1 ? 'Bathroom' : 'Bathrooms'}
+          </span>
         )}
       </div>
     )}
 
-    <div class="mt-4">
+    <!-- CTA pinned to bottom for consistency -->
+    <div class="mt-3">
       <a
         href={finalHref}
-        class={`${primaryCtaClass} ${btnPad} text-sm rounded-md`}
+        class={`${primaryCtaClass} ${btnPad} text-sm rounded-md w-full inline-flex`}
+        aria-label="View details"
       >
         View details
       </a>
     </div>
   </div>
 </article>
-
-<style>
-.chip {
-  @apply inline-flex items-center gap-1 rounded-full border border-neutral-200 bg-neutral-50 
-         px-2.5 py-1 text-xs text-neutral-700;
-}
-</style>

@@ -2,10 +2,11 @@
 // src/components/FeaturedListingsRow.astro
 import PropertyCard from './PropertyCard.astro';
 import type { CollectionEntry } from 'astro:content';
-import { resolveListingImage, buildListingHref } from '../lib/utils/paths';
 
 const { items = [] }: { items: (CollectionEntry<'listings'> | CollectionEntry<'featured'>)[] } = Astro.props;
-const featured = items.slice(0, 4);
+
+// take first 8 to give the carousel room; grid uses first 4
+const featured = items.slice(0, 8);
 
 const imgProps = {
   loading: 'lazy',
@@ -24,19 +25,10 @@ const imgProps = {
 >
   <!-- Desktop grid -->
   <div class="hidden lg:grid grid-cols-4 gap-6">
-    {featured.map((item) => (
+    {featured.slice(0, 4).map((item) => (
       <PropertyCard
-        listing={{
-          ...item.data,
-          image: resolveListingImage(
-            item.slug,
-            item.data.imagesFolder,
-            item.data.images,
-            item.data.image
-          )
-        }}
+        listing={item.data}
         slug={item.slug}
-        href={buildListingHref(item.data.availability, item.slug)}
         compact={true}
         primaryCtaClass="btn-cta"
         secondaryCtaClass="btn-outline"
@@ -45,110 +37,145 @@ const imgProps = {
     ))}
   </div>
 
-  <!-- Mobile/tablet horizontal scroll (native swipe) -->
-  <div
-    id="featured-scroll"
-    class="flex lg:hidden gap-4 overflow-x-auto px-1 snap-x snap-mandatory"
-  >
-    {featured.map((item) => (
-      <div class="shrink-0 basis-full sm:basis-1/2 md:basis-1/3 snap-start">
-        <PropertyCard
-          listing={{
-            ...item.data,
-            image: resolveListingImage(
-              item.slug,
-              item.data.imagesFolder,
-              item.data.images,
-              item.data.image
-            )
-          }}
-          slug={item.slug}
-          href={buildListingHref(item.data.availability, item.slug)}
-          compact={true}
-          primaryCtaClass="btn-cta"
-          secondaryCtaClass="btn-outline"
-          imgProps={imgProps}
-        />
-      </div>
-    ))}
-  </div>
+  <!-- Mobile/tablet horizontal carousel -->
+  <div class="lg:hidden">
+    <div
+      id="featured-scroll"
+      class="flex gap-4 overflow-x-auto px-1 snap-x snap-mandatory scroll-smooth"
+      aria-label="Featured listings carousel track"
+      tabindex="0"
+    >
+      {featured.map((item) => (
+        <div class="shrink-0 basis-full sm:basis-1/2 md:basis-1/3 snap-start">
+          <PropertyCard
+            listing={item.data}
+            slug={item.slug}
+            compact={true}
+            primaryCtaClass="btn-cta"
+            secondaryCtaClass="btn-outline"
+            imgProps={imgProps}
+          />
+        </div>
+      ))}
+    </div>
 
-  <!-- Mobile swipe hint -->
-  <div
-    id="swipe-hint"
-    class="lg:hidden absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white to-transparent flex items-center justify-center text-neutral-400 pointer-events-none transition-opacity duration-500"
-  >
-    <span class="text-xs font-medium rotate-90">Swipe ›</span>
+    <!-- Progress dots -->
+    <div id="featured-dots" class="mt-3 flex items-center justify-center gap-2" role="tablist" aria-label="Carousel pagination">
+      {featured.map((_, i) => (
+        <button
+          class={`h-2.5 w-2.5 rounded-full ${i === 0 ? 'bg-neutral-900' : 'bg-neutral-300'}`}
+          aria-label={`Go to slide ${i + 1}`}
+          data-index={i}
+          role="tab"
+          aria-selected={i === 0 ? 'true' : 'false'}
+        />
+      ))}
+    </div>
   </div>
 </section>
 
 <script type="module" client:load>
-  const el = document.getElementById('featured-scroll');
-  const hint = document.getElementById('swipe-hint');
+  const el = document.getElementById('featured-scroll') as HTMLElement | null;
+  const dotsWrap = document.getElementById('featured-dots') as HTMLElement | null;
+  const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('button')) as HTMLButtonElement[] : [];
 
   if (el) {
-    // Make the container feel instantly draggable on touch
+    // native feel
     el.style.touchAction = 'pan-x pinch-zoom';
-    el.style.webkitOverflowScrolling = 'touch';
+    (el as any).style.webkitOverflowScrolling = 'touch';
 
-    // Hide hint on first interaction
-    const hideHint = () => hint?.classList.add('opacity-0');
-    el.addEventListener('pointerdown', hideHint, { passive: true });
-    el.addEventListener('scroll', hideHint, { passive: true });
+    // cache slide nodes and positions
+    const slides = Array.from(el.children) as HTMLElement[];
+    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
-    // Pointer-drag fallback (smooth, no delay)
-    let isDown = false;
-    let startX = 0;
-    let startLeft = 0;
-    let moved = false;
-
-    const onDown = (e) => {
-      isDown = true;
-      moved = false;
-      startX = e.clientX;
-      startLeft = el.scrollLeft;
-      el.setPointerCapture?.(e.pointerId);
-      el.dataset.dragging = 'true';
+    const getIndexFromScroll = () => {
+      // pick the child whose left edge is closest to scrollLeft
+      let best = 0;
+      let bestDist = Number.POSITIVE_INFINITY;
+      slides.forEach((node, idx) => {
+        const dist = Math.abs(node.offsetLeft - el.scrollLeft);
+        if (dist < bestDist) { best = idx; bestDist = dist; }
+      });
+      return best;
     };
 
-    const onMove = (e) => {
-      if (!isDown) return;
-      const dx = e.clientX - startX;
-      if (Math.abs(dx) > 3) moved = true;
-      // Prevent text selection / click delay while dragging
-      e.preventDefault();
-      el.scrollLeft = startLeft - dx;
+    let active = 0;
+    const setActive = (idx: number) => {
+      active = clamp(idx, 0, slides.length - 1);
+      dots.forEach((d, i) => {
+        d.className = 'h-2.5 w-2.5 rounded-full ' + (i === active ? 'bg-neutral-900' : 'bg-neutral-300');
+        d.setAttribute('aria-selected', i === active ? 'true' : 'false');
+      });
     };
 
-    const onUp = (e) => {
-      isDown = false;
-      el.releasePointerCapture?.(e.pointerId);
-      delete el.dataset.dragging;
+    const scrollToIndex = (idx: number, smooth = true) => {
+      const node = slides[clamp(idx, 0, slides.length - 1)];
+      if (!node) return;
+      el.scrollTo({ left: node.offsetLeft, behavior: smooth ? 'smooth' : 'auto' });
+      setActive(idx);
     };
 
-    el.addEventListener('pointerdown', onDown, { passive: true });
-    el.addEventListener('pointermove', onMove, { passive: false });
-    window.addEventListener('pointerup', onUp, { passive: true });
-    el.addEventListener('pointerleave', onUp, { passive: true });
-
-    // Prevent accidental clicks on cards when user dragged
-    el.addEventListener('click', (ev) => {
-      if (moved) {
-        ev.preventDefault();
-        ev.stopPropagation();
-      }
-      moved = false;
-    }, true);
-
-    // Keyboard support (for accessibility)
-    el.setAttribute('tabindex', '0');
-    el.addEventListener('keydown', (e) => {
-      const cardW = el.firstElementChild?.getBoundingClientRect().width || 0;
-      if (e.key === 'ArrowRight') el.scrollBy({ left: cardW, behavior: 'smooth' });
-      if (e.key === 'ArrowLeft')  el.scrollBy({ left: -cardW, behavior: 'smooth' });
-      if (e.key === 'Home')       el.scrollTo({ left: 0, behavior: 'smooth' });
-      if (e.key === 'End')        el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+    // click dots to navigate
+    dots.forEach((d) => {
+      d.addEventListener('click', () => {
+        const idx = Number((d as HTMLElement).dataset.index || 0);
+        scrollToIndex(idx);
+        stopAuto();
+        startAuto(); // restart timer
+      }, { passive: true });
     });
+
+    // update dots on scroll end (debounced)
+    let scrollT: number | undefined;
+    el.addEventListener('scroll', () => {
+      window.clearTimeout(scrollT);
+      scrollT = window.setTimeout(() => setActive(getIndexFromScroll()), 80);
+    }, { passive: true });
+
+    // keyboard navigation
+    el.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); scrollToIndex(active + 1); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); scrollToIndex(active - 1); }
+      if (e.key === 'Home')       { e.preventDefault(); scrollToIndex(0); }
+      if (e.key === 'End')        { e.preventDefault(); scrollToIndex(slides.length - 1); }
+    });
+
+    // auto-scroll every 4s when visible and not interacting
+    let autoT: number | undefined;
+    let userInteracting = false;
+    const startAuto = () => {
+      if (autoT) window.clearInterval(autoT);
+      autoT = window.setInterval(() => {
+        if (userInteracting) return;
+        const next = (active + 1) % slides.length;
+        scrollToIndex(next);
+      }, 4000);
+    };
+    const stopAuto = () => { if (autoT) window.clearInterval(autoT); autoT = undefined; };
+
+    // pause on hover, pointer down, focus in; resume on leave/blur
+    ['pointerdown','mouseenter','focusin','touchstart'].forEach(evt => {
+      el.addEventListener(evt, () => { userInteracting = true; stopAuto(); }, { passive: true });
+    });
+    ['pointerup','mouseleave','focusout','touchend'].forEach(evt => {
+      el.addEventListener(evt, () => { userInteracting = false; startAuto(); }, { passive: true });
+    });
+
+    // pause when offscreen
+    const io = new IntersectionObserver((entries) => {
+      const visible = entries.some(e => e.isIntersecting);
+      if (visible) startAuto(); else stopAuto();
+    }, { threshold: 0.2 });
+    io.observe(el);
+
+    // initial state
+    setActive(0);
+    startAuto();
+
+    // ensure snap aligns exactly to child offsets after resize
+    window.addEventListener('resize', () => {
+      scrollToIndex(active, false);
+    }, { passive: true });
   }
 </script>
 
@@ -157,11 +184,11 @@ const imgProps = {
 #featured-scroll::-webkit-scrollbar { display: none; }
 #featured-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Make swipe snapping reliable */
-#featured-scroll { 
+/* Snap behavior and perf hints */
+#featured-scroll {
   scroll-snap-type: x mandatory;
   overscroll-behavior-x: contain;
-  contain: content;            /* paints faster on mobile */
+  contain: content;
 }
 
 /* Strong snap on each card */
