@@ -1,15 +1,49 @@
+# -------------------------
 # Dependencies
-node_modules
+# -------------------------
+node_modules/
 
+# -------------------------
 # Build output
-dist
-.astro
+# -------------------------
+dist/
+.astro/
+.cache/
+.tmp/
 
+# -------------------------
 # Environment files
+# -------------------------
 .env*
 !.env.example
 
+# -------------------------
 # System files
+# -------------------------
 .DS_Store
 Thumbs.db
+desktop.ini
+ehthumbs.db
 nul
+
+# -------------------------
+# Editor / IDE
+# -------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------
+# Logs & Debug
+# -------------------------
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# -------------------------
+# Accidental junk from mis-typed commands
+# -------------------------
+h
+-*
