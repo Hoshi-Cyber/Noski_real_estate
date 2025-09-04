@@ -68,12 +68,15 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
 
     <main id="main" class="min-h-[70vh] overflow-x-hidden" role="main">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Breadcrumbs slot with tighter spacing -->
-        <nav aria-label="Breadcrumb" class="mb-2" id="breadcrumbs">
+        <!-- Breadcrumbs slot rendered tightly above first heading/section -->
+        <nav aria-label="Breadcrumb" id="breadcrumbs" class="mb-2">
           <slot name="breadcrumbs" />
         </nav>
 
-        <slot />
+        <!-- Page content -->
+        <div id="page-body">
+          <slot />
+        </div>
       </div>
     </main>
 
@@ -96,7 +99,7 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
       ];
 
       function prefetch(href) {
-        if (!href || document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
+        if (!href || document.querySelector(\`link[rel="prefetch"][href="\${href}"]\`)) return;
         const l = document.createElement('link');
         l.rel = 'prefetch';
         l.href = href;
@@ -106,12 +109,8 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
       const ids = ['listings-btn','dev-btn','res-btn'];
       ids.forEach((id) => {
         const el = document.getElementById(id);
-        el?.addEventListener('mouseenter', () => {
-          routes.forEach(prefetch);
-        }, { passive: true });
-        el?.addEventListener('focus', () => {
-          routes.forEach(prefetch);
-        }, { passive: true });
+        el?.addEventListener('mouseenter', () => routes.forEach(prefetch), { passive: true });
+        el?.addEventListener('focus', () => routes.forEach(prefetch), { passive: true });
       });
 
       // Also prefetch on hover of any header nav links
@@ -123,5 +122,15 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
         }
       }, { passive: true });
     </script>
+
+    <!-- Tighten spacing between breadcrumbs and the first section/heading -->
+    <style is:global>
+      /* Collapse any top margin/padding on the first block after breadcrumbs */
+      #breadcrumbs + #page-body > :first-child { margin-top: 0 !important; padding-top: 0 !important; }
+      /* If the first child is a header element */
+      #breadcrumbs + #page-body > header:first-child { margin-top: 0 !important; padding-top: 0 !important; }
+      /* If the first child uses a .section wrapper */
+      #breadcrumbs + #page-body > .section:first-child { margin-top: 0 !important; padding-top: 0 !important; }
+    </style>
   </body>
 </html>

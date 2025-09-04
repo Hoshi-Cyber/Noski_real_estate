@@ -1,44 +1,41 @@
 ---
-export interface Props {
+interface Props {
   title: string;
-  desc?: string;
   href: string;
+  desc?: string;
+  image?: string;   // e.g. '/images/guides/buying.webp'
+  alt?: string;
 }
 
-const { title, desc = '', href } = Astro.props;
+const { title, href, desc = '', image = '', alt = '' } = Astro.props;
+const hasImg = !!image;
 ---
 
-<article class="related-card">
-  <a
-    href={href}
-    class="block focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
-    aria-label={title}
-  >
-    <!-- Decorative placeholder media -->
-    <div class="post-media bg-neutral-100 flex items-center justify-center">
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        class="w-7 h-7 text-primary"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 6v12m6-6H6"
-        />
-      </svg>
+<a href={href} class="post-card post-card--rich block h-full">
+  {hasImg ? (
+    <div class="post-media-wrap">
+      <img
+        src={image}
+        alt={alt || title}
+        class="post-media"
+        loading="lazy"
+        width="640"
+        height="400"
+      />
     </div>
-  </a>
-  <div class="post-body">
-    <h4 class="post-title">
-      <a href={href} class="hover:underline">{title}</a>
-    </h4>
+  ) : (
+    <div class="post-media-wrap" aria-hidden="true">
+      <!-- simple placeholder so heights stay consistent -->
+      <div style="width:100%;height:100%;background:linear-gradient(135deg,#eef2ff,#f8fafc)"></div>
+    </div>
+  )}
+
+  <div class="post-body flex flex-col">
+    <h4 class="post-title">{title}</h4>
     {desc && <p class="post-desc">{desc}</p>}
     <div class="post-meta">
-      <span class="text-neutral-500">Guide</span>
-      <a href={href} class="link-decor">Read more &rarr;</a>
+      <span>Guide</span>
+      <span class="read">Read more →</span>
     </div>
   </div>
-</article>
+</a>

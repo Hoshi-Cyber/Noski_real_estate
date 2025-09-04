@@ -1,4 +1,5 @@
 ---
+// src/components/blog/PostLayout.astro
 import BlogCard from './BlogCard.astro';
 import { BLOG_CATEGORIES } from '../../lib/blog-categories';
 
@@ -118,7 +119,7 @@ const articleJson = {
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 9h3V6h-3c-2 0-3.5 1.5-3.5 3.5V12H8v3h2.5v6H14v-6h2.6l.4-3H14V9.5c0-.3.2-.5.5-.5z"/></svg>
       </a>
       <a class="share-btn" href={liHref} target="_blank" rel="noopener" aria-label="Share on LinkedIn">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9h3v9H6V9zm1.5-5a1.75 1.75 0 110 3.5A1.75 1.75 0 017.5 4zM10 9h2.9v1.2h.1c.4-.8 1.4-1.4 2.8-1.4 3 0 3.5 2 3.5 4.6V18h-3v-3.7c0-.9 0-2-1.2-2s-1.4 1-1.4 2V18h-3V9z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9h3v9H6V9zm1.5-5A1.75 1.75 0 119 5.75 1.75 1.75 0 017.5 4zM10 9h2.9v1.2h.1c.4-.8 1.4-1.4 2.8-1.4 3 0 3.5 2 3.5 4.6V18h-3v-3.7c0-.9 0-2-1.2-2s-1.4 1-1.4 2V18h-3V9z"/></svg>
       </a>
       <a class="share-btn" href={waHref} target="_blank" rel="noopener" aria-label="Share on WhatsApp">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 00-7.8 13.3L3 21l4.9-1.3A9 9 0 1012 3zm0 2a7 7 0 015.7 11.1l-.2.3c-1.2 1.5-3.7 2.1-5.8 1.6l-2.2-.6-2.2.6.6-2.2-.6-2.2C6.8 10.2 7.8 8 9.4 6.9A7 7 0 0112 5z"/></svg>
@@ -131,9 +132,9 @@ const articleJson = {
       </button>
     </div>
 
-    <!-- TOP TOC -->
+    <!-- TOP TOC: visible on mobile/tablet, hidden on desktop -->
     {Array.isArray(headings) && headings.length > 0 && (
-      <nav aria-label="Table of contents" class="toc-card mt-6 rounded-lg border border-slate-200 bg-white p-5">
+      <nav aria-label="Table of contents" class="toc-card mt-6 rounded-lg border border-slate-200 bg-white p-5 lg:hidden">
         <h2 class="text-sm font-semibold text-slate-900">Contents</h2>
         <ul class="mt-3 space-y-2 text-sm toc-list">
           {headings.map((h: any) => (
@@ -160,10 +161,23 @@ const articleJson = {
             class="w-full h-full object-cover object-center"
             loading="lazy"
             decoding="async"
-            width="960"
-            height="960"
+            width="1600"
+            height="900"
             sizes="(min-width: 1024px) 48rem, 100vw"
           />
+          {/* Desktop-only TOC overlay on hero */}
+          {Array.isArray(headings) && headings.length > 0 && (
+            <nav aria-label="Table of contents" class="toc-overlay hidden lg:block">
+              <h2 class="toc-overlay__title">Contents</h2>
+              <ul class="toc-overlay__list">
+                {headings.map((h:any) => (
+                  <li>
+                    <a href={`#${h.id}`} class="toc-overlay__link">{h.text}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
         </figure>
       )}
 
@@ -245,7 +259,7 @@ const articleJson = {
       <div class="flex items-center gap-2" role="group" aria-label="Share this article">
         <a class="share-btn" href={xHref} target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24"><path d="M4 4l7.3 9.6L4.7 20H8l4.2-4.8L16.8 20H20l-7.4-9.8L19.3 4H16l-4 4.6L8.8 4H4z"/></svg></a>
         <a class="share-btn" href={fbHref} target="_blank" rel="noopener" aria-label="Share on Facebook"><svg viewBox="0 0 24 24"><path d="M14 9h3V6h-3c-2 0-3.5 1.5-3.5 3.5V12H8v3h2.5v6H14v-6h2.6l.4-3H14V9.5c0-.3.2-.5.5-.5z"/></svg></a>
-        <a class="share-btn" href={liHref} target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24"><path d="M6 9h3v9H6V9zm1.5-5a1.75 1.75 0 110 3.5A1.75 1.75 0 017.5 4zM10 9h2.9v1.2h.1c(.4-.8 1.4-1.4 2.8-1.4) 3 0 3.5 2 3.5 4.6V18h-3v-3.7c0-.9 0-2-1.2-2s-1.4 1-1.4 2V18h-3V9z"/></svg></a>
+        <a class="share-btn" href={liHref} target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24"><path d="M6 9h3v9H6V9zm1.5-5A1.75 1.75 0 119 5.75 1.75 1.75 0 017.5 4zM10 9h2.9v1.2h.1c.4-.8 1.4-1.4 2.8-1.4 3 0 3.5 2 3.5 4.6V18h-3v-3.7c0-.9 0-2-1.2-2s-1.4 1-1.4 2V18h-3V9z"/></svg></a>
         <a class="share-btn" href={waHref} target="_blank" rel="noopener" aria-label="Share on WhatsApp"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 00-7.8 13.3L3 21l4.9-1.3A9 9 0 1012 3zm0 2a7 7 0 015.7 11.1l-.2.3c-1.2 1.5-3.7 2.1-5.8 1.6l-2.2-.6-2.2.6.6-2.2-.6-2.2C6.8 10.2 7.8 8 9.4 6.9A7 7 0 0112 5z"/></svg></a>
         <a class="share-btn" href={emailHref} aria-label="Share by email"><svg viewBox="0 0 24 24"><path d="M2 6h20v12H2V6zm10 6L3.5 7h17L12 12z"/></svg></a>
         <button type="button" id="copy-link-mobile" class="share-btn" aria-label="Copy link"><svg viewBox="0 0 24 24"><path d="M8 7h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2zm-1-3h10v2H7V4z"/></svg></button>
@@ -269,8 +283,57 @@ const articleJson = {
   }
   article :global(a:hover){ border-bottom-style: solid; }
 
-  .hero-wrap{ width:100%; aspect-ratio:1/1; max-height:clamp(240px,58vh,640px); position:relative; background:#f8fafc; }
+  /* Responsive hero: 4:3 on small, 16:9 on md+ */
+  .hero-wrap{ width:100%; aspect-ratio:4/3; max-height:clamp(240px,58vh,640px); position:relative; background:#f8fafc; }
+  @media (min-width: 768px){
+    .hero-wrap{ aspect-ratio:16/9; }
+  }
   .hero-wrap > img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; }
+
+  /* Hero TOC overlay (desktop) */
+  .toc-overlay{
+    position:absolute; left:1rem; bottom:1rem;
+    max-width:420px;
+    padding:.85rem .9rem;
+    border-radius:.75rem;
+    background: color-mix(in srgb, #ffffff 78%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 18px rgb(0 0 0 / 0.12);
+    border: 1px solid #e5e7eb; /* slate-200 */
+  }
+  .toc-overlay__title{
+    margin:0 0 .5rem 0;
+    font-size:.85rem;
+    font-weight:700;
+    color:#0f172a; /* slate-900 */
+    letter-spacing:.01em;
+  }
+  .toc-overlay__list{
+    display:grid;
+    gap:.35rem;
+    max-height:42vh;
+    overflow:auto;
+    padding-right:.25rem;
+  }
+  .toc-overlay__link{
+    display:block;
+    padding:.4rem .5rem;
+    border-radius:.5rem;
+    color:#0f172a;
+    text-decoration:none;
+    border-bottom:1px dotted currentColor;
+    padding-bottom:1px;
+  }
+  .toc-overlay__link:hover{
+    background: color-mix(in srgb, var(--color-cta) 10%, transparent);
+    border-bottom-style:solid;
+    color: var(--color-primary);
+  }
+  .toc-overlay__link:focus-visible{
+    outline:2px solid var(--color-cta);
+    outline-offset:2px;
+  }
 
   .cta-inline a.btn-cta, .cta-inline a.btn-outline{ text-decoration:none; }
 
@@ -279,7 +342,7 @@ const articleJson = {
 </style>
 
 <script>
-  /* existing JS unchanged */
+  /* existing JS unchanged, with safer copy+share handling */
   document.addEventListener('DOMContentLoaded', function () {
     var root = document.getElementById('post-root');
     var ds = root ? root.dataset : {};
@@ -317,7 +380,7 @@ const articleJson = {
       });
     }
 
-    // Remove ONLY the in-article TOC (keep top + sidebar anchors)
+    // Remove ONLY the in-article TOC (keep top + sidebar + hero overlay)
     if (art) {
       var tocs = art.querySelectorAll('nav[aria-label="Table of contents"], nav[aria-label="Contents"], .toc-card');
       tocs.forEach(function(el){ el.remove(); });

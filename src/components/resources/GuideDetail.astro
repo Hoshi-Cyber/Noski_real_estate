@@ -1,13 +1,18 @@
 ---
 /**
- * GuideDetail: hero + sticky in-page TOC + numbered steps + optional checklist CTA + related guides
+ * GuideDetail: hero + steps summary grid + numbered sections + optional checklist + related
  *
  * Props:
  *  - title: string
  *  - intro?: string  (alias: summary)
  *  - estReadMin?: number
- *  - checklistUrl?: string   // e.g. "/docs/resources/buyer-checklist.pdf"
- *  - steps: Array<{ id?: string; heading: string; bodyHtml: string }>
+ *  - checklistUrl?: string            // e.g. "/docs/resources/buyer-checklist.pdf"
+ *  - steps: Array<{
+ *      id?: string;
+ *      heading: string;
+ *      bodyHtml?: string;            // rich HTML
+ *      pdfUrl?: string;              // per-step PDF (optional)
+ *    }>
  *  - related?: Array<{ title: string; href: string; desc?: string }>
  */
 
@@ -23,137 +28,98 @@ const {
   related = [],
 } = Astro.props;
 
-// prefer `intro`, fall back to `summary`
 const lead = (intro || summary || '').trim();
 
-// util: slugify for step ids
 const slugify = (str = '') =>
-  str
-    .toLowerCase()
-    .trim()
+  str.toLowerCase().trim()
     .replace(/['’"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-// ensure each step has a stable id
+const stripHtml = (html = '') => html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+
 const stepsWithIds = steps.map((s, i) => ({
   ...s,
   id: s.id && s.id.length ? s.id : slugify(`${i + 1}-${s.heading || 'step'}`),
+  excerpt: stripHtml(s.bodyHtml || '').slice(0, 140),
 }));
 ---
 
 <section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
   <!-- Hero -->
   <header class="mb-6 md:mb-10">
-    <!-- Breadcrumbs slot: renders directly above the title -->
-    {Astro.slots.has('breadcrumbs') && (
-      <div class="mb-3">
-        <slot name="breadcrumbs" />
-      </div>
-    )}
-
+    {Astro.slots.has('breadcrumbs') && <div class="mb-3"><slot name="breadcrumbs" /></div>}
     <h1 class="text-2xl md:text-3xl font-bold text-primary">{title}</h1>
     {lead && <p class="mt-2 text-neutral-700">{lead}</p>}
     <p class="mt-1 text-sm text-neutral-500">Estimated read: {estReadMin} min</p>
   </header>
 
-  <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8">
-    <!-- Sticky In-page TOC (uses .toc-card + .toc-list) -->
-    <nav class="toc-card" aria-label="On this page">
-      <h2 class="font-semibold text-primary mb-3">Steps</h2>
-      <ul class="toc-list space-y-2">
+  <!-- Main (no left TOC) -->
+  <article class="space-y-10">
+    <!-- SUMMARY GRID -->
+    <section aria-labelledby="steps-overview">
+      <h2 id="steps-overview" class="section-subtitle mb-3">Overview</h2>
+      <div class="grid-steps" data-count={stepsWithIds.length}>
         {stepsWithIds.map((s, i) => (
-          <li>
-            <a
-              href={`#${s.id}`}
-              data-step-link
-              class="block rounded px-2 py-1 hover:underline hover:text-cta transition focus:outline-none focus:ring-2 focus:ring-cta"
-            >
-              Step {i + 1}: {s.heading}
-            </a>
+          <article class="step-card" id={`card-${s.id}`}>
+            <div class="step-head">
+              <span class="step-index">{i + 1}</span>
+              <h3 class="step-title">{s.heading}</h3>
+            </div>
+            {s.bodyHtml && <p class="step-body line-clamp-2">{stripHtml(s.bodyHtml)}</p>}
+            <div class="step-actions">
+              <a href={`#${s.id}`} class="btn-subtle">Read section</a>
+              {s.pdfUrl && (
+                <a href={s.pdfUrl} class="btn-cta !px-4 !py-2 text-sm" target="_blank" rel="noopener">
+                  Download PDF
+                </a>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {checklistUrl && (
+        <div class="mt-6 flex justify-center">
+          <a href={checklistUrl} class="btn-cta rounded-md text-sm">Download all-in-one checklist</a>
+        </div>
+      )}
+    </section>
+
+    <!-- DETAILED SECTIONS -->
+    <section class="space-y-8" aria-labelledby="steps-detail">
+      <h2 id="steps-detail" class="section-title">Detailed steps</h2>
+      <ol class="detail-list">
+        {stepsWithIds.map((s, i) => (
+          <li class="detail-item scroll-mt-24" id={s.id}>
+            <div class="detail-head">
+              <span class="detail-index">{i + 1}</span>
+              <h3 class="text-lg font-semibold text-primary">Step {i + 1}: {s.heading}</h3>
+            </div>
+
+            {s.bodyHtml && (
+              <div class="prose max-w-none prose-p:my-3 prose-li:my-1 text-neutral-700 detail-body" set:html={s.bodyHtml} />
+            )}
+
+            <div class="detail-actions">
+              {s.pdfUrl && <a href={s.pdfUrl} class="pdf-badge" target="_blank" rel="noopener">PDF</a>}
+              <a href={`#card-${s.id}`} class="text-sm text-neutral-700 underline">Back to overview</a>
+            </div>
           </li>
         ))}
-      </ul>
+      </ol>
+    </section>
 
-      {checklistUrl && (
-        <div class="mt-5 flex items-center gap-2">
-          <span class="pdf-badge" aria-hidden="true">PDF</span>
-          <a href={checklistUrl} class="flex-1 text-center btn-cta rounded-md" aria-label="Download checklist PDF">
-            Download Checklist
-          </a>
+    <!-- Related Guides -->
+    {related?.length > 0 && (
+      <section class="mt-6">
+        <h3 class="text-lg font-semibold text-primary mb-4">Related Guides</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {related.slice(0, 3).map((r) => (
+            <RelatedGuideCard {...r} compact />
+          ))}
         </div>
-      )}
-    </nav>
-
-    <!-- Main Body: Steps -->
-    <article class="space-y-10">
-      {stepsWithIds.map((s, i) => (
-        <section id={s.id} aria-labelledby={`${s.id}-heading`} class="scroll-mt-24">
-          <h2 id={`${s.id}-heading`} class="text-xl font-semibold text-primary mb-2">
-            Step {i + 1}: {s.heading}
-          </h2>
-          <div
-            class="prose max-w-none prose-p:my-3 prose-li:my-1 text-neutral-700"
-            set:html={s.bodyHtml}
-          ></div>
-        </section>
-      ))}
-
-      <!-- Inline Download block -->
-      {checklistUrl && (
-        <div class="mt-2 rounded-2xl ring-1 ring-neutral-200 bg-white p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div class="text-sm text-neutral-700">
-            <strong class="text-primary">Need a handy PDF?</strong>
-            <span class="ml-2 text-neutral-500">Download the checklist to use offline.</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="pdf-badge" aria-hidden="true">PDF</span>
-            <a href={checklistUrl} class="btn-cta rounded-md" aria-label="Download checklist PDF">Download</a>
-          </div>
-        </div>
-      )}
-
-      <!-- Related Guides -->
-      {related?.length > 0 && (
-        <section class="mt-6">
-          <h3 class="text-lg font-semibold text-primary mb-4">Related Guides</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {related.slice(0, 3).map((r) => (
-              <RelatedGuideCard {...r} />
-            ))}
-          </div>
-        </section>
-      )}
-    </article>
-  </div>
+      </section>
+    )}
+  </article>
 </section>
-
-<script type="module" client:load>
-  // Highlight current step link for better orientation
-  const links = Array.from(document.querySelectorAll('[data-step-link]'));
-  const sections = links
-    .map((a) => document.getElementById(a.getAttribute('href')?.slice(1) || ''))
-    .filter(Boolean);
-
-  if (sections.length && 'IntersectionObserver' in window) {
-    const setActive = (id) => {
-      links.forEach((a) => {
-        const match = a.getAttribute('href') === `#${id}`;
-        a.classList.toggle('text-[color:var(--color-cta)]', match);
-        a.setAttribute('aria-current', match ? 'true' : 'false');
-      });
-    };
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target?.id) setActive(visible.target.id);
-      },
-      { rootMargin: '0px 0px -60% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-
-    sections.forEach((sec) => io.observe(sec));
-  }
-</script>

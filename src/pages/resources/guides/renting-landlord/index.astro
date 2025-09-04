@@ -4,56 +4,147 @@ import GuideDetail from '../../../../components/resources/GuideDetail.astro';
 import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
 
 const title = 'Renting & Landlord Guide | Severino Realty';
-const description = 'Acquisition-to-operations workflow for compliant and profitable rentals.';
+const description = 'Professional-grade landlording: screening, leasing, operations, compliance, and renewals with modern standards.';
 
 const steps = [
   {
-    id: 'ready',
-    heading: 'Unit Readiness & Pricing',
-    bodyHtml: '<p>Turnover checklist, rent comps, yield target, concessions policy.</p>',
+    id: 'screening',
+    heading: 'Screening & Fair Housing',
+    pdfUrl: '/docs/resources/landlord-screening-policy.pdf',
+    bodyHtml: `
+      <p>Adopt a <strong>written rental criteria</strong> and apply it equally. Keep objective thresholds and document all decisions.</p>
+      <h4>Rental criteria</h4>
+      <ul>
+        <li>Income: verifiable gross income ≥ <strong>3× monthly rent</strong> (adjust for subsidies per local law).</li>
+        <li>Credit: minimum score band with allowance for medical/student debt; evaluate <em>total obligations</em>, not score alone.</li>
+        <li>History: no prior evictions in 5 yrs (consider context), on-time housing payments ≥ 12 months, clean landlord references.</li>
+        <li>Background: use compliant screening; follow <strong>FCRA</strong> adverse-action process for denials/conditional approvals.</li>
+      </ul>
+      <h4>Compliance</h4>
+      <ul>
+        <li><strong>Fair Housing:</strong> protected classes + local expansions. Prohibit steering, different terms, or discriminatory ads.</li>
+        <li><strong>Source-of-income:</strong> where applicable, treat vouchers the same; use payment-standards for affordability tests.</li>
+        <li><strong>Accessibility:</strong> reasonable accommodations/modifications; service and assistance animals are <em>not pets</em>.</li>
+        <li>Keep screening logs for 3–5 years; store IDs and reports securely.</li>
+      </ul>
+    `,
   },
   {
-    id: 'market',
-    heading: 'Marketing & Tenant Funnel',
-    bodyHtml: '<p>Listings, photos, screening form, showing cadence, lead tracking.</p>',
+    id: 'leasing',
+    heading: 'Leasing & Onboarding',
+    pdfUrl: '/docs/resources/lease-onboarding-checklist.pdf',
+    bodyHtml: `
+      <p>Use a state-specific lease with addenda and disclosures. Onboard like a professional to prevent disputes later.</p>
+      <h4>Lease package</h4>
+      <ul>
+        <li>State/association lease + addenda: lead-based paint (pre-1978), mold, pest, bedbug, HOA/strata rules, parking, smoking, pet/animal policy.</li>
+        <li>Key business terms: rent, deposit, late fee policy, grace period, utilities, renter's insurance requirement, renewal and notice periods.</li>
+        <li>Electronic signatures with audit trail; deliver <strong>signed copies</strong> to all parties.</li>
+      </ul>
+      <h4>Move-in</h4>
+      <ul>
+        <li>Collect certified move-in funds; confirm <strong>trust account</strong> deposit handling per statute; issue receipt.</li>
+        <li>Condition report with date-stamped photos/video; meter reads; keys/fobs/garage remotes logged; smart locks rekeyed.</li>
+        <li>Welcome sheet: utilities setup, maintenance request process, emergency numbers, trash/recycling, HOA rules.</li>
+      </ul>
+    `,
   },
   {
-    id: 'screen',
-    heading: 'Screening & Approval',
-    bodyHtml: '<p>Criteria, verification, risk flags, fair-housing compliance.</p>',
+    id: 'collections',
+    heading: 'Rent Collection & Accounting',
+    pdfUrl: '/docs/resources/rent-collection-policy.pdf',
+    bodyHtml: `
+      <p>Make payments easy and enforcement predictable. Separate client funds and operate on a monthly close cadence.</p>
+      <h4>Collections</h4>
+      <ul>
+        <li>Online portal with ACH/card; autopay and payment receipts. Define grace period, late fee schedule, and NSF fee.</li>
+        <li>Delinquency ladder: reminder → notice to pay or quit per statute → file only after cure window expires.</li>
+      </ul>
+      <h4>Accounting controls</h4>
+      <ul>
+        <li>Segregate security deposits and rent in compliance with <strong>trust accounting</strong>; reconcile bank accounts monthly.</li>
+        <li>Chart of accounts for rent, fees, deposits, maintenance, CapEx, reserves. Year-end owner P&amp;L and 1099/NR4 as applicable.</li>
+      </ul>
+      <h4>Insurance</h4>
+      <ul>
+        <li>Landlord policy with liability ≥ $1M; require tenant renter’s insurance and list landlord/PM as interested party.</li>
+      </ul>
+    `,
   },
   {
-    id: 'lease',
-    heading: 'Lease & Move-in',
-    bodyHtml: '<p>Deposit, inventory & condition report, utilities, key handover.</p>',
+    id: 'maintenance',
+    heading: 'Maintenance, Habitability & Turns',
+    pdfUrl: '/docs/resources/maintenance-turns-playbook.pdf',
+    bodyHtml: `
+      <p>Protect asset value and resident experience. Triage fast, document well, and schedule preventive work.</p>
+      <h4>Workflows</h4>
+      <ul>
+        <li>24/7 emergency line; response SLA: emergency &lt; 1 hr dispatch, urgent &lt; 24 hrs, routine &lt; 72 hrs.</li>
+        <li>Vendors W-9/COI on file; written scopes; photos before/after; invoices matched to work orders.</li>
+      </ul>
+      <h4>Habitability & safety</h4>
+      <ul>
+        <li>Smoke/CO detectors, hot-water temp, handrails, GFCI, locks/rekey, pest management, moisture/mold response protocol.</li>
+        <li>Annual inspections; filter program; seasonal checks: HVAC service, gutters, shutoff valves, weatherproofing.</li>
+      </ul>
+      <h4>Unit turns</h4>
+      <ul>
+        <li>Standard finishes for speed; paint spec, flooring SKUs, hardware kit; target ≤ 7 calendar days for basic turns.</li>
+      </ul>
+    `,
   },
   {
-    id: 'ops',
-    heading: 'Operations & Maintenance',
-    bodyHtml: '<p>Rent collection, SLAs, vendor panel, preventive schedule.</p>',
+    id: 'renewals',
+    heading: 'Renewals, Rent Increases & Retention',
+    pdfUrl: '/docs/resources/renewals-retention-guide.pdf',
+    bodyHtml: `
+      <p>Start 75–90 days out. Use data and law-compliant notices. Keep good residents.</p>
+      <h4>Process</h4>
+      <ul>
+        <li>Market survey + performance review; propose renewal terms and rent. Comply with rent control or notice rules if applicable.</li>
+        <li>Offer options: 12-month, 6-month, or month-to-month premium. Incentivize early decision with small credit or upgrade.</li>
+        <li>Track acceptance, follow up at 30/15/10 days. If non-renewing, issue notice and start turn planning.</li>
+      </ul>
+      <h4>Retention</h4>
+      <ul>
+        <li>Service quality drives renewals: fast maintenance, clean common areas, respectful communication, digital convenience.</li>
+      </ul>
+    `,
   },
   {
-    id: 'renewal',
-    heading: 'Renewals & Vacancy Control',
-    bodyHtml: '<p>Notice timelines, increase policy, retention offers, re-list flow.</p>',
+    id: 'moveout',
+    heading: 'Move-out, Deposit Accounting & Legal',
+    pdfUrl: '/docs/resources/deposit-accounting-checklist.pdf',
+    bodyHtml: `
+      <p>Close files cleanly and on time. Follow statute to the day.</p>
+      <h4>Move-out steps</h4>
+      <ul>
+        <li>Written notice acknowledged; pre-move-out guidance to reduce deductions; lock in walkthrough date.</li>
+        <li>Walkthrough with condition form and photos. Compare to move-in; normal wear vs. damage by statute.</li>
+        <li>Itemized deposit accounting with receipts sent within the legal window; refund via traceable method.</li>
+      </ul>
+      <h4>Legal & risk</h4>
+      <ul>
+        <li>Document all communications. Use counsel for evictions, fair-housing questions, and complex disputes.</li>
+      </ul>
+    `,
   },
 ];
 
-// PDF lives at /public/docs/resources/tenant-handover-form.pdf -> href /docs/resources/tenant-handover-form.pdf
-const checklistUrl = '/docs/resources/tenant-handover-form.pdf';
+const checklistUrl = '/docs/resources/landlord-starter-pack.pdf';
 
 const related = [
-  { title: 'Buying Guide',       href: '/resources/guides/buying',  desc: 'From search to ownership.' },
-  { title: 'Selling Guide',      href: '/resources/guides/selling', desc: 'Prep, pricing, marketing, closing.' },
-  { title: 'Investment',         href: '/resources/guides/investment', desc: 'Yields, financing, exits.' },
+  { title: 'Buying Guide',     href: '/resources/guides/buying',     desc: 'From search to ownership.',       image: '/images/guides/buying.webp',     alt: 'New homeowners with keys' },
+  { title: 'Selling Guide',    href: '/resources/guides/selling',    desc: 'Prep, pricing, marketing, closing.', image: '/images/guides/selling.webp',    alt: 'Staged living room ready for sale' },
+  { title: 'Investment Guide', href: '/resources/guides/investment', desc: 'Yields, financing, exits.',        image: '/images/guides/investment.webp', alt: 'Multifamily building and spreadsheet' },
 ];
 ---
 
 <MainLayout {title} {description}>
   <GuideDetail
-    title="Renting & Landlord Guide"
-    intro="Simple operating system for stable tenancy, low vacancy, and fewer headaches."
-    estReadMin={14}
+    title="Renting & Landlord"
+    intro="Screening, leasing, operations, and compliance built for durable cash flow and low risk."
+    estReadMin={16}
     {steps}
     {checklistUrl}
     {related}

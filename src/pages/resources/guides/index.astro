@@ -1,28 +1,13 @@
 ---
-/** Static, layout-driven Guides homepage */
-import { getCollection } from 'astro:content';
+// src/pages/resources/guides/index.astro
+/** Guides Landing — v11 (Popular Articles removed; WhatsApp + FAQ removed) */
 import MainLayout from '../../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../../components/resources/Breadcrumbs.astro';
 
 const title = 'Guides | Severino Realty';
 const description = 'Step-by-step help for buying, selling, renting/landlord, and investment.';
 
-/** Popular Articles: pull a few recent blog posts if available */
-let posts: Array<any> = [];
-try {
-  const allPosts = await getCollection('blog');
-  posts = allPosts
-    .sort((a, b) => {
-      const da = a?.data?.pubDate ? new Date(a.data.pubDate).getTime() : 0;
-      const db = b?.data?.pubDate ? new Date(b.data.pubDate).getTime() : 0;
-      return db - da || String(a.data?.title || '').localeCompare(String(b.data?.title || ''));
-    })
-    .slice(0, 4);
-} catch (_) {
-  posts = [];
-}
-
-/** Subcategory tiles (exactly four) */
+/** Subcategory tiles */
 const tiles = [
   { title: 'Buying Guide',          href: '/resources/guides/buying',           desc: 'From search to ownership.' },
   { title: 'Selling Guide',         href: '/resources/guides/selling',          desc: 'Prep, pricing, marketing, closing.' },
@@ -30,121 +15,172 @@ const tiles = [
   { title: 'Investment',            href: '/resources/guides/investment',       desc: 'Yields, financing, exits.' },
 ];
 
-/** Lead magnet — use /docs/resources path */
+/** Chips */
+const chips = [
+  { label: 'Buying',    href: '/resources/guides/buying' },
+  { label: 'Selling',   href: '/resources/guides/selling' },
+  { label: 'Renting',   href: '/resources/guides/renting-landlord' },
+  { label: 'Investment',href: '/resources/guides/investment' },
+];
+
+/** Lead magnet */
 const lead = {
   text: 'Get our free property buying checklist',
   note: 'Instant PDF download',
   href: '/docs/resources/buyer-checklist.pdf',
 };
 
-/** Quick Downloads (PDFs in /public/docs/resources) */
+/** Quick Downloads */
 const downloads = [
-  { label: 'Property Viewing Checklist (PDF)',          file: 'property-viewing-checklist.pdf' },
-  { label: 'Tenant Handover Form (PDF)',                file: 'tenant-handover-form.pdf' },
-  { label: 'Rental Application Template (PDF)',         file: 'rental-application-template.pdf' },
-  { label: 'Real Estate Glossary – Kenya (PDF)',        file: 'real-estate-glossary-kenya-edition.pdf' },
-  { label: 'How to Avoid Real Estate Scams (PDF)',      file: 'how-to-avoid-common-real-estate-scams.pdf' },
-  { label: 'Title Deeds & Ownership (PDF)',             file: 'understanding-title-deeds-and-land-ownership.pdf' },
+  { label: 'Property Viewing Checklist (PDF)',   file: 'property-viewing-checklist.pdf' },
+  { label: 'Tenant Handover Form (PDF)',         file: 'tenant-handover-form.pdf' },
+  { label: 'Rental Application Template (PDF)',  file: 'rental-application-template.pdf' },
+  { label: 'Real Estate Glossary – Kenya (PDF)', file: 'real-estate-glossary-kenya-edition.pdf' },
+  { label: 'Avoid Real Estate Scams (PDF)',      file: 'how-to-avoid-common-real-estate-scams.pdf' },
+  { label: 'Title Deeds & Ownership (PDF)',      file: 'understanding-title-deeds-and-land-ownership.pdf' },
+];
+
+/** Testimonials */
+const testimonials = [
+  { q:'Clear guidance and tight processes. We moved from confusion to a signed deal fast.', a:'Private buyer, Nairobi · Residential purchase' },
+  { q:'Sharp on pricing and marketing. Sold above our expectation.', a:'Seller, Kilimani · Apartment' },
+  { q:'Landlord onboarding was painless. Good screening and lease structure.', a:'Landlord, Kileleshwa · Rental' },
+  { q:'Investment brief was concise and data-led. Will work with them again.', a:'Investor, Westlands · Multi-unit' },
 ];
 ---
-
 <MainLayout {title} {description}>
-  <!-- Hero -->
   <section class="section container">
-    <header class="mb-6 md:mb-8">
-      <!-- Breadcrumbs placed directly above the page title for tight spacing -->
-      <Breadcrumbs
-        class="mb-3"
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Resources', href: '/resources' },
-          { label: 'Guides' }
-        ]}
-      />
+    <!-- Breadcrumbs immediately above title -->
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Resources', href: '/resources' },
+        { label: 'Guides' }
+      ]}
+      class="mb-2"
+    />
+
+    <header class="mb-5 md:mb-6">
       <h1 class="text-2xl md:text-3xl font-bold text-primary">Guides</h1>
       <p class="mt-2 text-neutral-700">
         Step-by-step help for buying, selling, renting/landlord, and investment.
       </p>
-      <div class="mt-4">
-        <a href={lead.href} class="btn-cta rounded-md">
+
+      <!-- Hero CTA (single, smaller on mobile) -->
+      <div class="mt-3 flex items-center gap-2 flex-nowrap">
+        <a href={lead.href} class="btn-cta rounded-md text-sm px-3 py-2 md:text-base md:px-5 md:py-3">
           Download Free Buying Checklist
         </a>
       </div>
+
+      <!-- Compact chips -->
+      <div class="mt-3">
+        <div class="grid grid-cols-4 gap-2 sm:flex sm:flex-wrap sm:gap-2">
+          {chips.map((c) => (
+            <a href={c.href} class="chip-link text-xs px-2 py-1 text-center">{c.label}</a>
+          ))}
+        </div>
+      </div>
     </header>
 
-    <!-- Subcategory Cards (exactly four) -->
+    <!-- Subcategory Cards with subtle tint -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       {tiles.map((t) => (
-        <a href={t.href} class="category-tile tile-accent" aria-label={t.title}>
-          <div class="tile-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6" />
+        <a href={t.href} class="category-tile tile-accent tile-tint" aria-label={t.title}>
+          <div class="tile-badge" aria-hidden="true">
+            <svg class="tile-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor">
+              <path d="M12 6v12m6-6H6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
             </svg>
           </div>
-          <h3 class="tile-title">{t.title}</h3>
+          <h2 class="tile-title">{t.title}</h2>
           <p class="tile-sub">{t.desc}</p>
+          <div class="mt-3"><span class="badge-cta">Open Guide</span></div>
         </a>
       ))}
     </div>
 
-    <!-- Quick Downloads (PDF) -->
+    <!-- Quick Downloads -->
     <div class="mt-8">
-      <h2 class="section-subtitle mb-3">Quick Downloads</h2>
+      <h2 class="text-lg md:text-xl font-bold text-primary mb-3">Quick Downloads</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {downloads.map((d) => (
-          <a href={`/docs/resources/${d.file}`} class="chip-link" rel="noopener">
-            {d.label}
-          </a>
+          <a href={`/docs/resources/${d.file}`} class="chip-link text-sm px-3 py-2" rel="noopener">{d.label}</a>
         ))}
       </div>
     </div>
 
-    <!-- Lead Magnet Banner -->
+    <!-- Lead Magnet Banner (smaller button) -->
     <div class="mt-8 rounded-2xl ring-1 ring-neutral-200 bg-white shadow-sm hover:shadow-md transition p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       <div class="text-sm text-neutral-700">
         <strong class="text-primary">{lead.text}</strong>
         <span class="ml-2 text-neutral-500">{lead.note}</span>
       </div>
-      <a href={lead.href} class="btn-cta rounded-md">Download</a>
+      <a href={lead.href} class="btn-cta rounded-md text-sm px-3 py-2">Download</a>
     </div>
   </section>
 
-  <!-- Popular Articles -->
-  {posts.length > 0 && (
-    <section class="section container">
-      <h2 class="section-title">Popular Articles</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {posts.map((p) => {
-          const href = `/blog/${p.slug}`;
-          const dateISO = p?.data?.pubDate ? new Date(p.data.pubDate) : null;
-          const date = dateISO
-            ? dateISO.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-            : '';
-          return (
-            <article class="post-card">
-              <a href={href} class="block focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
-                <img
-                  src={p?.data?.image || '/images/placeholder.webp'}
-                  alt={p?.data?.title || 'Blog post'}
-                  loading="lazy"
-                  decoding="async"
-                  class="post-media"
-                />
-              </a>
-              <div class="post-body">
-                <h3 class="post-title">
-                  <a href={href} class="hover:underline">{p?.data?.title}</a>
-                </h3>
-                {p?.data?.description && <p class="post-desc">{p.data.description}</p>}
-                <div class="post-meta">
-                  {date && <time datetime={dateISO?.toISOString()}>{date}</time>}
-                  <a href={href} class="link-decor">Read more &rarr;</a>
-                </div>
-              </div>
-            </article>
-          );
-        })}
+  <!-- Why choose us + Testimonials -->
+  <section class="section container">
+    <h2 class="section-title">Why choose us</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="why-card why-card--tint tint-blue">
+        <span class="why-icon-ring">
+          <svg viewBox="0 0 24 24" class="why-icon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </span>
+        <span class="why-label">Expertise across deals</span>
       </div>
-    </section>
-  )}
+      <div class="why-card why-card--tint tint-amber">
+        <span class="why-icon-ring">
+          <svg viewBox="0 0 24 24" class="why-icon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"><path d="M12 8v8m-4-4h8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </span>
+        <span class="why-label">Transparent fees</span>
+      </div>
+      <div class="why-card why-card--tint tint-emerald">
+        <span class="why-icon-ring">
+          <svg viewBox="0 0 24 24" class="why-icon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"><path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </span>
+        <span class="why-label">Local market data</span>
+      </div>
+      <div class="why-card why-card--tint tint-purple">
+        <span class="why-icon-ring">
+          <svg viewBox="0 0 24 24" class="why-icon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"><path d="M7 8h10v8H7zM5 10h14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </span>
+        <span class="why-label">Faster closings</span>
+      </div>
+    </div>
+
+    <div class="mt-6 overflow-hidden">
+      <div class="marquee" role="region" aria-label="Testimonials">
+        {[...testimonials, ...testimonials].map((t) => (
+          <figure class="testimonial-card" aria-roledescription="slide">
+            <p>“{t.q}”</p>
+            <figcaption>{t.a}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section">
+    <div class="container surface-muted rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-xl md:text-2xl font-bold text-primary">Need direction on your next move?</h2>
+        <p class="mt-1 text-neutral-700">Book a consult.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/contact" class="btn-cta rounded-md">Book a Consult</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page-local styles (marquee only) -->
+  <style is:global>
+    @keyframes guides-marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .marquee { display: flex; gap: 1rem; width: max-content; animation: guides-marquee 30s linear infinite; }
+    .marquee:hover { animation-play-state: paused; }
+    .testimonial-card { min-width: 280px; max-width: 360px; background:#fff; border-radius:1rem; border:1px solid rgba(0,0,0,.08); box-shadow:0 1px 3px rgba(0,0,0,.06); padding:1rem; }
+    .testimonial-card p { font-style: italic; }
+    .testimonial-card figcaption { margin-top:.5rem; font-size:.875rem; color:#555; }
+  </style>
 </MainLayout>
