@@ -4,46 +4,53 @@ import MainLayout from '../../layouts/MainLayout.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
 import { parseSearchParams, filterListings } from '../../lib/search';
 
-// Helpers
+// helpers (same as before)
 const areaOf = (loc = '') => (loc || '').split(',')[0].trim();
 const canonType = (t = '') => {
   const v = (t || '').trim().toLowerCase();
   return v === 'studio' || v === 'bedsitter' ? 'studio/bedsitter' : v;
 };
-const cardImg = (entry: any) => {
-  const folder = entry?.data?.imagesFolder || '';
-  return folder ? `${folder}/1.webp` : '/images/placeholder.webp';
-};
+const cardImg = (entry: any) => entry?.data?.imagesFolder ? `${entry.data.imagesFolder}/1.webp` : '/images/placeholder.webp';
 
-// Data
+// If a page is provided via query (?page=2), redirect to /listings/page/2 and keep other filters
+const url = new URL(Astro.url);
+const qp = parseSearchParams(url);
+const goPage = Math.max(1, Number(qp.page || 1));
+if (goPage !== 1) {
+  url.searchParams.delete('page');
+  const qs = url.search ? url.search : '';
+  return Astro.redirect(`/listings/page/${goPage}${qs}`, 302);
+}
+
+// Build page 1 here so /listings still works and indexes well
 const all = await getCollection('listings');
-
-// Parse URL -> filters; then SSR filter + paginate
-const query = parseSearchParams(Astro.url); // q, beds, type, minPrice, maxPrice, availability, page
+const query = { ...qp, page: 1 };
 const filtered = filterListings(all, query);
 
 const PAGE_SIZE = 12;
 const totalResults = filtered.length;
 const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
-const currentPage = Math.min(Math.max(query.page, 1), totalPages);
-const start = (currentPage - 1) * PAGE_SIZE;
+const currentPage = 1;
+const start = 0;
 const pageItems = filtered.slice(start, start + PAGE_SIZE);
 
-// Facets (from all listings)
+// facets
 const allLocations = Array.from(new Set(all.map(e => areaOf(e.data.location)).filter(Boolean))).sort();
 const allTypesCanon = Array.from(new Set(all.map(e => canonType(e.data.type)).filter(Boolean))).sort();
 
-// URL builder preserving current filters
+// pageUrl -> path pages, preserve other filters
 function pageUrl(page: number) {
-  const url = new URL(Astro.url);
-  if (page <= 1) url.searchParams.delete('page'); else url.searchParams.set('page', String(page));
-  return url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '');
+  const u = new URL(Astro.url);
+  u.searchParams.delete('page');
+  const qs = u.searchParams.toString();
+  return `/listings/page/${page}${qs ? `?${qs}` : ''}`;
 }
 
-// Buttons
 const btn = {
   primary: 'inline-flex items-center rounded-md bg-emerald-600 text-white px-5 py-3 text-sm font-semibold shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2',
-  ghost:   'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-200'
+  ghost:   'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-200',
+  page:    'px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50',
+  pageActive: 'px-3 py-1.5 rounded-md bg-emerald-600 text-white text-sm font-semibold',
 };
 ---
 
@@ -59,119 +66,72 @@ const btn = {
       </div>
     </div>
 
-    <!-- Filters (GET form; names match search.ts) -->
+    <!-- Filters -->
     <form id="filters" method="get" action="/listings" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-      <!-- Location -> use name="q" (parser searches title/location/description); store lowercased value -->
       <select id="f-location" name="q" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
         <option value="">All Locations</option>
         {allLocations.map(loc => {
           const val = loc.toLowerCase();
-          return (
-            <option value={val} selected={query.q === val}>{loc}</option>
-          );
+          return <option value={val} selected={query.q === val}>{loc}</option>;
         })}
       </select>
 
-      <!-- Min Bedrooms -->
+      <!-- Beds: EXACT for 1–4, MIN for 5+ (values match search.ts) -->
       <select id="f-bed" name="beds" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="0" selected={!query.beds || query.beds === '0'}>Min Bedrooms</option>
-        {[1,2,3,4,5].map(b => (
-          <option value={b} selected={String(query.beds || '') === String(b)}>{b}+</option>
+        <option value="" selected={!query.beds}>Beds</option>
+        {['1','2','3','4','5+'].map(v => (
+          <option value={v} selected={query.beds === v}>{v}</option>
         ))}
       </select>
 
-      <!-- Type (canonical, already lowercase) -->
       <select id="f-type" name="type" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
         <option value="">All Property Types</option>
         {allTypesCanon.map(t => (
-          <option value={t} selected={query.type === t}>
-            {t === 'studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g, c => c.toUpperCase())}
+          <option value={t} selected={query.type===t}>
+            {t==='studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g, c => c.toUpperCase())}
           </option>
         ))}
       </select>
 
-      <!-- Clear -->
-      <button type="button" id="f-clear" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        Clear filters
-      </button>
+      <button type="button" id="f-clear" class="w-full rounded-md border border-neutral-300 p-2 text-sm">Clear filters</button>
     </form>
 
-    <!-- Results header -->
     <div id="result-count" class="text-sm text-neutral-600 mb-3">
       {totalResults} listing{totalResults !== 1 && 's'}
     </div>
 
-    <!-- Listings grid (4 per row) -->
     {totalResults === 0 ? (
       <div id="empty" class="text-center text-neutral-600 mt-8">No listings match your filters.</div>
     ) : (
       <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {pageItems.map((e) => {
-          const d = e.data;
-          const loc = areaOf(d.location).toLowerCase();
-          const beds = Number.isFinite(d.bedrooms) ? Number(d.bedrooms) : 0;
-          const typeCanon = canonType(d.type);
-
-          return (
-            <li
-              class="card"
-              data-loc={loc}
-              data-beds={beds}
-              data-type={typeCanon}
-            >
-              <PropertyCard
-                listing={{ ...d, image: cardImg(e) }}
-                slug={e.slug}
-                compact={false}
-              />
-            </li>
-          );
-        })}
+        {pageItems.map((e) => (
+          <li data-loc={areaOf(e.data.location).toLowerCase()} data-beds={Number(e.data.bedrooms)||0} data-type={canonType(e.data.type)}>
+            <PropertyCard listing={{ ...e.data, image: cardImg(e) }} slug={e.slug} compact={false} />
+          </li>
+        ))}
       </ul>
     )}
 
-    <!-- Pagination -->
     {totalPages > 1 && (
       <nav id="pager" class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Pagination">
-        <a
-          rel="prev"
-          href={pageUrl(Math.max(1, currentPage - 1))}
-          class="px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50"
-        >Prev</a>
-
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-          <a
-            href={pageUrl(p)}
-            class={p === currentPage
-              ? 'px-3 py-1.5 rounded-md bg-emerald-600 text-white text-sm font-semibold'
-              : 'px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50'}
-            aria-current={p === currentPage ? 'page' : undefined}
-          >{p}</a>
-        ))}
-
-        <a
-          rel="next"
-          href={pageUrl(Math.min(totalPages, currentPage + 1))}
-          class="px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50"
-        >Next</a>
+        <a rel="prev" href={pageUrl(Math.max(1, currentPage-1))} class={btn.page}>Prev</a>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => {
+          const isActive = p === currentPage;
+          return (
+            <a href={pageUrl(p)} class={isActive ? btn.pageActive : btn.page} aria-current={isActive ? 'page' : undefined}>{p}</a>
+          );
+        })}
+        <a rel="next" href={pageUrl(Math.min(totalPages, currentPage+1))} class={btn.page}>Next</a>
       </nav>
     )}
   </section>
 </MainLayout>
 
-<!-- Tiny enhancement: auto-submit on change; clear -> reset to /listings -->
 <script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('filters');
     const clearBtn = document.getElementById('f-clear');
-    if (form) {
-      form.addEventListener('change', () => form.requestSubmit());
-    }
-    if (clearBtn) {
-      clearBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = '/listings';
-      });
-    }
+    if (form) form.addEventListener('change', () => form.requestSubmit());
+    if (clearBtn) clearBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/listings'; });
   });
 </script>

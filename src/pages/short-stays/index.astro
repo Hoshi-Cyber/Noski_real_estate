@@ -3,31 +3,31 @@ import { getCollection } from 'astro:content';
 import MainLayout from '../../layouts/MainLayout.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
 
-// Load listings and pre-scope to "Short Stays"
-const all = await getCollection('listings');
-const shortStays = all.filter((e) => (e.data.availability || '').toLowerCase() === 'short stays');
-
 // Helpers
 const areaOf = (loc = '') => (loc || '').split(',')[0].trim();
 const canonType = (t = '') => {
   const v = (t || '').trim().toLowerCase();
   return v === 'studio' || v === 'bedsitter' ? 'studio/bedsitter' : v;
 };
+const cardImg = (entry: any) =>
+  entry?.data?.imagesFolder ? `${entry.data.imagesFolder}/1.webp` : '/images/placeholder.webp';
 
-// Distinct facets (from Short Stays only)
-const allLocations = Array.from(new Set(shortStays.map(e => areaOf(e.data.location)).filter(Boolean))).sort();
-const allTypesCanon = Array.from(new Set(shortStays.map(e => canonType(e.data.type)).filter(Boolean))).sort();
+// Data (pre-scope to SHORT STAYS; accepts variations via "short")
+const all = await getCollection('listings');
+const shortOnly = all.filter((e) => (e.data.availability || '').toLowerCase().includes('short'));
 
-// Safe image helper (main image = imagesFolder/1.webp)
-const cardImg = (entry: any) => {
-  const folder = entry?.data?.imagesFolder || '';
-  return folder ? `${folder}/1.webp` : '/images/placeholder.webp';
-};
+// Facets (from shortOnly)
+const allLocations = Array.from(
+  new Set(shortOnly.map(e => areaOf(e.data.location)).filter(Boolean))
+).sort();
+const allTypesCanon = Array.from(
+  new Set(shortOnly.map(e => canonType(e.data.type)).filter(Boolean))
+).sort();
 
-// Buttons
+// Buttons (styling matches listings page)
 const btn = {
   ghost:
-    'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-200'
+    'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-200',
 };
 ---
 
@@ -49,7 +49,7 @@ const btn = {
       Our curated selection of serviced apartments, cottages and villas makes it easy to plan your next getaway. Filter by location, bedrooms and type.
     </p>
 
-    <!-- Filters (pre-scoped to Short Stays) -->
+    <!-- Filters (client-side; URL is synced via pagination.js) -->
     <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       <!-- Location -->
       <select id="f-location" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
@@ -57,14 +57,14 @@ const btn = {
         {allLocations.map(loc => (<option value={loc.toLowerCase()}>{loc}</option>))}
       </select>
 
-      <!-- Min Bedrooms -->
+      <!-- Beds: EXACT 1–4; MIN 5+ -->
       <select id="f-bed" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="0">Min Bedrooms</option>
-        <option value="1">1+</option>
-        <option value="2">2+</option>
-        <option value="3">3+</option>
-        <option value="4">4+</option>
-        <option value="5">5+</option>
+        <option value="">Beds</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5+">5+</option>
       </select>
 
       <!-- Type (canonical) -->
@@ -83,25 +83,27 @@ const btn = {
       </button>
     </div>
 
-    <!-- Results header -->
+    <!-- Results header (hydrated by client JS) -->
     <div class="flex items-center justify-between mb-3">
       <div id="result-count" class="text-sm text-neutral-600"></div>
     </div>
 
-    <!-- Listings grid (4 per row on large screens) -->
+    <!-- Listings grid: render ALL; client JS paginates & filters -->
     <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {shortStays.map((e) => {
+      {shortOnly.map((e) => {
         const d = e.data;
         const loc = areaOf(d.location).toLowerCase();
         const beds = Number.isFinite(d.bedrooms) ? Number(d.bedrooms) : 0;
         const typeCanon = canonType(d.type);
+        const avail = 'short-stays';
 
         return (
           <li
-            class="card"
+            data-title={(d.title || '').toLowerCase()}
             data-loc={loc}
             data-beds={beds}
             data-type={typeCanon}
+            data-avail={avail}
           >
             <PropertyCard
               listing={{ ...d, image: cardImg(e) }}
@@ -117,7 +119,7 @@ const btn = {
       No short stays match your filters.
     </div>
 
-    <!-- Pagination -->
+    <!-- Pagination container (client-rendered; keeps styling) -->
     <div id="pager" class="mt-8 flex flex-wrap items-center justify-center gap-2"></div>
 
     <!-- Bottom shortcuts (mobile) -->
@@ -129,7 +131,7 @@ const btn = {
   </section>
 </MainLayout>
 
-<!-- Reusable pagination+filters -->
+<!-- Reusable client pagination+filters -->
 <script type="module" is:inline>
   import { initPaginationAndFilters } from '/src/lib/pagination.js';
 
@@ -137,11 +139,11 @@ const btn = {
     pageSize: 12,
     filterSelectors: {
       location: '#f-location',
-      beds: '#f-bed',       // FIXED: engine expects "beds"
+      beds: '#f-bed',         // supports "", "1","2","3","4","5+"
       type: '#f-type',
     },
     clearSelector: '#f-clear',
-    cardSelector: '#cards .card',
+    cardSelector: '#cards li',
     pagerSelector: '#pager',
     emptySelector: '#empty',
     resultCountSelector: '#result-count',

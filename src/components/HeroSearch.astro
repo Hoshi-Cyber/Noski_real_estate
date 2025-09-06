@@ -1,10 +1,9 @@
----
 /**
  * Hero-area search bar to keep the header clean.
  * Submits to /listings using names expected by search.ts:
  * q, beds, type, availability (for-sale|for-rent|short-stays), minPrice, maxPrice
  */
----
+
 <form action="/listings" method="get"
       class="mt-6 rounded-xl border border-neutral-200 bg-white/90 backdrop-blur p-3 sm:p-4 shadow-sm">
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
@@ -57,26 +56,31 @@
     <label class="sr-only" for="hs-beds">Beds</label>
     <select id="hs-beds" name="beds" class="rounded-md border border-neutral-300 p-2 text-sm">
       <option value="">Beds</option>
-      <option value="1">1+</option>
-      <option value="2">2+</option>
-      <option value="3">3+</option>
-      <option value="4">4+</option>
-      <option value="5">5+</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5+">5+</option>
     </select>
 
     <!-- Submit -->
-    <button class="btn-cta inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm">
-      <svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true"><path d="M10 4a6 6 0 104.47 10.03l4.25 4.25 1.42-1.42-4.25-4.25A6 6 0 0010 4zm0 2a4 4 0 110 8 4 4 0 010-8z"/></svg>
+    <button type="submit" class="btn-cta inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm">
+      <svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true">
+        <path d="M10 4a6 6 0 104.47 10.03l4.25 4.25 1.42-1.42-4.25-4.25A6 6 0 0010 4zm0 2a4 4 0 110 8 4 4 0 010-8z"/>
+      </svg>
       Search
     </button>
   </div>
 </form>
 
-<script type="module" is:inline>
+<script is:inline>
   // Prefill from current URL so users see their last filters
   const sp = new URLSearchParams(location.search);
-  document.querySelectorAll('[name]').forEach(el=>{
+  document.querySelectorAll('[name]').forEach(el => {
     const k = el.getAttribute('name');
-    if (k && sp.get(k) != null) el.value = sp.get(k);
+    const val = k ? sp.get(k) : null;
+    if (val !== null && val !== '') {
+      el.value = val;
+    }
   });
 </script>

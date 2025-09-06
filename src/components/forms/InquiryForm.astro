@@ -1,0 +1,186 @@
+---
+interface Props {
+  context: 'for-rent' | 'for-sale' | 'short-stay';
+  listingId?: string;
+  listingTitle?: string;
+}
+const { context, listingId = '', listingTitle = '' } = Astro.props as Props;
+---
+
+<form id="inquiry-form" class="max-w-xl rounded-xl border p-5" novalidate>
+  { (listingId || listingTitle) && (
+    <div class="mb-4 rounded-lg bg-neutral-50 p-3 text-sm">
+      <div class="font-medium">Listing</div>
+      <div>{listingTitle || 'Untitled'}</div>
+      {listingId && <div class="text-neutral-600">ID: {listingId}</div>}
+    </div>
+  ) }
+
+  <!-- hidden -->
+  <input type="hidden" name="context" value={context} />
+  <input type="hidden" name="listingId" value={listingId} />
+  <input type="hidden" name="listingTitle" value={listingTitle} />
+  <input type="hidden" name="pageUrl" value="" />
+
+  <!-- required -->
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <label class="text-sm" for="firstName">First name</label>
+      <input id="firstName" name="firstName" required class="mt-1 w-full border rounded px-3 py-2" />
+      <p class="mt-1 text-xs text-red-600 hidden" data-error-for="firstName">First name is required.</p>
+    </div>
+    <div>
+      <label class="text-sm" for="lastName">Last name</label>
+      <input id="lastName" name="lastName" required class="mt-1 w-full border rounded px-3 py-2" />
+      <p class="mt-1 text-xs text-red-600 hidden" data-error-for="lastName">Last name is required.</p>
+    </div>
+    <div>
+      <label class="text-sm" for="phone">Phone (KE)</label>
+      <input
+        id="phone"
+        name="phone"
+        inputmode="tel"
+        autocomplete="tel"
+        required
+        placeholder="+2547XXXXXXXX, +2541XXXXXXXX or 07/01XXXXXXXX"
+        class="mt-1 w-full border rounded px-3 py-2"
+      />
+      <p class="mt-1 text-xs text-red-600 hidden" data-error-for="phone">
+        Enter a valid KE number: +2547XXXXXXXX, +2541XXXXXXXX, 07XXXXXXXX or 01XXXXXXXX.
+      </p>
+    </div>
+    <div>
+      <label class="text-sm" for="email">Email</label>
+      <input id="email" name="email" type="email" required class="mt-1 w-full border rounded px-3 py-2" />
+      <p class="mt-1 text-xs text-red-600 hidden" data-error-for="email">Enter a valid email.</p>
+    </div>
+  </div>
+
+  <fieldset class="mt-3" required>
+    <legend class="text-sm">Preferred contact</legend>
+    <div class="mt-1 flex gap-4" id="preferredContact">
+      <label><input type="radio" name="preferredContact" value="phone" required /> Phone</label>
+      <label><input type="radio" name="preferredContact" value="whatsapp" required /> WhatsApp</label>
+      <label><input type="radio" name="preferredContact" value="email" required /> Email</label>
+    </div>
+    <p class="mt-1 text-xs text-red-600 hidden" data-error-for="preferredContact">Choose one option.</p>
+  </fieldset>
+
+  <!-- optional -->
+  <div class="mt-4">
+    <label class="text-sm" for="message">Message <span class="text-neutral-500">(optional)</span></label>
+    <textarea id="message" name="message" rows="3" class="mt-1 w-full border rounded px-3 py-2"></textarea>
+  </div>
+
+  <button id="submitBtn" type="submit" class="mt-4 rounded bg-gray-900 px-4 py-2 text-white disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+    Send inquiry
+  </button>
+  <p id="formStatus" class="mt-2 text-sm"></p>
+</form>
+
+<script is:inline>
+  (function () {
+    const form = document.getElementById('inquiry-form');
+    const statusEl = document.getElementById('formStatus');
+    const submitBtn = document.getElementById('submitBtn');
+    const phoneEl = form.querySelector('#phone');
+    const emailEl = form.querySelector('#email');
+    const firstEl = form.querySelector('#firstName');
+    const lastEl  = form.querySelector('#lastName');
+
+    // capture current page URL
+    form.querySelector('input[name="pageUrl"]').value = location.href;
+
+    // Helpers
+    const err = (name) => form.querySelector(`[data-error-for="${name}"]`);
+    const setErr = (el, show, key) => {
+      el.classList.toggle('border-red-500', !!show);
+      const e = err(key);
+      if (e) e.classList.toggle('hidden', !show);
+      el.setAttribute('aria-invalid', show ? 'true' : 'false');
+    };
+
+    // KE phone normalize + validate
+    function toKEE164(s) {
+      s = String(s || '').replace(/\s+/g,'');
+      if (/^(?:\+254|254)(?:7|1)\d{8}$/.test(s)) return s.startsWith('+') ? s : '+' + s;
+      if (/^(?:07|01)\d{8}$/.test(s)) return '+254' + s.slice(1);
+      return s;
+    }
+    function isValidKEPhone(s) {
+      s = String(s || '').replace(/\s+/g,'');
+      return /^(?:\+254|254)(?:7|1)\d{8}$/.test(s) || /^(?:07|01)\d{8}$/.test(s);
+    }
+
+    // Field validation
+    function validate() {
+      // first/last
+      setErr(firstEl, firstEl.value.trim().length === 0, 'firstName');
+      setErr(lastEl,  lastEl.value.trim().length === 0,  'lastName');
+
+      // phone
+      const phoneOk = isValidKEPhone(phoneEl.value);
+      setErr(phoneEl, !phoneOk, 'phone');
+
+      // email (use built-in)
+      const emailOk = emailEl.value.trim().length > 0 && emailEl.checkValidity();
+      setErr(emailEl, !emailOk, 'email');
+
+      // preferredContact
+      const pcWrap = document.getElementById('preferredContact');
+      const pcOk = !!form.querySelector('input[name="preferredContact"]:checked');
+      err('preferredContact').classList.toggle('hidden', pcOk);
+
+      const allOk = firstEl.value && lastEl.value && phoneOk && emailOk && pcOk;
+      submitBtn.disabled = !allOk;
+      return allOk;
+    }
+
+    // Live validation
+    ['input','blur','change'].forEach(evt => {
+      form.addEventListener(evt, (e) => {
+        if (e.target === phoneEl && (evt === 'blur' || evt === 'change')) {
+          phoneEl.value = toKEE164(phoneEl.value);
+        }
+        validate();
+      }, true);
+    });
+
+    // Initial state
+    validate();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validate()) {
+        form.reportValidity?.(); // leverage native bubbles where possible
+        statusEl.textContent = 'Please correct the highlighted fields.';
+        return;
+      }
+
+      statusEl.textContent = 'Sending…';
+      submitBtn.disabled = true;
+
+      const fd = new FormData(form);
+      const payload = Object.fromEntries(fd.entries());
+
+      try {
+        const res = await fetch('/api/inquiry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data?.ok) {
+          statusEl.textContent = 'Received. We will contact you shortly.';
+          form.reset();
+        } else {
+          statusEl.textContent = `Failed: ${data?.error || 'Server error'}`;
+        }
+      } catch {
+        statusEl.textContent = 'Network error. Please try again.';
+      } finally {
+        validate(); // re-check and re-enable if inputs exist
+      }
+    });
+  })();
+</script>
