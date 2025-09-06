@@ -1,4 +1,5 @@
 ---
+// src/pages/resources/faqs/index.astro
 import { getCollection } from 'astro:content';
 import MainLayout from '../../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../../components/resources/Breadcrumbs.astro';
@@ -6,11 +7,11 @@ import Breadcrumbs from '../../../components/resources/Breadcrumbs.astro';
 const title = 'FAQs | Severino Realty';
 const description = 'Quick answers grouped by Buying, Selling, Renting, and Short-Stay.';
 
-const normalizeSection = (s = '') => {
-  const v = s.toLowerCase().replace(/_/g, '-').trim();
-  if (v === 'faqs' || v === 'faq') return 'faqs';
-  if (['market-reports','market','reports'].includes(v)) return 'market-reports';
-  return 'guides';
+/** Detect section: prefer slug prefix, fallback to front-matter */
+const isFaqEntry = (e: any) => {
+  const slug = (e?.slug || '').toLowerCase();
+  const sec  = (e?.data?.section || '').toLowerCase().replace(/_/g, '-').trim();
+  return slug.startsWith('faqs/') || sec === 'faqs' || sec === 'faq';
 };
 
 const normalizeSubcat = (s = '') => {
@@ -24,7 +25,7 @@ const normalizeSubcat = (s = '') => {
 
 const all = await getCollection('resources');
 const faqs = all
-  .filter((e) => normalizeSection(e.data?.section || '') === 'faqs')
+  .filter(isFaqEntry)
   .sort((a, b) => {
     const da = a.data?.pubDate ? new Date(a.data.pubDate).getTime() : 0;
     const db = b.data?.pubDate ? new Date(b.data.pubDate).getTime() : 0;
@@ -36,10 +37,19 @@ for (const e of faqs) {
   const key = normalizeSubcat(e.data?.subcategory || e.data?.category || '');
   (grouped[key] || grouped.other).push(e);
 }
+
 const order: Array<keyof typeof grouped> = ['buying','selling','renting','short-stay','other'];
 const labels: Record<string,string> = {
   buying:'Buying FAQs', selling:'Selling FAQs', renting:'Renting FAQs', 'short-stay':'Short-Stay FAQs', other:'General FAQs'
 };
+
+/** Always render the 4 main tiles */
+const tiles = [
+  { key: 'buying',     name: 'Buying FAQs',     short: 'buying',     href: '/resources/faqs/buying',     desc: 'Short answers about the buying process.' },
+  { key: 'selling',    name: 'Selling FAQs',    short: 'selling',    href: '/resources/faqs/selling',    desc: 'Quick answers for property sellers.' },
+  { key: 'renting',    name: 'Renting FAQs',    short: 'renting',    href: '/resources/faqs/renting',    desc: 'Landlord and tenant common questions.' },
+  { key: 'short-stay', name: 'Short-Stay FAQs', short: 'short-stay', href: '/resources/faqs/short-stay', desc: 'For hosts and guests in short rentals.' },
+];
 ---
 
 <MainLayout {title} {description}>
@@ -58,67 +68,28 @@ const labels: Record<string,string> = {
       <p class="text-neutral-600 mt-2 max-w-2xl mx-auto">
         Quick answers across Buying, Selling, Renting, and Short-Stay.
       </p>
-
-      <div class="mt-6 max-w-xl mx-auto">
-        <input
-          id="faq-search"
-          type="text"
-          placeholder="Search FAQs…"
-          class="w-full border border-neutral-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-cta focus:outline-none"
-          aria-label="Search FAQs"
-        />
-      </div>
     </header>
 
-    <!-- Subcategory cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-      <a href="/resources/faqs/buying" class="category-tile tile-accent tile-hover">
-        <div class="tile-badge">
-          <svg viewBox="0 0 24 24" class="tile-icon-svg" aria-hidden="true">
-            <path d="M3 11.5L12 4l9 7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M5 10.5V20h14v-9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="tile-title">Buying FAQs</div>
-        <p class="tile-sub">Short answers about the buying process.</p>
-      </a>
-
-      <a href="/resources/faqs/selling" class="category-tile tile-accent tile-hover">
-        <div class="tile-badge">
-          <svg viewBox="0 0 24 24" class="tile-icon-svg" aria-hidden="true">
-            <path d="M20 13l-7 7-9-9V4h7l9 9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor"/>
-          </svg>
-        </div>
-        <div class="tile-title">Selling FAQs</div>
-        <p class="tile-sub">Quick answers for property sellers.</p>
-      </a>
-
-      <a href="/resources/faqs/renting" class="category-tile tile-accent tile-hover">
-        <div class="tile-badge">
-          <svg viewBox="0 0 24 24" class="tile-icon-svg" aria-hidden="true">
-            <circle cx="7.5" cy="7.5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
-            <path d="M11 11l7 7m0 0h3m-3 0v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="tile-title">Renting FAQs</div>
-        <p class="tile-sub">Landlord and tenant common questions.</p>
-      </a>
-
-      <a href="/resources/faqs/short-stay" class="category-tile tile-accent tile-hover">
-        <div class="tile-badge">
-          <svg viewBox="0 0 24 24" class="tile-icon-svg" aria-hidden="true">
-            <path d="M12 3a5 5 0 00-5 5v3.5L5 14v1h14v-1l-2-2.5V8a5 5 0 00-5-5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M9.5 18a2.5 2.5 0 005 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="tile-title">Short-Stay FAQs</div>
-        <p class="tile-sub">For hosts and guests in short rentals.</p>
-      </a>
+    <!-- Category tiles -->
+    <div id="faq-tiles" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+      {tiles.map((t) => (
+        <a
+          href={t.href}
+          class="category-tile tile-tint tile-hover focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+        >
+          <div class="tile-title">{t.name}</div>
+          <p class="tile-sub">{t.desc}</p>
+          <div class="mt-4 flex items-center justify-end">
+            <span class="text-cta text-sm font-semibold">Explore</span>
+            <svg class="ml-1 w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+      ))}
     </div>
 
-    {Object.values(grouped).flat().length > 0 && (
+    {faqs.length > 0 && (
       <>
         <div class="mt-10 flex gap-2 flex-wrap justify-center">
           {order.filter((k) => grouped[k].length > 0).map((k) => (
@@ -130,17 +101,24 @@ const labels: Record<string,string> = {
           grouped[key].length > 0 && (
             <section id={`sec-${key}`} class="mt-8">
               <h2 class="text-xl font-semibold text-primary mb-4">{labels[key]}</h2>
-              <div class="rounded-lg border border-neutral-200 bg-white divide-y divide-neutral-200" data-faq-group={key}>
+              <div class="rounded-lg border border-neutral-200 bg-white divide-y divide-neutral-200">
                 {grouped[key].map((faq) => (
-                  <details class="p-4 group faq-item">
+                  <details class="p-4 group">
                     <summary class="cursor-pointer font-medium text-primary flex items-center justify-between">
-                      <span class="faq-title">{faq.data.title}</span>
-                      <span class="ml-3 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+                      <span>{faq.data.title}</span>
+                      <svg class="ml-3 w-4 h-4 text-neutral-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                      </svg>
                     </summary>
                     {faq.data.description && (
-                      <p class="mt-2 text-neutral-600 faq-desc">{faq.data.description}</p>
+                      <p class="mt-2 text-neutral-600">{faq.data.description}</p>
                     )}
-                    <a href={`/resources/faqs/${faq.slug}`} class="text-cta text-sm mt-2 inline-block">Read more →</a>
+                    <a href={`/resources/faqs/${faq.slug}`} class="text-cta text-sm mt-2 inline-flex items-center">
+                      Read more
+                      <svg class="ml-1 w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                      </svg>
+                    </a>
                   </details>
                 ))}
               </div>
@@ -150,25 +128,4 @@ const labels: Record<string,string> = {
       </>
     )}
   </section>
-
-  <script>
-    const input = document.getElementById('faq-search');
-    const sections = document.querySelectorAll('[data-faq-group]');
-    input?.addEventListener('input', (e) => {
-      const q = (e.target.value || '').toLowerCase().trim();
-      sections.forEach((sec) => {
-        let visibleCount = 0;
-        sec.querySelectorAll('.faq-item').forEach((item) => {
-          const title = item.querySelector('.faq-title')?.textContent?.toLowerCase() || '';
-          const desc = item.querySelector('.faq-desc')?.textContent?.toLowerCase() || '';
-          const hit = !q || title.includes(q) || desc.includes(q);
-          item.style.display = hit ? '' : 'none';
-          if (hit) visibleCount++;
-          if (!hit) item.open = false;
-        });
-        const container = sec.closest('section');
-        if (container) container.style.display = visibleCount ? '' : 'none';
-      });
-    });
-  </script>
 </MainLayout>

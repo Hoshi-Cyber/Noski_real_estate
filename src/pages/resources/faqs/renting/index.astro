@@ -1,4 +1,5 @@
 ---
+// src/pages/resources/faqs/renting/index.astro
 import MainLayout from '../../../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
 
@@ -6,25 +7,77 @@ const title = 'Renting FAQs | Severino Realty';
 const description = 'Common questions about renting and tenancy.';
 const guideUrl = '/resources/guides/renting-landlord';
 
-const faqs = [
-  { q:'Required documents for tenants?', aHtml:'<p>ID, employment/income proof, references, and prior landlord contacts.</p>' },
-  { q:'How is rent set?', aHtml:'<p>By comps, features, seasonality, and occupancy goals. Review quarterly.</p>' },
-  { q:'Deposit rules and returns?', aHtml:'<p>State your policy in the lease. Document condition to avoid disputes.</p>' },
-  { q:'Maintenance SLAs?', aHtml:'<p>Emergencies 24h, urgent 72h, routine 7–14 days. Communicate clearly.</p>' },
-  { q:'Late payment process?', aHtml:'<p>Grace period, notice, fees as per lease and local law. Keep written records.</p>' },
-  { q:'Pets and restrictions?', aHtml:'<p>Define pet policy, deposits/fees, and damage responsibilities in the lease.</p>' },
+const categories = [
+  {
+    name: 'Screening & Documents',
+    faqs: [
+      { q:'Required documents for tenants?', aHtml:'<p>ID, employment/income proof, references, and prior landlord contacts.</p>' },
+      { q:'Do you run credit or background checks?', aHtml:'<p>Yes, where permitted. We assess payment history and tenancy conduct.</p>' },
+      { q:'What if I’m self-employed?', aHtml:'<p>Provide 6–12 months bank statements, tax returns, and client references.</p>' },
+      { q:'Can a guarantor help me qualify?', aHtml:'<p>Yes, subject to income and credit standards.</p>' },
+      { q:'Minimum income requirement?', aHtml:'<p>Typical rule is 2.5–3× monthly rent in gross income.</p>' },
+      { q:'How fast is approval?', aHtml:'<p>24–72 hours after complete documentation.</p>' }
+    ]
+  },
+  {
+    name: 'Lease & Payments',
+    faqs: [
+      { q:'How is rent set?', aHtml:'<p>By comps, features, seasonality, and occupancy goals. Review quarterly.</p>' },
+      { q:'When is rent due and what are accepted payment methods?', aHtml:'<p>Due dates are in the lease; we accept bank transfer and approved digital payments.</p>' },
+      { q:'Deposit rules and returns?', aHtml:'<p>Outlined in the lease. We itemize deductions and return within legal timelines.</p>' },
+      { q:'Are deposits interest-bearing?', aHtml:'<p>Only where law requires. Terms are stated in the lease.</p>' },
+      { q:'Late payment process?', aHtml:'<p>Grace period and fees per lease and local law. Notices are provided in writing.</p>' },
+      { q:'Rent increases and notice periods?', aHtml:'<p>Adjustments follow market and legal caps; notice as per statute and lease.</p>' }
+    ]
+  },
+  {
+    name: 'Maintenance & Repairs',
+    faqs: [
+      { q:'Maintenance SLAs?', aHtml:'<p>Emergencies 24h, urgent 72h, routine 7–14 days. Communicate clearly.</p>' },
+      { q:'What is an emergency repair?', aHtml:'<p>Issues that risk safety or major damage: gas, electrical hazards, flooding.</p>' },
+      { q:'Who handles minor repairs?', aHtml:'<p>Landlord handles structural and systems; tenants handle consumables by policy.</p>' },
+      { q:'How do I report a repair?', aHtml:'<p>Use the portal or hotline with photos, access times, and description.</p>' },
+      { q:'Are alterations allowed?', aHtml:'<p>Only with written consent. Reinstatement may be required at move-out.</p>' },
+      { q:'Pest control responsibilities?', aHtml:'<p>Landlord for building-wide issues; tenant for hygiene-related infestations.</p>' }
+    ]
+  },
+  {
+    name: 'Rights, Rules & Compliance',
+    faqs: [
+      { q:'Pets and restrictions?', aHtml:'<p>Policy, deposits/fees, and damage responsibilities are defined in the lease.</p>' },
+      { q:'Guest and subletting policy?', aHtml:'<p>Guests allowed within limits. Subletting requires written approval.</p>' },
+      { q:'Quiet hours and nuisance rules?', aHtml:'<p>Outlined in house rules and local bylaws. Violations trigger notices.</p>' },
+      { q:'Entry notice by management?', aHtml:'<p>Advance notice except in emergencies, per law and lease terms.</p>' },
+      { q:'Insurance requirements?', aHtml:'<p>Tenant contents insurance recommended; landlord carries property cover.</p>' },
+      { q:'Data privacy and records?', aHtml:'<p>We store applications and payments securely and retain per policy.</p>' }
+    ]
+  },
+  {
+    name: 'Move-in, Renewals & Disputes',
+    faqs: [
+      { q:'Move-in checklist and condition report?', aHtml:'<p>Signed by both parties with photos to avoid disputes later.</p>' },
+      { q:'Early termination options?', aHtml:'<p>Only per break clause or mutual agreement; fees may apply.</p>' },
+      { q:'Renewal process and negotiation?', aHtml:'<p>We review market 60–90 days prior and share renewal terms.</p>' },
+      { q:'Handling disputes?', aHtml:'<p>Start with written notice and dialogue; escalate to mediation or tribunal if needed.</p>' },
+      { q:'Notice to vacate requirements?', aHtml:'<p>Provide written notice as per lease length and legal minimums.</p>' },
+      { q:'Move-out deposit deductions?', aHtml:'<p>Only for unpaid rent, damage beyond wear, or cleaning per inventory.</p>' }
+    ]
+  }
 ];
 
+// Build JSON-LD from all questions
+const allFaqs = categories.flatMap(c => c.faqs);
 const ld = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: faqs.map(f => ({
-    '@type':'Question',
-    name:f.q,
-    acceptedAnswer:{ '@type':'Answer', text:f.aHtml.replace(/<[^>]*>/g,'') }
+  mainEntity: allFaqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.aHtml.replace(/<[^>]*>/g, '') }
   })),
 };
 ---
+
 <MainLayout {title} {description}>
   <section class="section container">
     <Breadcrumbs
@@ -39,65 +92,32 @@ const ld = {
 
     <header class="mb-6 md:mb-8">
       <h1 class="text-2xl md:text-3xl font-bold text-primary">Renting FAQs</h1>
-      <div class="mt-3 flex items-center gap-3">
-        <input
-          id="faq-q"
-          type="search"
-          placeholder="Search Renting FAQs"
-          class="w-full max-w-lg rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cta"
-          aria-label="Search Renting FAQs"
-        />
+      <div class="mt-3">
         <a href={guideUrl} class="btn-cta text-sm">Read full Guide</a>
       </div>
     </header>
 
-    <div id="faq-list" class="divide-y divide-neutral-200 rounded-md ring-1 ring-neutral-200 bg-white">
-      {faqs.map(f => (
-        <details class="group">
-          <summary class="list-none cursor-pointer px-4 py-3 flex items-center justify-between">
-            <span class="font-medium text-primary">{f.q}</span>
-            <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </summary>
-          <div class="px-4 pb-4 text-neutral-700 prose max-w-none" set:html={f.aHtml}></div>
-        </details>
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {categories.map(cat => (
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-accent">{cat.name}</h2>
+          <div class="divide-y divide-neutral-200 rounded-md ring-1 ring-neutral-200 bg-white">
+            {cat.faqs.map(f => (
+              <details class="group">
+                <summary class="list-none cursor-pointer px-4 py-3 flex items-center justify-between">
+                  <span class="font-medium text-primary">{f.q}</span>
+                  <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </summary>
+                <div class="px-4 pb-4 text-neutral-700 prose max-w-none" set:html={f.aHtml}></div>
+              </details>
+            ))}
+          </div>
+        </div>
       ))}
     </div>
 
     <script type="application/ld+json">{JSON.stringify(ld)}</script>
   </section>
-
-  <script type="module" client:load>
-    const q = document.getElementById('faq-q');
-    const list = document.getElementById('faq-list');
-
-    // Filter
-    q?.addEventListener('input', () => {
-      const term = q.value.toLowerCase();
-      list.querySelectorAll('details').forEach(d => {
-        const t = d.querySelector('span')?.textContent?.toLowerCase() || '';
-        d.classList.toggle('hidden', term && !t.includes(term));
-      });
-    });
-
-    // One-open-only
-    function closeOthers(except){
-      list.querySelectorAll('details[open]').forEach(d => { if (d !== except) d.removeAttribute('open'); });
-    }
-    list?.addEventListener('toggle', (e) => {
-      const d = e.target;
-      if (d.tagName !== 'DETAILS') return;
-      if (d.open) closeOthers(d);
-    }, true);
-
-    // Hash open
-    const hash = decodeURIComponent(location.hash.slice(1));
-    if (hash && list) {
-      const match = [...list.querySelectorAll('details')].find(d =>
-        (d.querySelector('span')?.textContent || '').toLowerCase().includes(hash.toLowerCase())
-      );
-      if (match) { closeOthers(match); match.open = true; }
-    }
-  </script>
 </MainLayout>

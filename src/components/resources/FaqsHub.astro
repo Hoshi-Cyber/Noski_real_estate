@@ -1,11 +1,9 @@
 ---
-import BaseCard from '../BaseCard.astro';
-
-/** FAQs hub: hero + search + grouped links */
+/** FAQs hub: hero + search + grouped links (self-contained, no BaseCard) */
 const {
   title = 'FAQs',
   intro = 'Quick answers grouped by topic.',
-  groups = /** [{ name, href, count }] */ [
+  groups = [
     { name: 'Buying', href: '/resources/faqs/buying', count: 12 },
     { name: 'Selling', href: '/resources/faqs/selling', count: 10 },
     { name: 'Renting', href: '/resources/faqs/renting', count: 9 },
@@ -13,55 +11,103 @@ const {
   ],
 } = Astro.props;
 ---
-
-<section class="max-w-7xl mx-auto px-4 py-8 md:py-10">
-  <!-- Header -->
+<section class="max-w-7xl mx-auto px-4 py-8 md:py-10" aria-labelledby="faqh-title">
   <header class="mb-6 md:mb-8">
-    <h1 class="text-2xl md:text-3xl font-bold text-primary">{title}</h1>
+    <h1 id="faqh-title" class="text-2xl md:text-3xl font-bold text-primary">{title}</h1>
     <p class="mt-2 text-neutral-700">{intro}</p>
-
-    <!-- Search -->
-    <form role="search" aria-label="Search FAQs" class="mt-4">
+    <form role="search" aria-label="Search FAQs" class="mt-4" onsubmit="return false">
       <label for="faq-search" class="sr-only">Search FAQs</label>
-      <input
-        id="faq-search"
-        type="search"
-        placeholder="Search FAQs"
-        class="w-full max-w-lg rounded-md border border-neutral-300 px-3 py-2 text-sm
-               focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
-      />
+      <div class="relative max-w-lg">
+        <input
+          id="faq-search"
+          type="search"
+          placeholder="Search categories (press / to focus)…"
+          class="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+          autocomplete="off"
+        />
+        <button
+          id="faq-clear"
+          type="button"
+          class="absolute right-1.5 top-1.5 hidden rounded px-2 py-1 text-xs text-neutral-600 hover:bg-neutral-100"
+          aria-label="Clear search"
+        >
+          Clear
+        </button>
+      </div>
+      <p id="faq-count" class="mt-2 text-sm text-neutral-600" aria-live="polite">
+        Showing {groups.length} categories
+      </p>
     </form>
   </header>
 
-  <!-- FAQ Groups -->
   <div id="faq-groups" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     {groups.map((g) => (
-      <div data-title={g.name}>
-        <BaseCard
-          title={g.name}
-          desc={`Browse ${g.name} questions`}
-          href={g.href}
-          tag="FAQ"
-          cta={`${g.count} Qs →`}
-          variant="compact"
-          showImage={false}
-        />
-      </div>
+      <a
+        href={g.href}
+        data-title={g.name}
+        class="faq-card tile-tint rounded-2xl p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-cta)] hover:-translate-y-0.5 transition"
+      >
+        <div class="tile-badge mb-4">
+          <svg class="tile-icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M8.228 9a3.772 3.772 0 116.736 1.997c-.61.842-1.557 1.34-2.23 2.003-.335.33-.484.8-.484 1.27v.23M12 19.25h.008v.008H12z"/>
+          </svg>
+        </div>
+        <h3 class="tile-title">{g.name}</h3>
+        <p class="tile-sub">Browse {g.name} questions</p>
+        <div class="mt-4 flex items-center justify-between">
+          <span class="badge-cta">{g.count} Qs</span>
+          <span class="text-cta text-sm font-semibold">Explore →</span>
+        </div>
+      </a>
     ))}
+  </div>
+
+  <div id="faq-empty" class="hidden mt-6 rounded-lg border border-neutral-200 bg-white p-4 text-sm text-neutral-700">
+    No categories match your search. Try a different term.
   </div>
 </section>
 
 <script type="module" client:load>
-  const q = document.getElementById('faq-search');
+  const input = document.getElementById('faq-search');
+  const clearBtn = document.getElementById('faq-clear');
   const container = document.getElementById('faq-groups');
+  const count = document.getElementById('faq-count');
+  const empty = document.getElementById('faq-empty');
 
-  if (q && container) {
-    q.addEventListener('input', () => {
-      const term = q.value.trim().toLowerCase();
-      container.querySelectorAll('[data-title]').forEach((el) => {
-        const t = el.getAttribute('data-title')?.toLowerCase() || '';
-        el.classList.toggle('hidden', !!term && !t.includes(term));
-      });
+  const update = () => {
+    if (!input || !container || !count) return;
+    const term = input.value.trim().toLowerCase();
+    let visible = 0;
+
+    container.querySelectorAll('[data-title]').forEach((el) => {
+      const t = (el.getAttribute('data-title') || '').toLowerCase();
+      const show = !term || t.includes(term);
+      el.classList.toggle('hidden', !show);
+      if (show) visible++;
+    });
+
+    count.textContent = `Showing ${visible} ${visible === 1 ? 'category' : 'categories'}`;
+    if (clearBtn) clearBtn.classList.toggle('hidden', term.length === 0);
+    if (empty) empty.classList.toggle('hidden', visible !== 0);
+  };
+
+  if (input) {
+    input.addEventListener('input', update);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && (document.activeElement === document.body || document.activeElement === null)) {
+        e.preventDefault();
+        input.focus();
+      }
     });
   }
+  if (clearBtn && input) {
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      input.focus();
+      update();
+    });
+  }
+  update();
 </script>

@@ -1,4 +1,5 @@
 ---
+// src/pages/resources/faqs/buying/index.astro
 import MainLayout from '../../../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
 
@@ -6,13 +7,59 @@ const title = 'Buying FAQs | Severino Realty';
 const description = 'Common questions about buying property.';
 const guideUrl = '/resources/guides/buying';
 
-const faqs = [
-  { q:'What down payment is typical?', aHtml:'<p>10–20% is common. Lower is possible with stricter terms.</p>' },
-  { q:'How long does closing take?', aHtml:'<p>About 30–60 days from offer acceptance.</p>' },
-  { q:'What costs should I budget for?', aHtml:'<p>Stamp duty, legal, valuation, inspection, loan fees, insurance.</p>' },
-  { q:'Fixed vs. variable rate?', aHtml:'<p>Fixed = certainty. Variable = lower initial cost but rate risk.</p>' },
+const categories = [
+  {
+    name: 'Financing & Mortgage',
+    faqs: [
+      { q:'What down payment is typical?', aHtml:'<p>10–20% is common. Lower is possible with stricter terms.</p>' },
+      { q:'Can I buy without a mortgage?', aHtml:'<p>Yes, cash offers are common and can close faster.</p>' },
+      { q:'Fixed vs. variable rate?', aHtml:'<p>Fixed = certainty. Variable = lower initial cost but rate risk.</p>' },
+      { q:'What documents do lenders require?', aHtml:'<p>ID, payslips, bank statements, credit report, tax returns.</p>' },
+      { q:'How do I improve mortgage approval odds?', aHtml:'<p>Boost credit score, reduce debts, stable income, large deposit.</p>' }
+    ]
+  },
+  {
+    name: 'Process & Timeline',
+    faqs: [
+      { q:'How long does closing take?', aHtml:'<p>About 30–60 days from offer acceptance.</p>' },
+      { q:'What steps are involved in buying?', aHtml:'<p>Offer → acceptance → inspection → valuation → financing → closing.</p>' },
+      { q:'Do I need an agent?', aHtml:'<p>Strongly recommended for negotiations, due diligence, and paperwork.</p>' },
+      { q:'When should I engage a lawyer?', aHtml:'<p>Before signing binding agreements. They review title and contracts.</p>' },
+      { q:'What is an offer letter?', aHtml:'<p>A formal document stating purchase terms, deposit, and contingencies.</p>' }
+    ]
+  },
+  {
+    name: 'Costs & Budgeting',
+    faqs: [
+      { q:'What costs should I budget for?', aHtml:'<p>Stamp duty, legal, valuation, inspection, loan fees, insurance.</p>' },
+      { q:'What is stamp duty in Kenya?', aHtml:'<p>1–4% depending on property value and location.</p>' },
+      { q:'Are valuation fees refundable?', aHtml:'<p>No. They are payable regardless of outcome.</p>' },
+      { q:'Do I pay agent commission as a buyer?', aHtml:'<p>In most cases seller covers, but check local practice.</p>' },
+      { q:'How much should I keep aside post-purchase?', aHtml:'<p>At least 1–2% annually for maintenance and taxes.</p>' }
+    ]
+  },
+  {
+    name: 'Legal & Compliance',
+    faqs: [
+      { q:'How do I verify property ownership?', aHtml:'<p>Do a title search at the lands registry before committing.</p>' },
+      { q:'What is a sale agreement?', aHtml:'<p>Legal contract between buyer and seller outlining terms and obligations.</p>' },
+      { q:'What is due diligence?', aHtml:'<p>Checks on title, zoning, arrears, encumbrances, physical inspection.</p>' },
+      { q:'Can foreigners buy property in Kenya?', aHtml:'<p>Yes, but with restrictions on agricultural land.</p>' },
+      { q:'What happens if seller backs out?', aHtml:'<p>Buyer may recover deposit or sue depending on contract terms.</p>' }
+    ]
+  },
+  {
+    name: 'Strategy & Market',
+    faqs: [
+      { q:'Is it better to buy off-plan or completed?', aHtml:'<p>Off-plan = lower entry but risk. Completed = certainty but higher price.</p>' },
+      { q:'How do I know if I’m overpaying?', aHtml:'<p>Check comparables, professional valuation, and absorption rate.</p>' },
+      { q:'Should I buy as an investment or residence?', aHtml:'<p>Define goals early. Rental yield vs lifestyle and location needs.</p>' },
+      { q:'Is location more important than property size?', aHtml:'<p>Yes. Location drives long-term value appreciation.</p>' }
+    ]
+  }
 ];
 ---
+
 <MainLayout {title} {description}>
   <section class="section container">
     <Breadcrumbs
@@ -28,59 +75,29 @@ const faqs = [
     <header class="mb-6 md:mb-8">
       <h1 class="text-2xl md:text-3xl font-bold text-primary">Buying FAQs</h1>
       <div class="mt-3 flex items-center gap-3">
-        <input
-          id="faq-q"
-          type="search"
-          placeholder="Search Buying FAQs"
-          class="w-full max-w-lg rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cta"
-          aria-label="Search Buying FAQs"
-        />
         <a href={guideUrl} class="btn-cta text-sm">Read full Guide</a>
       </div>
     </header>
 
-    <div id="faq-list" class="divide-y divide-neutral-200 rounded-md ring-1 ring-neutral-200 bg-white">
-      {faqs.map((f) => (
-        <details class="group">
-          <summary class="list-none cursor-pointer px-4 py-3 flex items-center justify-between">
-            <span class="font-medium text-primary">{f.q}</span>
-            <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </summary>
-          <div class="px-4 pb-4 text-neutral-700 prose max-w-none" set:html={f.aHtml}></div>
-        </details>
+    <div class="grid md:grid-cols-2 gap-6">
+      {categories.map(cat => (
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-accent">{cat.name}</h2>
+          <div class="divide-y divide-neutral-200 rounded-md ring-1 ring-neutral-200 bg-white">
+            {cat.faqs.map(f => (
+              <details class="group">
+                <summary class="list-none cursor-pointer px-4 py-3 flex items-center justify-between">
+                  <span class="font-medium text-primary">{f.q}</span>
+                  <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </summary>
+                <div class="px-4 pb-4 text-neutral-700 prose max-w-none" set:html={f.aHtml}></div>
+              </details>
+            ))}
+          </div>
+        </div>
       ))}
     </div>
-
-    <script type="module" client:load>
-      const q = document.getElementById('faq-q');
-      const list = document.getElementById('faq-list');
-
-      q?.addEventListener('input', () => {
-        const term = q.value.toLowerCase();
-        list.querySelectorAll('details').forEach(d => {
-          const t = d.querySelector('span')?.textContent?.toLowerCase() || '';
-          d.classList.toggle('hidden', term && !t.includes(term));
-        });
-      });
-
-      function closeOthers(except){
-        list.querySelectorAll('details[open]').forEach(d => { if (d !== except) d.removeAttribute('open'); });
-      }
-      list?.addEventListener('toggle', (e) => {
-        const d = e.target;
-        if (d.tagName !== 'DETAILS') return;
-        if (d.open) closeOthers(d);
-      }, true);
-
-      const hash = decodeURIComponent(location.hash.slice(1));
-      if (hash && list) {
-        const match = [...list.querySelectorAll('details')].find(d =>
-          (d.querySelector('span')?.textContent || '').toLowerCase().includes(hash.toLowerCase())
-        );
-        if (match) { closeOthers(match); match.open = true; }
-      }
-    </script>
   </section>
 </MainLayout>

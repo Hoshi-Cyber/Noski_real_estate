@@ -1,30 +1,78 @@
 ---
+// src/pages/resources/faqs/short-stay/index.astro
 import MainLayout from '../../../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
 
-const title = 'Selling FAQs | Severino Realty';
-const description = 'Common questions about selling property.';
-const guideUrl = '/resources/guides/selling';
+const title = 'Short-Stay FAQs | Severino Realty';
+const description = 'Common questions for short-stay guests and hosts.';
+const guideUrl = '/short-stays';
 
-const faqs = [
-  { q:'Best time to list?', aHtml:'<p>When supply is low and demand is steady. Seasonality affects traffic; price to the market.</p>' },
-  { q:'Do renovations pay back?', aHtml:'<p>Focus on high-ROI items: paint, lighting, minor repairs, curb appeal, kitchens/baths refresh.</p>' },
-  { q:'How do you price?', aHtml:'<p>Recent comps, condition, and absorption. Choose a strategy: price-to-attract vs price-to-negotiate.</p>' },
-  { q:'What is DOM and why it matters?', aHtml:'<p>Days on Market. Long DOM signals overpricing or issues and weakens negotiating power.</p>' },
-  { q:'Handling multiple offers?', aHtml:'<p>Use an offer matrix. Compare net, contingencies, proof of funds, and closing dates.</p>' },
-  { q:'What are my closing costs?', aHtml:'<p>Agency fees, legal, taxes, lien clearance, and agreed credits/repairs.</p>' },
+const categories = [
+  {
+    name: 'Booking & Stay Terms',
+    faqs: [
+      { q:'Minimum stay length?', aHtml:'<p>Set per unit and season. Longer minimums reduce churn and cleaning load.</p>' },
+      { q:'Maximum stay length?', aHtml:'<p>Typically 30–90 days for short-stay rentals. Longer requires tenancy terms.</p>' },
+      { q:'Can I extend my stay?', aHtml:'<p>Yes, subject to availability and updated rate confirmation.</p>' },
+      { q:'Cancellation policy?', aHtml:'<p>Choose flexible, standard, or strict. Align with channel partner policies.</p>' },
+      { q:'Refund timeline if cancelled?', aHtml:'<p>Refunds are processed within 7–14 business days as per payment channel.</p>' }
+    ]
+  },
+  {
+    name: 'Rates & Payments',
+    faqs: [
+      { q:'What’s included in rates?', aHtml:'<p>Utilities, Wi-Fi, housekeeping cadence, and any disclosed fees.</p>' },
+      { q:'Are taxes included?', aHtml:'<p>Local occupancy or VAT may apply; always shown at booking.</p>' },
+      { q:'Deposit/holds?', aHtml:'<p>Security deposit or card pre-auth held until checkout inspection.</p>' },
+      { q:'Extra fees to expect?', aHtml:'<p>Cleaning, parking, or pet fees if applicable, disclosed upfront.</p>' },
+      { q:'Accepted payment methods?', aHtml:'<p>Bank card, mobile money, or transfer through approved platforms.</p>' }
+    ]
+  },
+  {
+    name: 'Check-in, Stay & Rules',
+    faqs: [
+      { q:'Check-in/out process?', aHtml:'<p>Provide access codes, ID match, and 24/7 contact for issues.</p>' },
+      { q:'Early check-in or late checkout?', aHtml:'<p>Possible with prior approval and small fee subject to occupancy.</p>' },
+      { q:'House rules?', aHtml:'<p>Guest limits, smoking, events, pets, quiet hours, and damage policy.</p>' },
+      { q:'Are parties or events allowed?', aHtml:'<p>No, unless specifically authorized. Violations risk eviction.</p>' },
+      { q:'Pet policy?', aHtml:'<p>Varies by unit. Fees, deposits, and cleaning rules disclosed in advance.</p>' }
+    ]
+  },
+  {
+    name: 'Amenities & Services',
+    faqs: [
+      { q:'Is cleaning included?', aHtml:'<p>Light cleaning may be included. Deep cleans charged separately.</p>' },
+      { q:'Do units include kitchen use?', aHtml:'<p>Yes, unless studio/hotel-style units. Equipment varies by property.</p>' },
+      { q:'Laundry facilities available?', aHtml:'<p>Either in-unit washer/dryer or shared building laundry.</p>' },
+      { q:'Is parking provided?', aHtml:'<p>Yes where available. May be free, reserved, or paid separately.</p>' },
+      { q:'Do you provide toiletries or starter kits?', aHtml:'<p>Basic supplies like soap, tissue, and water are provided initially.</p>' }
+    ]
+  },
+  {
+    name: 'Safety, Support & Compliance',
+    faqs: [
+      { q:'Emergency contact during stay?', aHtml:'<p>24/7 hotline number is provided pre-arrival.</p>' },
+      { q:'What security measures exist?', aHtml:'<p>Locks, CCTV, controlled access, and onsite staff where applicable.</p>' },
+      { q:'Insurance coverage?', aHtml:'<p>Property insured for structure. Guests cover personal items.</p>' },
+      { q:'What happens in case of damage?', aHtml:'<p>Documented at checkout. Repair costs deducted from deposit/hold.</p>' },
+      { q:'Is ID required at check-in?', aHtml:'<p>Yes, to comply with local regulations and security protocols.</p>' }
+    ]
+  }
 ];
 
+// Flatten for JSON-LD
+const allFaqs = categories.flatMap(c => c.faqs);
 const ld = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: faqs.map(f => ({
-    '@type':'Question',
-    name:f.q,
-    acceptedAnswer:{ '@type':'Answer', text:f.aHtml.replace(/<[^>]*>/g,'') }
+  mainEntity: allFaqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.aHtml.replace(/<[^>]*>/g, '') }
   })),
 };
 ---
+
 <MainLayout {title} {description}>
   <section class="section container">
     <Breadcrumbs
@@ -32,72 +80,39 @@ const ld = {
         { label: 'Home', href: '/' },
         { label: 'Resources', href: '/resources' },
         { label: 'FAQs', href: '/resources/faqs' },
-        { label: 'Selling FAQs' }
+        { label: 'Short-Stay FAQs' }
       ]}
       class="mb-6"
     />
 
     <header class="mb-6 md:mb-8">
-      <h1 class="text-2xl md:text-3xl font-bold text-primary">Selling FAQs</h1>
-      <div class="mt-3 flex items-center gap-3">
-        <input
-          id="faq-q"
-          type="search"
-          placeholder="Search Selling FAQs"
-          class="w-full max-w-lg rounded-md ring-1 ring-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cta"
-          aria-label="Search Selling FAQs"
-        />
-        <a href={guideUrl} class="btn-cta text-sm">Read full Guide</a>
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">Short-Stay FAQs</h1>
+      <div class="mt-3">
+        <a href={guideUrl} class="btn-cta text-sm">View Short-Stays</a>
       </div>
     </header>
 
-    <div id="faq-list" class="divide-y divide-neutral-200 rounded-md ring-1 ring-neutral-200 bg-white">
-      {faqs.map(f => (
-        <details class="group">
-          <summary class="list-none cursor-pointer px-4 py-3 flex items-center justify-between">
-            <span class="font-medium text-primary">{f.q}</span>
-            <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </summary>
-          <div class="px-4 pb-4 text-neutral-700 prose max-w-none" set:html={f.aHtml}></div>
-        </details>
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {categories.map(cat => (
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-accent">{cat.name}</h2>
+          <div class="divide-y divide-neutral-200 rounded-md ring-1 ring-neutral-200 bg-white">
+            {cat.faqs.map(f => (
+              <details class="group">
+                <summary class="list-none cursor-pointer px-4 py-3 flex items-center justify-between">
+                  <span class="font-medium text-primary">{f.q}</span>
+                  <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </summary>
+                <div class="px-4 pb-4 text-neutral-700 prose max-w-none" set:html={f.aHtml}></div>
+              </details>
+            ))}
+          </div>
+        </div>
       ))}
     </div>
 
     <script type="application/ld+json">{JSON.stringify(ld)}</script>
   </section>
-
-  <script type="module" client:load>
-    const q = document.getElementById('faq-q');
-    const list = document.getElementById('faq-list');
-
-    // Filter
-    q?.addEventListener('input', () => {
-      const term = q.value.toLowerCase();
-      list.querySelectorAll('details').forEach(d => {
-        const t = d.querySelector('span')?.textContent?.toLowerCase() || '';
-        d.classList.toggle('hidden', term && !t.includes(term));
-      });
-    });
-
-    // One-open-only
-    function closeOthers(except){
-      list.querySelectorAll('details[open]').forEach(d => { if (d !== except) d.removeAttribute('open'); });
-    }
-    list?.addEventListener('toggle', (e) => {
-      const d = e.target;
-      if (d.tagName !== 'DETAILS') return;
-      if (d.open) closeOthers(d);
-    }, true);
-
-    // Hash open
-    const hash = decodeURIComponent(location.hash.slice(1));
-    if (hash && list) {
-      const match = [...list.querySelectorAll('details')].find(d =>
-        (d.querySelector('span')?.textContent || '').toLowerCase().includes(hash.toLowerCase())
-      );
-      if (match) { closeOthers(match); match.open = true; }
-    }
-  </script>
 </MainLayout>
