@@ -2,27 +2,26 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
+import netlify from '@astrojs/netlify/functions';
 
 export default defineConfig({
-  // Replace with your final domain when you deploy (optional for local dev)
-  site: 'https://www.severino-realty.example',
+  // Production domain for Netlify deploy
+  site: 'https://noski-real-estate.netlify.app',
 
-  // Build a fully static site (no adapter needed)
-  output: 'static',
+  // Switch from static to server output for Netlify adapter
+  output: 'server',
+  adapter: netlify(),
 
   integrations: [
     react(),
     tailwind({
-      applyBaseStyles: true, // ✅ correct option shape for @astrojs/tailwind
+      applyBaseStyles: true,
     }),
   ],
 
-  // Keep markdown plugin slots available (optional)
+  // Keep markdown plugin slots available
   markdown: {
     remarkPlugins: [],
     rehypePlugins: [],
   },
-
-  // Use default static build format (directory). Remove custom SSR format.
-  // build: { format: 'directory' }, // optional; default is fine
 });
