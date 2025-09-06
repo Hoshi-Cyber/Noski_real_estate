@@ -17,7 +17,12 @@ export function parseSearchParams(input: SearchParamsInput) {
 
   const availability =
     coerceAvailability(params.get("availability") || params.get("serviceType") || "");
+
+  // In your UI, "q" is used as location/area; we still treat it as a generic text search
   const q = (params.get("q") || "").trim().toLowerCase();
+
+  // Canonical type parsing (e.g. "studio" | "bedsitter" => "studio/bedsitter")
+  const type = coerceType(params.get("type") || "");
 
   let minPrice = moneyToNumber(params.get("minPrice") || "");
   let maxPrice = moneyToNumber(params.get("maxPrice") || "");
@@ -34,7 +39,7 @@ export function parseSearchParams(input: SearchParamsInput) {
     maxPrice = tmp;
   }
 
-  return { page, availability, q, minPrice, maxPrice, beds };
+  return { page, availability, q, type, minPrice, maxPrice, beds };
 }
 
 /**
@@ -55,10 +60,23 @@ export function filterListings(listings: any[], filters: ReturnType<typeof parse
       if (avail !== filters.availability) return false;
     }
 
-    // query across common fields
+    // type (canonical)
+    if (filters.type) {
+      const t = coerceType(String(d.type || ""));
+      if (t !== filters.type) return false;
+    }
+
+    // q: your UI mainly sets this to the area part of location.
+    // We first try exact area match, then fall back to broad text search.
     if (filters.q) {
+      const area = areaOf(String(d.location || "")).toLowerCase();
+      const q = filters.q;
       const haystack = `${d.title || ""} ${d.location || ""} ${d.description || ""}`.toLowerCase();
-      if (!haystack.includes(filters.q)) return false;
+
+      const exactAreaMatch = area && q && area === q;
+      const fuzzyMatch = haystack.includes(q);
+
+      if (!exactAreaMatch && !fuzzyMatch) return false;
     }
 
     // price (treat non-numeric as missing)
@@ -72,11 +90,16 @@ export function filterListings(listings: any[], filters: ReturnType<typeof parse
       if (typeof priceVal !== "number" || priceVal > filters.maxPrice) return false;
     }
 
-    // bedrooms (minimum)
+    // bedrooms (exact for 1–4, min for 5+)
     if (filters.beds) {
-      const need = parseInt(filters.beds, 10);
       const have = Number(d.bedrooms) || 0;
-      if (have < need) return false;
+      if (filters.beds.endsWith("+")) {
+        const needMin = parseInt(filters.beds, 10);
+        if (have < needMin) return false;
+      } else {
+        const needExact = parseInt(filters.beds, 10);
+        if (have !== needExact) return false;
+      }
     }
 
     return true;
@@ -90,10 +113,24 @@ function coerceAvailability(val: string) {
   return allowed.includes(v) ? v : "";
 }
 
+function coerceType(val: string) {
+  const v = (val || "").trim().toLowerCase();
+  if (!v) return "";
+  if (v === "studio" || v === "bedsitter") return "studio/bedsitter";
+  return v;
+}
+
 function coerceBeds(val: string) {
-  if (!val) return "";
-  const n = parseInt(val, 10);
-  return Number.isNaN(n) ? "" : String(n);
+  const v = String(val || "").trim();
+  if (!v) return "";
+  const plus = v.endsWith("+");
+  const n = parseInt(v, 10);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return plus ? `${n}+` : String(n);
+}
+
+function areaOf(loc: string = "") {
+  return (loc || "").split(",")[0].trim();
 }
 
 /* ===========================

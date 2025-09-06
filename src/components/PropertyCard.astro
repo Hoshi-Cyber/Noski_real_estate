@@ -7,7 +7,7 @@ interface Props {
   href?: string;
   compact?: boolean;
   primaryCtaClass?: string;   // defaults to .btn-cta
-  secondaryCtaClass?: string; // available if needed later
+  secondaryCtaClass?: string; // reserved
   imgProps?: Record<string, any>; // loading/decoding/width/height
 }
 
@@ -82,6 +82,8 @@ const imgAspect = compact ? 'aspect-[4/3]' : 'aspect-[16/9]';
 const titleSize = compact ? 'text-base' : 'text-lg';
 const pad = compact ? 'p-3' : 'p-4';
 const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
+
+const titleText = listing.title || 'Untitled Property';
 ---
 
 <article
@@ -90,7 +92,7 @@ const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
   role="article"
 >
   <!-- Media -->
-  <a href={finalHref} class="block overflow-hidden focus:outline-none" aria-label={`Open ${listing.title || 'property'} details`}>
+  <a href={finalHref} class="block overflow-hidden focus:outline-none" aria-label={`Open ${titleText} details`}>
     <figure class={`w-full ${imgAspect} relative`}>
       {listing.availability && (
         <span
@@ -118,7 +120,7 @@ const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
         href={finalHref}
         class="rounded focus:outline-none focus:ring-2 focus:ring-cta hover:opacity-90"
       >
-        {listing.title || 'Untitled Property'}
+        {titleText}
       </a>
     </h3>
 
@@ -150,11 +152,11 @@ const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
       </div>
     )}
 
-    <!-- CTA pinned to bottom for consistency -->
+    <!-- CTA pinned to bottom -->
     <div class="mt-3">
       <a
         href={finalHref}
-        class={`${primaryCtaClass} ${btnPad} text-sm rounded-md w-full inline-flex`}
+        class={`${primaryCtaClass} ${btnPad} text-sm rounded-md w-full inline-flex items-center justify-center`}
         aria-label="View details"
       >
         View details

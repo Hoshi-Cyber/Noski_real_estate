@@ -1,0 +1,167 @@
+---
+import { getCollection } from 'astro:content';
+import MainLayout from '../../../layouts/MainLayout.astro';
+import PropertyCard from '../../../components/PropertyCard.astro';
+import { parseSearchParams, filterListings } from '../../../lib/search';
+
+/* ---------- STATIC PATHS (REQUIRED) ---------- */
+export async function getStaticPaths() {
+  const all = await getCollection('listings');
+  const PAGE_SIZE = 12;
+  const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+  return Array.from({ length: totalPages }, (_, i) => ({
+    params: { page: String(i + 1) },
+  }));
+}
+
+/* ---------- Helpers (same as index) ---------- */
+const areaOf = (loc = '') => (loc || '').split(',')[0].trim();
+const canonType = (t = '') => {
+  const v = (t || '').trim().toLowerCase();
+  return v === 'studio' || v === 'bedsitter' ? 'studio/bedsitter' : v;
+};
+const cardImg = (entry: any) =>
+  entry?.data?.imagesFolder ? `${entry.data.imagesFolder}/1.webp` : '/images/placeholder.webp';
+
+/* ---------- Data + pagination ---------- */
+const all = await getCollection('listings');
+
+const url = new URL(Astro.url);
+const qp = parseSearchParams(url);
+
+const PAGE_SIZE = 12;
+const currentPage = Math.max(1, Number(Astro.params.page || 1));
+
+// Apply server-side filters for the current (path) page.
+const filtered = filterListings(all, { ...qp, page: currentPage });
+
+const totalResults = filtered.length;
+const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
+const safePage = Math.min(currentPage, totalPages);
+const start = (safePage - 1) * PAGE_SIZE;
+const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+/* ---------- Facets ---------- */
+const allLocations = Array.from(new Set(all.map(e => areaOf(e.data.location)).filter(Boolean))).sort();
+const allTypesCanon = Array.from(new Set(all.map(e => canonType(e.data.type)).filter(Boolean))).sort();
+
+/* ---------- URL builder (preserve filters) ---------- */
+function pageUrl(page: number) {
+  const u = new URL(Astro.url);
+  const qs = u.searchParams.toString();
+  return `/listings/page/${page}${qs ? `?${qs}` : ''}`;
+}
+
+/* ---------- Classes ---------- */
+const btn = {
+  primary:
+    'inline-flex items-center rounded-md bg-emerald-600 text-white px-5 py-3 text-sm font-semibold shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2',
+  ghost:
+    'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-200',
+  page: 'px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50',
+  pageActive: 'px-3 py-1.5 rounded-md bg-emerald-600 text-white text-sm font-semibold',
+};
+---
+
+<MainLayout title={`All Listings – Page ${safePage} – Severino Realty`}>
+  <section class="py-10 max-w-7xl mx-auto px-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6 gap-3">
+      <h1 class="text-3xl font-bold text-primary">All Listings</h1>
+      <div class="hidden sm:flex gap-2">
+        <a href="/for-sale" class={btn.ghost}>For Sale</a>
+        <a href="/for-rent" class={btn.ghost}>For Rent</a>
+        <a href="/short-stays" class={btn.ghost}>Short Stays</a>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <form id="filters" method="get" action="/listings/page/1" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <!-- Location -->
+      <select id="f-location" name="q" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
+        <option value="">All Locations</option>
+        {allLocations.map(loc => {
+          const val = loc.toLowerCase();
+          return <option value={val} selected={qp.q === val}>{loc}</option>;
+        })}
+      </select>
+
+      <!-- Min Bedrooms -->
+      <select id="f-bed" name="beds" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
+        <option value="0" selected={!qp.beds || qp.beds === '0'}>Min Bedrooms</option>
+        {[1,2,3,4,5].map(b => (
+          <option value={b} selected={String(qp.beds || '') === String(b)}>{b}+</option>
+        ))}
+      </select>
+
+      <!-- Type -->
+      <select id="f-type" name="type" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
+        <option value="">All Property Types</option>
+        {allTypesCanon.map(t => (
+          <option value={t} selected={qp.type === t}>
+            {t === 'studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g, c => c.toUpperCase())}
+          </option>
+        ))}
+      </select>
+
+      <!-- Clear -->
+      <button type="button" id="f-clear" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
+        Clear filters
+      </button>
+    </form>
+
+    <!-- Result count -->
+    <div id="result-count" class="text-sm text-neutral-600 mb-3">
+      {totalResults} listing{totalResults !== 1 && 's'}
+    </div>
+
+    <!-- Grid -->
+    {totalResults === 0 ? (
+      <div id="empty" class="text-center text-neutral-600 mt-8">No listings match your filters.</div>
+    ) : (
+      <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {pageItems.map((e) => (
+          <li
+            data-loc={areaOf(e.data.location).toLowerCase()}
+            data-beds={Number.isFinite(e.data.bedrooms) ? Number(e.data.bedrooms) : 0}
+            data-type={canonType(e.data.type)}
+          >
+            <PropertyCard listing={{ ...e.data, image: cardImg(e) }} slug={e.slug} compact={false} />
+          </li>
+        ))}
+      </ul>
+    )}
+
+    <!-- Pagination -->
+    {totalPages > 1 && (
+      <nav id="pager" class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Pagination">
+        <a rel="prev" href={pageUrl(Math.max(1, safePage - 1))} class={btn.page}>Prev</a>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => {
+          const isActive = p === safePage;
+          return (
+            <a
+              href={pageUrl(p)}
+              class={isActive ? btn.pageActive : btn.page}
+              aria-current={isActive ? 'page' : undefined}
+            >{p}</a>
+          );
+        })}
+        <a rel="next" href={pageUrl(Math.min(totalPages, safePage + 1))} class={btn.page}>Next</a>
+      </nav>
+    )}
+  </section>
+</MainLayout>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('filters');
+    const clearBtn = document.getElementById('f-clear');
+    if (form) form.addEventListener('change', () => form.requestSubmit());
+    if (clearBtn) {
+      clearBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/listings';
+      });
+    }
+  });
+</script>

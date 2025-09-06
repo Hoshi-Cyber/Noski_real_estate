@@ -87,6 +87,12 @@ const TYPES = allCategories.slice(0, 8).map((c) => ({
   href: `/types/${c}`,
   label: c.charAt(0).toUpperCase() + c.slice(1),
 }));
+
+// (Non-breaking) helpers passed to HeroSearch if it supports props:
+const popularAreas = AREAS.map(a => a.label);
+const propertyTypes = Array.from(
+  new Set(listings.map(l => (l.data.type || '').toLowerCase()).filter(Boolean))
+).slice(0, 10);
 ---
 
 <MainLayout
@@ -102,10 +108,10 @@ const TYPES = allCategories.slice(0, 8).map((c) => ({
     img="/images/hero/karen-villas.webp"
   />
 
-  <!-- Hero Search (clean, after hero) -->
-  <section class="bg-white">
+  <!-- Hero Search (landmark for accessibility; submits to /listings via GET) -->
+  <section class="bg-white" role="search" aria-label="Property search">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <HeroSearch />
+      <HeroSearch areas={popularAreas} types={propertyTypes} />
     </div>
   </section>
 

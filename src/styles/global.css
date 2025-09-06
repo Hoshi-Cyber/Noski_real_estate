@@ -5,24 +5,24 @@
 /* ---- Base Tokens ---- */
 :root {
   /* Brand */
-  --color-primary: #0A2540;              /* Deep Navy */
-  --color-primary-90: rgb(10 37 64 / .9);
-  --color-primary-active: rgb(10 37 64 / .8);
+  --color-primary: #0A2A42; /* Primary */
+  --color-primary-90: color-mix(in srgb, #0A2A42 88%, #000 12%);
+  --color-primary-active: color-mix(in srgb, #0A2A42 80%, #000 20%);
 
-  --color-accent: #F59E0B;               /* Amber highlight */
+  /* Accent / CTA = Teal */
+  --color-accent: #4A7F96;           /* Accent Teal */
+  --color-cta: var(--color-accent);  /* unify CTAs to teal */
+  --color-cta-90: color-mix(in srgb, var(--color-accent) 88%, #000 12%);
+  --color-cta-active: color-mix(in srgb, var(--color-accent) 80%, #000 20%);
 
-  --color-cta: #2563EB;                  /* CTA Blue */
-  --color-cta-90: rgb(37 99 235 / .9);
-  --color-cta-active: rgb(37 99 235 / .8);
-
-  /* Neutrals */
-  --color-neutral-50: #FAFAFA;
-  --color-neutral-100: #F3F4F6;
-  --color-neutral-200: #E5E7EB;
-  --color-neutral-300: #D1D5DB;
+  /* Neutrals (per spec) */
+  --color-neutral-50:  #F9F9F9; /* Neutral Light */
+  --color-neutral-100: #F3F1ED; /* Secondary */
+  --color-neutral-200: #E7E5E0;
+  --color-neutral-300: #D6D3CE;
   --color-neutral-500: #6B7280;
   --color-neutral-600: #4B5563;
-  --color-neutral-800: #1F2937;
+  --color-neutral-800: #394449; /* Neutral Dark for body text */
 
   /* Typography */
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -48,7 +48,9 @@
 
 /* ---- Base Styles ---- */
 body {
-  @apply font-sans text-neutral-800 bg-white antialiased;
+  @apply font-sans antialiased;
+  color: var(--color-neutral-800);
+  background: var(--color-neutral-100);
   font-family: var(--font-sans);
 }
 
@@ -97,12 +99,12 @@ a:disabled {
   .container { @apply max-w-7xl mx-auto; }
 
   /* Surface utilities to match header styling */
-  .surface          { @apply bg-white ring-1 ring-neutral-200; }
-  .surface-muted    { @apply bg-neutral-50 ring-1 ring-neutral-200; }
+  .surface          { @apply ring-1; background:#fff;                 border-color: var(--color-neutral-200); }
+  .surface-muted    { @apply ring-1; background: var(--color-neutral-50); border-color: var(--color-neutral-200); }
   .surface-translucent { background-color: rgb(255 255 255 / .9); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 
   /* Subtle fact label text (used beside price) */
-  .fact-label { @apply text-sm text-neutral-700; }
+  .fact-label { @apply text-sm; color: var(--color-neutral-700); }
 
   /* Single-line ellipsis */
   .truncate-1 { @apply truncate; }
@@ -141,7 +143,7 @@ a:disabled {
   .btn-primary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
   .btn-primary:disabled{ background-color: var(--color-neutral-300); }
 
-  /* Primary CTA uses --color-cta */
+  /* Primary CTA uses --color-cta (teal) */
   .btn-cta {
     @apply inline-flex items-center justify-center px-6 py-3 rounded-md font-semibold text-white transition shadow-sm;
     background-color: var(--color-cta);
@@ -160,7 +162,7 @@ a:disabled {
   }
   .btn-subtle:hover{ background: var(--color-neutral-100); }
 
-  /* Secondary CTA uses --color-accent */
+  /* Secondary CTA uses --color-accent (teal outline) */
   .btn-outline {
     @apply inline-flex items-center justify-center px-5 py-2.5 rounded-md font-medium transition;
     border: 1px solid var(--color-accent);
@@ -191,6 +193,18 @@ a:disabled {
   .carousel-btn { @apply inline-flex items-center justify-center rounded-md px-3 py-2 text-white focus:outline-none transition; background-color: rgb(0 0 0 / .45); }
   .carousel-btn:hover { background-color: rgb(0 0 0 / .6); }
   .carousel-btn:focus-visible { outline: 2px solid var(--color-cta); outline-offset: 2px; }
+
+  /* Pagination (shared by pagination.js) */
+  .pg-btn,
+  .pg-num {
+    @apply inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-neutral-300 text-sm text-neutral-800 hover:bg-neutral-50 transition;
+  }
+  .pg-active {
+    @apply bg-emerald-600 text-white font-semibold border-transparent;
+  }
+  .pg-disabled {
+    @apply pointer-events-none opacity-50;
+  }
 
   /* ---- Badges ---- */
   .badge{ @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium ring-1 ring-neutral-200 bg-neutral-50 text-neutral-700; }
@@ -245,7 +259,7 @@ a:disabled {
   .category-tile {
     @apply relative flex flex-col items-start p-6 rounded-2xl bg-white shadow-sm
            ring-1 ring-neutral-200 transition hover:shadow-md hover:-translate-y-0.5;
-    background-image: linear-gradient(180deg, rgba(10,37,64,.02), rgba(10,37,64,0));
+    background-image: linear-gradient(180deg, rgba(10,42,66,.02), rgba(10,42,66,0));
   }
   .category-tile:focus-visible { outline: 2px solid var(--color-cta); outline-offset: 2px; }
   .tile-accent::after{ content:""; @apply absolute inset-x-6 top-14 h-px bg-neutral-200; }
@@ -262,11 +276,11 @@ a:disabled {
   .tile-tint{
     background-image:
       radial-gradient(80% 60% at 10% -10%, color-mix(in srgb, var(--color-cta) 9%, transparent), transparent),
-      linear-gradient(180deg, rgba(10,37,64,.02), rgba(10,37,64,0));
+      linear-gradient(180deg, rgba(10,42,66,.02), rgba(10,42,66,0));
     border: 1px solid color-mix(in srgb, var(--color-cta) 22%, var(--color-neutral-200));
     box-shadow: 0 1px 0 0 color-mix(in srgb, var(--color-cta) 18%, transparent) inset;
   }
-  .tile-tint:hover{ box-shadow: 0 8px 16px rgb(0 0 0 / .06), 0 2px 3px rgb(37 99 235 / .08); }
+  .tile-tint:hover{ box-shadow: 0 8px 16px rgb(0 0 0 / .06), 0 2px 3px rgb(74 127 150 / .08); }
   .tile-tint .tile-badge{
     background-color: color-mix(in srgb, var(--color-cta) 12%, #fff);
     color: var(--color-cta);
@@ -372,7 +386,7 @@ a:disabled {
     position: relative;
     background-image:
       radial-gradient(80% 70% at 10% -20%, color-mix(in srgb, var(--color-cta) 10%, transparent), transparent),
-      linear-gradient(180deg, rgba(10,37,64,.02), rgba(10,37,64,0));
+      linear-gradient(180deg, rgba(10,42,66,.02), rgba(10,42,66,0));
     border-color: color-mix(in srgb, var(--color-cta) 22%, var(--color-neutral-200));
     box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-cta) 16%, transparent), 0 1px 3px rgba(0,0,0,.06);
   }
@@ -416,7 +430,7 @@ a:disabled {
   .post-card--rich:hover .post-media{ transform: scale(1.06); }
   .post-card--rich .post-media-wrap::after{
     content:""; position:absolute; inset:0;
-    background: linear-gradient(to top, rgba(255,255,255,0.0) 40%, rgba(10,37,64,.10));
+    background: linear-gradient(to top, rgba(255,255,255,0.0) 40%, rgba(10,42,66,.10));
     opacity:.75; transition: opacity .25s ease;
   }
   .post-card--rich:hover .post-media-wrap::after{ opacity:.95; }
@@ -432,7 +446,7 @@ a:disabled {
   .post-card--overlay:hover .post-media{ transform: scale(1.06); }
   .post-card--overlay .post-overlay{
     position:absolute; left:0; right:0; bottom:0; padding:.75rem .9rem; color:#fff;
-    background: linear-gradient(to top, rgba(10,37,64,.88), rgba(10,37,64,0) 70%);
+    background: linear-gradient(to top, rgba(10,42,66,.88), rgba(10,42,66,0) 70%);
   }
   .post-card--overlay .post-title{ margin:0 0 .2rem 0; color:#fff; font-weight:700; font-size:1rem; line-height:1.35; }
   .post-card--overlay .post-excerpt{
@@ -587,7 +601,7 @@ footer.bg-primary h6 { color: var(--color-neutral-100); }
   .t-author{ font-weight:600; color: var(--color-primary); line-height:1.2; }
   .t-role{ font-size:.825rem; color:#64748b; }
 
-  .t-stars{ display:flex; gap:.25rem; color:#f59e0b; }
+  .t-stars{ display:flex; gap:.25rem; color:#d4a017; } /* neutral gold for ratings */
   .t-stars svg{ width:14px; height:14px; }
 
   .testimonial--tint{

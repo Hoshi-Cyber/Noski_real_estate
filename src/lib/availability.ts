@@ -162,3 +162,43 @@ export function nextOpenIsoDates(
   }
   return out;
 }
+
+/* ===========================
+   Alias → canonical mapping
+   =========================== */
+
+/** Canonical availability slugs used across the site. */
+export type CanonAvailability = 'for-rent' | 'for-sale' | 'short-stays' | '';
+
+/** Lowercased alias map for quick normalization. */
+export const AVAILABILITY_CANON_MAP: Record<string, Exclude<CanonAvailability, ''>> = {
+  'for rent': 'for-rent',
+  'rent': 'for-rent',
+  'rental': 'for-rent',
+  'to let': 'for-rent',
+  'for-rent': 'for-rent',
+
+  'for sale': 'for-sale',
+  'sale': 'for-sale',
+  'selling': 'for-sale',
+  'for-sale': 'for-sale',
+
+  'short stay': 'short-stays',
+  'short stays': 'short-stays',
+  'short-stay': 'short-stays',
+  'short-stays': 'short-stays',
+  'airbnb': 'short-stays',
+  'serviced': 'short-stays',
+};
+
+/**
+ * Normalize arbitrary availability text to canonical slugs:
+ * - "for rent" | "rent" → "for-rent"
+ * - "for sale" | "sale" → "for-sale"
+ * - "short stays" | "short-stay" → "short-stays"
+ * Returns "" if no match.
+ */
+export function canonicalizeAvailability(input: string): CanonAvailability {
+  const v = String(input || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  return AVAILABILITY_CANON_MAP[v] || '' as CanonAvailability;
+}
