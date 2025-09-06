@@ -88,7 +88,7 @@ const categories = [
               <details class="group">
                 <summary class="list-none cursor-pointer px-4 py-3 flex items-center justify-between">
                   <span class="font-medium text-primary">{f.q}</span>
-                  <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                   </svg>
                 </summary>
@@ -100,4 +100,19 @@ const categories = [
       ))}
     </div>
   </section>
+
+  <!-- Page-wide single-open enforcement -->
+  <script type="module" client:load>
+    document.addEventListener(
+      'toggle',
+      (e) => {
+        const el = e.target;
+        if (!(el instanceof HTMLDetailsElement) || !el.open) return;
+        document.querySelectorAll('details[open]').forEach((d) => {
+          if (d !== el) d.removeAttribute('open');
+        });
+      },
+      true
+    );
+  </script>
 </MainLayout>

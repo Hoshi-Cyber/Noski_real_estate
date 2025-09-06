@@ -120,4 +120,19 @@ const ld = {
 
     <script type="application/ld+json">{JSON.stringify(ld)}</script>
   </section>
+
+  <!-- Page-wide single-open enforcement -->
+  <script type="module" client:load>
+    document.addEventListener(
+      'toggle',
+      (e) => {
+        const el = e.target;
+        if (!(el instanceof HTMLDetailsElement) || !el.open) return;
+        document.querySelectorAll('details[open]').forEach((d) => {
+          if (d !== el) d.removeAttribute('open');
+        });
+      },
+      true
+    );
+  </script>
 </MainLayout>
