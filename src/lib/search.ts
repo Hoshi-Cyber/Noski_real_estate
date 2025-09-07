@@ -18,8 +18,10 @@ export function parseSearchParams(input: SearchParamsInput) {
   const availability =
     coerceAvailability(params.get("availability") || params.get("serviceType") || "");
 
-  // In your UI, "q" is used as location/area; we still treat it as a generic text search
-  const q = (params.get("q") || "").trim().toLowerCase();
+  // NEW: accept ?location= and map it into q for filtering; keep legacy ?q=
+  const location = (params.get("location") || "").trim().toLowerCase();
+  const legacyQ = (params.get("q") || "").trim().toLowerCase();
+  const q = location || legacyQ;
 
   // Canonical type parsing (e.g. "studio" | "bedsitter" => "studio/bedsitter")
   const type = coerceType(params.get("type") || "");
@@ -39,7 +41,8 @@ export function parseSearchParams(input: SearchParamsInput) {
     maxPrice = tmp;
   }
 
-  return { page, availability, q, type, minPrice, maxPrice, beds };
+  // Return both q and location (non-breaking; callers can use either)
+  return { page, availability, q, location, type, minPrice, maxPrice, beds };
 }
 
 /**
@@ -63,11 +66,10 @@ export function filterListings(listings: any[], filters: ReturnType<typeof parse
     // type (canonical)
     if (filters.type) {
       const t = coerceType(String(d.type || ""));
-      if (t !== filters.type) return false;
+      if (narrowTypeMismatch(t, filters.type)) return false;
     }
 
-    // q: your UI mainly sets this to the area part of location.
-    // We first try exact area match, then fall back to broad text search.
+    // q/location: try exact area match, else fuzzy match on title/location/description
     if (filters.q) {
       const area = areaOf(String(d.location || "")).toLowerCase();
       const q = filters.q;
@@ -120,6 +122,13 @@ function coerceType(val: string) {
   return v;
 }
 
+// treat "studio"|"bedsitter" as same canonical
+function narrowTypeMismatch(actual: string, wanted: string) {
+  if (actual === wanted) return false;
+  if (wanted === "studio/bedsitter") return actual !== "studio/bedsitter";
+  return true;
+}
+
 function coerceBeds(val: string) {
   const v = String(val || "").trim();
   if (!v) return "";
@@ -168,7 +177,8 @@ export function hydrateControlsFromURL(root: Document | HTMLElement = document) 
     const el = root.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${name}"], #${name}`);
     if (el) el.value = url.searchParams.get(name) || "";
   };
-  ["q", "minPrice", "maxPrice", "beds", "type", "availability"].forEach(set);
+  // NEW: include 'location' as first-class; keep legacy 'q' for back-compat
+  ["location", "q", "minPrice", "maxPrice", "beds", "type", "availability"].forEach(set);
 }
 
 /**

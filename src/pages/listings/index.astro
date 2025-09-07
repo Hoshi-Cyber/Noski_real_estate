@@ -2,61 +2,35 @@
 import { getCollection } from 'astro:content';
 import MainLayout from '../../layouts/MainLayout.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
-import { parseSearchParams, filterListings } from '../../lib/search';
 
-// helpers (same as before)
+// helpers
 const areaOf = (loc = '') => (loc || '').split(',')[0].trim();
 const canonType = (t = '') => {
   const v = (t || '').trim().toLowerCase();
   return v === 'studio' || v === 'bedsitter' ? 'studio/bedsitter' : v;
 };
-const cardImg = (entry: any) => entry?.data?.imagesFolder ? `${entry.data.imagesFolder}/1.webp` : '/images/placeholder.webp';
+const canonAvail = (a = '') => {
+  const v = (a || '').toLowerCase().replace(/\s+/g,'-');
+  if (v.includes('sale')) return 'for-sale';
+  if (v.includes('rent')) return 'for-rent';
+  if (v.includes('short')) return 'short-stays';
+  return '';
+};
+const num = (x:any)=> Number(String(x??'').replace(/[^0-9]/g,''))||0;
+const cardImg = (e:any) => e?.data?.imagesFolder ? `${e.data.imagesFolder}/1.webp` : '/images/placeholder.webp';
 
-// If a page is provided via query (?page=2), redirect to /listings/page/2 and keep other filters
-const url = new URL(Astro.url);
-const qp = parseSearchParams(url);
-const goPage = Math.max(1, Number(qp.page || 1));
-if (goPage !== 1) {
-  url.searchParams.delete('page');
-  const qs = url.search ? url.search : '';
-  return Astro.redirect(`/listings/page/${goPage}${qs}`, 302);
-}
-
-// Build page 1 here so /listings still works and indexes well
 const all = await getCollection('listings');
-const query = { ...qp, page: 1 };
-const filtered = filterListings(all, query);
 
-const PAGE_SIZE = 12;
-const totalResults = filtered.length;
-const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
-const currentPage = 1;
-const start = 0;
-const pageItems = filtered.slice(start, start + PAGE_SIZE);
-
-// facets
 const allLocations = Array.from(new Set(all.map(e => areaOf(e.data.location)).filter(Boolean))).sort();
 const allTypesCanon = Array.from(new Set(all.map(e => canonType(e.data.type)).filter(Boolean))).sort();
 
-// pageUrl -> path pages, preserve other filters
-function pageUrl(page: number) {
-  const u = new URL(Astro.url);
-  u.searchParams.delete('page');
-  const qs = u.searchParams.toString();
-  return `/listings/page/${page}${qs ? `?${qs}` : ''}`;
-}
-
 const btn = {
-  primary: 'inline-flex items-center rounded-md bg-emerald-600 text-white px-5 py-3 text-sm font-semibold shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2',
-  ghost:   'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-200',
-  page:    'px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50',
-  pageActive: 'px-3 py-1.5 rounded-md bg-emerald-600 text-white text-sm font-semibold',
+  ghost:'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50',
 };
 ---
 
-<MainLayout title="All Listings – Severino Realty">
+<MainLayout title="All Listings – Locate Properties Kenya">
   <section class="py-10 max-w-7xl mx-auto px-4">
-    <!-- Header -->
     <div class="flex items-center justify-between mb-6 gap-3">
       <h1 class="text-3xl font-bold text-primary">All Listings</h1>
       <div class="hidden sm:flex gap-2">
@@ -66,72 +40,190 @@ const btn = {
       </div>
     </div>
 
-    <!-- Filters -->
-    <form id="filters" method="get" action="/listings" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-      <select id="f-location" name="q" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="">All Locations</option>
-        {allLocations.map(loc => {
-          const val = loc.toLowerCase();
-          return <option value={val} selected={query.q === val}>{loc}</option>;
-        })}
-      </select>
+    <!-- Filters: single horizontal row on md+ -->
+    <form id="filters" class="mb-6">
+      <div class="flex flex-wrap md:flex-nowrap items-stretch gap-2">
+        <!-- Availability -->
+        <select id="f-availability" name="availability"
+          class="flex-1 min-w-[140px] rounded-md border border-neutral-300 p-2 text-sm">
+          <option value="">All</option>
+          <option value="for-sale">For Sale</option>
+          <option value="for-rent">For Rent</option>
+          <option value="short-stays">Short Stays</option>
+        </select>
 
-      <!-- Beds: EXACT for 1–4, MIN for 5+ (values match search.ts) -->
-      <select id="f-bed" name="beds" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="" selected={!query.beds}>Beds</option>
-        {['1','2','3','4','5+'].map(v => (
-          <option value={v} selected={query.beds === v}>{v}</option>
-        ))}
-      </select>
+        <!-- Location -->
+        <select id="f-location" name="location"
+          class="flex-1 min-w-[160px] rounded-md border border-neutral-300 p-2 text-sm">
+          <option value="">All Locations</option>
+          {allLocations.map(loc => <option value={loc.toLowerCase()}>{loc}</option>)}
+        </select>
 
-      <select id="f-type" name="type" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="">All Property Types</option>
-        {allTypesCanon.map(t => (
-          <option value={t} selected={query.type===t}>
-            {t==='studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g, c => c.toUpperCase())}
-          </option>
-        ))}
-      </select>
+        <!-- Beds -->
+        <select id="f-beds" name="beds"
+          class="flex-1 min-w-[110px] rounded-md border border-neutral-300 p-2 text-sm">
+          <option value="">Beds</option>
+          <option value="1">1</option><option value="2">2</option>
+          <option value="3">3</option><option value="4">4</option>
+          <option value="5+">5+</option>
+        </select>
 
-      <button type="button" id="f-clear" class="w-full rounded-md border border-neutral-300 p-2 text-sm">Clear filters</button>
+        <!-- Type -->
+        <select id="f-type" name="type"
+          class="flex-1 min-w-[170px] rounded-md border border-neutral-300 p-2 text-sm">
+          <option value="">All Property Types</option>
+          {allTypesCanon.map(t => (
+            <option value={t}>{t==='studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g,c=>c.toUpperCase())}</option>
+          ))}
+        </select>
+
+        <!-- Min price -->
+        <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden basis-28 shrink-0">
+          <span class="px-2 text-xs text-neutral-500">KES</span>
+          <input name="minPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Min" class="w-full p-2 text-sm outline-none"/>
+        </div>
+
+        <!-- Max price -->
+        <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden basis-28 shrink-0">
+          <span class="px-2 text-xs text-neutral-500">KES</span>
+          <input name="maxPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Max" class="w-full p-2 text-sm outline-none"/>
+        </div>
+
+        <!-- Clear -->
+        <button type="button" id="f-clear"
+          class="shrink-0 rounded-md border border-neutral-300 px-3 py-2 text-sm">
+          Clear filters
+        </button>
+      </div>
     </form>
 
-    <div id="result-count" class="text-sm text-neutral-600 mb-3">
-      {totalResults} listing{totalResults !== 1 && 's'}
-    </div>
+    <div id="result-count" class="text-sm text-neutral-600 mb-3"></div>
 
-    {totalResults === 0 ? (
-      <div id="empty" class="text-center text-neutral-600 mt-8">No listings match your filters.</div>
-    ) : (
-      <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {pageItems.map((e) => (
-          <li data-loc={areaOf(e.data.location).toLowerCase()} data-beds={Number(e.data.bedrooms)||0} data-type={canonType(e.data.type)}>
-            <PropertyCard listing={{ ...e.data, image: cardImg(e) }} slug={e.slug} compact={false} />
+    <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {all.map((e) => {
+        const d = e.data;
+        const beds = Number(d.bedrooms) || 0;
+        return (
+          <li
+            data-avail={canonAvail(d.availability)}
+            data-loc={areaOf(d.location).toLowerCase()}
+            data-type={canonType(d.type)}
+            data-beds={beds}
+            data-price={num(d.price)}
+          >
+            <PropertyCard listing={{ ...d, image: cardImg(e) }} slug={e.slug} compact={false} />
           </li>
-        ))}
-      </ul>
-    )}
+        );
+      })}
+    </ul>
 
-    {totalPages > 1 && (
-      <nav id="pager" class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Pagination">
-        <a rel="prev" href={pageUrl(Math.max(1, currentPage-1))} class={btn.page}>Prev</a>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => {
-          const isActive = p === currentPage;
-          return (
-            <a href={pageUrl(p)} class={isActive ? btn.pageActive : btn.page} aria-current={isActive ? 'page' : undefined}>{p}</a>
-          );
-        })}
-        <a rel="next" href={pageUrl(Math.min(totalPages, currentPage+1))} class={btn.page}>Next</a>
-      </nav>
-    )}
+    <div id="empty" class="hidden text-center text-neutral-600 mt-8">No listings match your filters.</div>
+    <div id="pager" class="mt-8 flex flex-wrap items-center justify-center gap-2"></div>
   </section>
-</MainLayout>
 
-<script is:inline>
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('filters');
-    const clearBtn = document.getElementById('f-clear');
-    if (form) form.addEventListener('change', () => form.requestSubmit());
-    if (clearBtn) clearBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/listings'; });
-  });
-</script>
+  <script is:inline>
+    (function(){
+      const $ = s => document.querySelector(s);
+      const form = $('#filters');
+      const els = {
+        avail: $('#f-availability'),
+        loc:   $('#f-location'),
+        type:  $('#f-type'),
+        beds:  $('#f-beds'),
+        min:   form.querySelector('[name="minPrice"]'),
+        max:   form.querySelector('[name="maxPrice"]'),
+        cards: Array.from(document.querySelectorAll('#cards > li')),
+        count: $('#result-count'),
+        empty: $('#empty'),
+        pager: $('#pager'),
+        clear: $('#f-clear'),
+      };
+
+      const qs = new URLSearchParams(location.search);
+      const get = k => qs.get(k) || '';
+      const setIf = (el,k)=>{ const v=get(k); if(v) el.value=v; };
+      setIf(els.avail,'availability');
+      setIf(els.loc,'location'); if(!els.loc.value) setIf(els.loc,'q');
+      setIf(els.type,'type'); setIf(els.beds,'beds');
+      setIf(els.min,'minPrice'); setIf(els.max,'maxPrice');
+
+      const cleanNum = s => Number(String(s||'').replace(/[^0-9]/g,''))||0;
+
+      function state(){
+        return {
+          availability: (els.avail.value||''),
+          location: (els.loc.value||'').toLowerCase().trim(),
+          type: (els.type.value||''),
+          beds: (els.beds.value||''),
+          min: cleanNum(els.min.value),
+          max: cleanNum(els.max.value),
+        };
+      }
+
+      function syncURL(s){
+        const p = new URLSearchParams();
+        if (s.availability) p.set('availability', s.availability);
+        if (s.location)     p.set('location', s.location);
+        if (s.type)         p.set('type', s.type);
+        if (s.beds)         p.set('beds', s.beds);
+        if (s.min)          p.set('minPrice', String(s.min));
+        if (s.max)          p.set('maxPrice', String(s.max));
+        history.replaceState(null,'', p.toString()? `${location.pathname}?${p.toString()}`: location.pathname);
+      }
+
+      const pageSize = 12;
+
+      function apply(){
+        const s = state();
+        syncURL(s);
+
+        let vis = [];
+        for(const li of els.cards){
+          const okAvail = !s.availability || li.dataset.avail === s.availability;
+          const okLoc   = !s.location || li.dataset.loc === s.location || (li.dataset.loc||'').includes(s.location);
+          const okType  = !s.type || li.dataset.type === s.type;
+          const beds    = Number(li.dataset.beds||0);
+          const okBeds  = !s.beds || (s.beds==='5+' ? beds>=5 : beds===Number(s.beds));
+          const price   = Number(li.dataset.price||0);
+          const okMin   = !s.min || price >= s.min;
+          const okMax   = !s.max || price <= s.max;
+
+          const show = okAvail && okLoc && okType && okBeds && okMin && okMax;
+          li.style.display = show ? '' : 'none';
+          if (show) vis.push(li);
+        }
+
+        const pages = Math.max(1, Math.ceil(vis.length / pageSize));
+        let page = Math.min(Math.max(1, Number(new URLSearchParams(location.hash.slice(1)).get('p')||'1')), pages);
+        vis.forEach((li,i)=>{ li.style.display = (i>=(page-1)*pageSize && i<page*pageSize) ? '' : 'none'; });
+
+        els.pager.innerHTML = '';
+        for(let i=1;i<=pages;i++){
+          const b = document.createElement('button');
+          b.className = 'px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50';
+          if (i===page) b.className = 'px-3 py-1.5 rounded-md bg-emerald-600 text-white text-sm font-semibold';
+          b.textContent = String(i);
+          b.onclick = ()=>{ location.hash = `p=${i}`; apply(); };
+          els.pager.appendChild(b);
+        }
+
+        els.count.textContent = `${vis.length} listing${vis.length===1?'':'s'}`;
+        els.empty.classList.toggle('hidden', vis.length>0);
+      }
+
+      ['change','input'].forEach(ev=>{
+        ['avail','loc','type','beds','min','max'].forEach(k=>{
+          els[k].addEventListener(ev, apply);
+        });
+      });
+      els.clear.addEventListener('click', ()=>{
+        ['avail','loc','type','beds','min','max'].forEach(k=> els[k].value='');
+        location.hash='';
+        apply();
+      });
+
+      window.addEventListener('hashchange', apply);
+      apply();
+    })();
+  </script>
+</MainLayout>

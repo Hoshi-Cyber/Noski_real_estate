@@ -1,7 +1,5 @@
-
-
-<form action="/listings" method="get"
-      class="mt-6 rounded-xl border border-neutral-200 bg-white/90 backdrop-blur p-3 sm:p-4 shadow-sm">
+<form id="hero-search" action="/listings" method="get"
+  class="mt-6 rounded-xl border border-neutral-200 bg-white/90 backdrop-blur p-3 sm:p-4 shadow-sm">
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
     <!-- Availability -->
     <label class="sr-only" for="hs-avail">Availability</label>
@@ -12,23 +10,23 @@
       <option value="short-stays">Short Stays</option>
     </select>
 
-    <!-- Query -->
-    <label class="sr-only" for="hs-q">Location or keyword</label>
-    <input id="hs-q" name="q" type="search" inputmode="search" placeholder="e.g. Karen"
-           class="rounded-md border border-neutral-300 p-2 text-sm" />
+    <!-- Location / Keyword -->
+    <label class="sr-only" for="hs-location">Location or keyword</label>
+    <input id="hs-location" name="location" type="search" inputmode="search" placeholder="e.g. Karen"
+      class="rounded-md border border-neutral-300 p-2 text-sm" />
 
     <!-- Min price -->
     <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden">
       <span class="px-2 text-xs text-neutral-500">KES</span>
       <input name="minPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Min"
-             class="w-full p-2 text-sm outline-none"/>
+        class="w-full p-2 text-sm outline-none" />
     </div>
 
     <!-- Max price -->
     <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden">
       <span class="px-2 text-xs text-neutral-500">KES</span>
       <input name="maxPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Max"
-             class="w-full p-2 text-sm outline-none"/>
+        class="w-full p-2 text-sm outline-none" />
     </div>
 
     <!-- Type -->
@@ -70,13 +68,39 @@
 </form>
 
 <script is:inline>
-  // Prefill from current URL so users see their last filters
-  const sp = new URLSearchParams(location.search);
-  document.querySelectorAll('[name]').forEach(el => {
-    const k = el.getAttribute('name');
-    const val = k ? sp.get(k) : null;
-    if (val !== null && val !== '') {
-      el.value = val;
-    }
+(() => {
+  const form = document.getElementById('hero-search');
+  const byName = (n) => form.querySelector(`[name="${n}"]`);
+  const qs = new URLSearchParams(location.search);
+  const get = (k) => qs.get(k) ?? '';
+
+  // Prefill from URL. Backward-compat: accept old ?q=
+  const prefill = {
+    availability: get('availability'),
+    location: get('location') || get('q'),
+    minPrice: get('minPrice'),
+    maxPrice: get('maxPrice'),
+    type: get('type'),
+    beds: get('beds'),
+  };
+  Object.entries(prefill).forEach(([k, v]) => { if (v) byName(k).value = v; });
+
+  // Normalize before submit:
+  // - location -> trimmed lowercase (to match dataset comparisons)
+  // - prices -> digits only
+  // - drop empty params from URL
+  form.addEventListener('submit', () => {
+    const stripNum = (s) => (s || '').toString().replace(/[^0-9]/g, '');
+    const loc = (byName('location').value || '').trim().toLowerCase();
+    byName('location').value = loc;
+
+    byName('minPrice').value = stripNum(byName('minPrice').value);
+    byName('maxPrice').value = stripNum(byName('maxPrice').value);
+
+    // Disable empty fields so they don't appear in the querystring
+    Array.from(form.elements).forEach(el => {
+      if (el.name && !el.value) el.disabled = true;
+    });
   });
+})();
 </script>
