@@ -89,10 +89,9 @@ type ResourceLike = {
 };
 
 function normalizeSection(section?: string) {
-  const v = String(section || '').toLowerCase().trim();
+  const v = String(section || '').toLowerCase().replace(/_/g, '-').trim();
   if (v === 'faqs' || v === 'faq') return 'faqs';
-  if (v === 'market-reports' || v === 'market' || v === 'reports' || v === 'market_reports')
-    return 'market-reports';
+  if (v === 'market-reports' || v === 'market' || v === 'reports') return 'market-reports';
   return 'guides';
 }
 
@@ -139,3 +138,9 @@ export function resolveResourceImage(
 
   return withV(candidates[0]!);
 }
+
+/* =======================================================
+ * BLOG: link helper
+ * =====================================================*/
+
+export const buildBlogHref = (slug: string) => `/blog/${slug}`;

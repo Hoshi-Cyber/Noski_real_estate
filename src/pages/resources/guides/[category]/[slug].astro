@@ -1,0 +1,147 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('guides', (e) => !e.data.draft);
+  return entries.map((e) => {
+    const [category, ...rest] = e.slug.split('/');
+    return { params: { category, slug: rest.join('/') }, props: { entry: e } };
+  });
+}
+
+const { entry: staticEntry } = Astro.props;
+const { category, slug } = Astro.params;
+
+let entry = staticEntry;
+if (!entry) {
+  const all = await getCollection('guides', (e) => !e.data.draft);
+  entry = all.find((e) => e.slug === `${category}/${slug}`);
+}
+if (!entry) {
+  throw new Error('Guide not found for this route. Add a content file under src/content/guides/<category>/<slug>.md');
+}
+
+const { title, description, pdfHref, heroImage } = entry.data;
+const { Content } = await entry.render();
+
+const allGuides = await getCollection('guides', (e) => !e.data.draft);
+const related = allGuides
+  .filter((g) => g.slug !== entry.slug && g.data.category === entry.data.category)
+  .sort((a, b) => {
+    const da = a.data.updated ? new Date(a.data.updated).getTime() : 0;
+    const db = b.data.updated ? new Date(b.data.updated).getTime() : 0;
+    return db - da || a.data.title.localeCompare(b.data.title);
+  })
+  .slice(0, 6)
+  .map((g) => ({
+    href: `/resources/guides/${g.slug}`,
+    title: g.data.title,
+    desc: g.data.description ?? '',
+    image: g.data.heroImage ?? '',
+    imageAlt: g.data.imageAlt ?? '',
+  }));
+
+const catLabelMap = {
+  'buying': 'Buying Guides',
+  'selling': 'Selling Guides',
+  'renting-landlord': 'Renting & Landlord Guides',
+  'investment': 'Investment Guides',
+};
+const catHrefMap = {
+  'buying': '/resources/guides/buying',
+  'selling': '/resources/guides/selling',
+  'renting-landlord': '/resources/guides/renting-landlord',
+  'investment': '/resources/guides/investment',
+};
+
+const pageTitle = `${title} | Locate Properties Kenya`;
+---
+
+<MainLayout title={pageTitle} description={description ?? ''}>
+  <section class="section container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Resources', href: '/resources' },
+        { label: 'Guides', href: '/resources/guides' },
+        { label: catLabelMap[category], href: catHrefMap[category] },
+        { label: title }
+      ]}
+      class="mb-3"
+    />
+
+    <div class="grid gap-8 lg:grid-cols-12">
+      <!-- Main article -->
+      <div class="lg:col-span-8">
+        <header class="mb-4 md:mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-primary">{title}</h1>
+            {description && <p class="mt-2 text-neutral-700">{description}</p>}
+          </div>
+
+          {pdfHref && (
+            <a
+              href={pdfHref}
+              class="btn-cta inline-flex items-center justify-center rounded-full font-medium
+                     w-full sm:w-auto
+                     text-sm px-4 py-3
+                     md:text-base md:px-5 md:py-2.5
+                     lg:text-sm lg:px-4 lg:py-2
+                     xl:text-sm xl:px-3.5 xl:py-2
+                     shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            >
+              Download PDF
+            </a>
+          )}
+        </header>
+
+        {heroImage && <img src={heroImage} alt="" class="w-full rounded-2xl mb-5 object-cover max-h-[360px]" loading="lazy" />}
+
+        <article class="prose max-w-none">
+          <Content />
+        </article>
+
+        <div class="mt-8">
+          <a href={catHrefMap[category]} class="chip-link px-3 py-2">← Back to {catLabelMap[category]}</a>
+        </div>
+      </div>
+
+      <!-- Right rail: Related guides -->
+      <aside class="lg:col-span-4">
+        <div class="lg:sticky lg:top-28">
+          <h2 class="text-lg md:text-xl font-bold text-primary mb-3">Related Guides</h2>
+          <div class="grid grid-cols-1 gap-4">
+            {related.length === 0 && (
+              <div class="rounded-2xl ring-1 ring-neutral-200 bg-white p-4 text-sm text-neutral-600">
+                More guides in this category will appear here.
+              </div>
+            )}
+            {related.map((g) => (
+              <a href={g.href} class="group rounded-2xl ring-1 ring-neutral-200 bg-white hover:shadow-md transition block overflow-hidden">
+                {g.image
+                  ? <img src={g.image} alt={g.imageAlt ?? ''} class="w-full h-32 object-cover" loading="lazy" />
+                  : <div class="w-full h-32 bg-gradient-to-br from-neutral-100 to-neutral-200" aria-hidden="true"></div>}
+                <div class="p-4">
+                  <h3 class="font-semibold leading-snug text-primary group-hover:underline">{g.title}</h3>
+                  {g.desc && <p class="mt-1 text-sm text-neutral-600 line-clamp-2">{g.desc}</p>}
+                  <div class="mt-3"><span class="badge-cta">Open</span></div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</MainLayout>
+
+<style is:global>
+  .line-clamp-2{
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+</style>

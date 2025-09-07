@@ -1,29 +1,29 @@
 ---
+export const prerender = true;
+
 import MainLayout from '../../layouts/MainLayout.astro';
 import PostLayout from '../../components/blog/PostLayout.astro';
-import { getCollection, type CollectionEntry } from 'astro:content';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import { getCollection, getEntryBySlug, type CollectionEntry } from 'astro:content';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
   return posts.map((p) => ({
     params: { slug: p.slug },
-    props: { entry: p },
   }));
 }
 
-const entry = (Astro.props?.entry as CollectionEntry<'blog'> | undefined) ?? null;
+const slug = String(Astro.params.slug || '');
+let resolved: CollectionEntry<'blog'> | null = await getEntryBySlug('blog', slug);
 
-// Defensive fallback (shouldn’t run if props are passed correctly)
-let resolved = entry;
+// Fallback search if slug mismatched
 if (!resolved) {
   const posts = await getCollection('blog');
-  const slug = String(Astro.params.slug || '');
   resolved = posts.find((p) => p.slug === slug) ?? null;
 }
 
 if (!resolved) {
-  throw new Error('Post not found');
+  return Astro.redirect('/blog');
 }
 
 const { Content, headings } = await resolved.render();
@@ -39,9 +39,8 @@ const related = all
   .slice(0, 4);
 
 const pageTitle = `${resolved.data.title} | Blog | Severino Realty`;
-const pageDesc = resolved.data.description ?? '';
+const pageDesc = resolved.data.excerpt ?? resolved.data.description ?? '';
 
-/** Category slug mapping */
 const CAT_PATHS: Record<string, string> = {
   'Buyer & Renter Tips': 'buying-renting-tips',
   'Seller & Marketing Tips': 'seller-marketing-tips',
@@ -51,16 +50,14 @@ const CAT_PATHS: Record<string, string> = {
 
 const breadcrumbTrail = [
   { label: 'Blog', href: '/blog' },
-  { label: resolved.data.category, href: `/blog/${CAT_PATHS[resolved.data.category]}` },
+  { label: resolved.data.category, href: `/blog/${CAT_PATHS[resolved.data.category] || ''}` },
   { label: resolved.data.title }
 ];
 ---
 
 <MainLayout title={pageTitle} description={pageDesc}>
   <PostLayout entry={resolved} headings={toc} related={related}>
-    <!-- Breadcrumb sits inside PostLayout, directly above the title -->
     <Breadcrumb segments={breadcrumbTrail} slot="breadcrumb" />
-
     <Content />
   </PostLayout>
 </MainLayout>

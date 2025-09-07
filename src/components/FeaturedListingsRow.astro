@@ -14,6 +14,21 @@ const imgProps = {
   width: 480,
   height: 320,
 };
+
+// Normalize availability to our route segments
+function availabilitySegment(avail: string | undefined): string {
+  const v = (avail || '').toLowerCase().trim();
+  if (!v) return '';
+  if (v.includes('short')) return 'short-stays';
+  if (v.includes('rent'))  return 'for-rent';
+  if (v.includes('sale'))  return 'for-sale';
+  return v.replace(/\s+/g, '-');
+}
+
+function cardHref(item: any): string | undefined {
+  const seg = availabilitySegment(item?.data?.availability);
+  return seg ? `/properties/${seg}/${item.slug}` : undefined;
+}
 ---
 
 <section
@@ -29,6 +44,7 @@ const imgProps = {
       <PropertyCard
         listing={item.data}
         slug={item.slug}
+        href={cardHref(item)}
         compact={true}
         primaryCtaClass="btn-cta"
         secondaryCtaClass="btn-outline"
@@ -50,6 +66,7 @@ const imgProps = {
           <PropertyCard
             listing={item.data}
             slug={item.slug}
+            href={cardHref(item)}
             compact={true}
             primaryCtaClass="btn-cta"
             secondaryCtaClass="btn-outline"
@@ -80,16 +97,13 @@ const imgProps = {
   const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('button')) as HTMLButtonElement[] : [];
 
   if (el) {
-    // native feel
     el.style.touchAction = 'pan-x pinch-zoom';
     (el as any).style.webkitOverflowScrolling = 'touch';
 
-    // cache slide nodes and positions
     const slides = Array.from(el.children) as HTMLElement[];
     const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
     const getIndexFromScroll = () => {
-      // pick the child whose left edge is closest to scrollLeft
       let best = 0;
       let bestDist = Number.POSITIVE_INFINITY;
       slides.forEach((node, idx) => {
@@ -115,24 +129,21 @@ const imgProps = {
       setActive(idx);
     };
 
-    // click dots to navigate
     dots.forEach((d) => {
       d.addEventListener('click', () => {
         const idx = Number((d as HTMLElement).dataset.index || 0);
         scrollToIndex(idx);
         stopAuto();
-        startAuto(); // restart timer
+        startAuto();
       }, { passive: true });
     });
 
-    // update dots on scroll end (debounced)
     let scrollT: number | undefined;
     el.addEventListener('scroll', () => {
       window.clearTimeout(scrollT);
       scrollT = window.setTimeout(() => setActive(getIndexFromScroll()), 80);
     }, { passive: true });
 
-    // keyboard navigation
     el.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') { e.preventDefault(); scrollToIndex(active + 1); }
       if (e.key === 'ArrowLeft')  { e.preventDefault(); scrollToIndex(active - 1); }
@@ -140,7 +151,6 @@ const imgProps = {
       if (e.key === 'End')        { e.preventDefault(); scrollToIndex(slides.length - 1); }
     });
 
-    // auto-scroll every 4s when visible and not interacting
     let autoT: number | undefined;
     let userInteracting = false;
     const startAuto = () => {
@@ -153,7 +163,6 @@ const imgProps = {
     };
     const stopAuto = () => { if (autoT) window.clearInterval(autoT); autoT = undefined; };
 
-    // pause on hover, pointer down, focus in; resume on leave/blur
     ['pointerdown','mouseenter','focusin','touchstart'].forEach(evt => {
       el.addEventListener(evt, () => { userInteracting = true; stopAuto(); }, { passive: true });
     });
@@ -161,18 +170,15 @@ const imgProps = {
       el.addEventListener(evt, () => { userInteracting = false; startAuto(); }, { passive: true });
     });
 
-    // pause when offscreen
     const io = new IntersectionObserver((entries) => {
       const visible = entries.some(e => e.isIntersecting);
       if (visible) startAuto(); else stopAuto();
     }, { threshold: 0.2 });
     io.observe(el);
 
-    // initial state
     setActive(0);
     startAuto();
 
-    // ensure snap aligns exactly to child offsets after resize
     window.addEventListener('resize', () => {
       scrollToIndex(active, false);
     }, { passive: true });

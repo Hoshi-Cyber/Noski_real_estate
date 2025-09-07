@@ -1,161 +1,113 @@
 ---
 import MainLayout from '../../../../layouts/MainLayout.astro';
-import GuideDetail from '../../../../components/resources/GuideDetail.astro';
 import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
 
-const title = 'Selling Guide | Severino Realty';
-const description = 'Pricing, prep, marketing, negotiation, and closing—executed to modern standards.';
+const title = 'Selling Guides | Locate Properties Kenya';
+const description = 'Pricing, prep, marketing, negotiation, and closing—executed to modern standards. Jump into focused topics, download quick references, then continue to related categories.';
 
-const steps = [
-  {
-    id: 'assess',
-    heading: 'Property Assessment & Pricing Strategy',
-    pdfUrl: '/docs/resources/assessment-pricing.pdf',
-    bodyHtml: `
-      <p>Price to maximize <em>net</em>, not just list-to-contract speed. Use verified comps and condition-adjusted deltas, then publish a target band with go/no-go rules.</p>
-      <h4>Market intelligence</h4>
-      <ul>
-        <li>Pull sold comps within 0.5–1.0 mi (or similar asset band), ≤180 days, adjusting for bed/bath, GLA, lot, year built, garage, view, and condition.</li>
-        <li>Overlay active and pending competition. Track days on market, list-to-sold ratio, price per ft², absorption, and seasonality.</li>
-      </ul>
-      <h4>Condition & disclosures</h4>
-      <ul>
-        <li>Walk the home with a repair/staging specialist. Prioritize health/safety, water intrusion, major systems, and high-ROI cosmetics.</li>
-        <li>Prep seller disclosures early (known defects, permits, insurance claims). Consider pre-listing inspection where norms support it.</li>
-      </ul>
-      <h4>Pricing framework</h4>
-      <ul>
-        <li><strong>List-to-attract:</strong> list near the lower bound of fair value to widen the buyer pool and drive competition.</li>
-        <li><strong>List-to-negotiate:</strong> list mid-range when uniqueness or low supply favors longer exposure.</li>
-        <li>Publish a <strong>net sheet</strong> with broker fee, concessions, taxes, transfer/HOA fees, and payoff. Define reduction cadence if no acceptable traffic by day 10–14.</li>
-      </ul>
-    `,
-  },
-  {
-    id: 'prep',
-    heading: 'Preparation & Staging',
-    pdfUrl: '/docs/resources/prep-staging-checklist.pdf',
-    bodyHtml: `
-      <p>Buyers judge on first glance. Execute a tight punch list that photographs well and survives inspection.</p>
-      <h4>High-ROI fixes</h4>
-      <ul>
-        <li>Exterior: landscaping refresh, pressure wash, paint front door, modern house numbers/lighting, repair rails and cracked paths.</li>
-        <li>Interior: neutral paint, lighting upgrades to 3000–3500K, hardware swaps (knobs, faucets), deep clean, re-caulk/touch-up trim.</li>
-        <li>Systems: service HVAC, test GFCIs/smoke alarms, correct basic plumbing/electrical defects, replace tired carpets or refinish floors as needed.</li>
-      </ul>
-      <h4>Staging & presentation</h4>
-      <ul>
-        <li>Declutter by ~50%, remove personal photos, optimize traffic flow, and scale furniture to rooms.</li>
-        <li>Prioritize hero shots: kitchen, primary suite, living/great room, outdoor area. Add plants/linens for warmth. No heavy scents.</li>
-        <li>Pet/air quality plan: HEPA filters, litter control, yard cleanup; schedule showings around pets.</li>
-      </ul>
-      <p class="text-sm">Safety: secure meds, documents, firearms. Use lockbox and showing logs. Ring/IoT cameras disclosed where required.</p>
-    `,
-  },
-  {
-    id: 'launch',
-    heading: 'Launch & Marketing',
-    pdfUrl: '/docs/resources/launch-marketing-plan.pdf',
-    bodyHtml: `
-      <p>Your media package is the product online. Ship consistent, platform-ready assets and measure funnel health weekly.</p>
-      <h4>Media kit</h4>
-      <ul>
-        <li>Pro photography (vertical + horizontal), twilight exteriors, floor plan with measurements, and optional 3D tour/video reel.</li>
-        <li>Feature sheet: upgrades list, utility costs, HOA/strata details, neighborhood highlights, walk/commute scores.</li>
-      </ul>
-      <h4>Listing accuracy</h4>
-      <ul>
-        <li>MLS data verified (beds/baths/GLA/lot/legal). Disclose exclusions. Upload disclosures, inspections, permits.</li>
-        <li>Remarks structure: hook sentence → three benefit bullets → call-to-action. Avoid fair-housing risk terms.</li>
-      </ul>
-      <h4>Distribution & promotion</h4>
-      <ul>
-        <li>MLS syndication to portals within hours. Agent email launch to buyer agents with matching criteria. Social reel + carousel posts.</li>
-        <li>Paid boosts: geo-targeted reach with lead capture landing page. Retarget portal visitors where policy allows.</li>
-        <li>Open houses: two opening-weekend events, signage plan, QR code to disclosure packet, registration for follow-up.</li>
-      </ul>
-      <h4>Metrics</h4>
-      <ul>
-        <li>Track views, saves, inquiries, showings, feedback, and second-show ratios. If below market baselines by day 7–10, adjust price or presentation.</li>
-      </ul>
-    `,
-  },
-  {
-    id: 'offers',
-    heading: 'Offers & Negotiation',
-    pdfUrl: '/docs/resources/offers-negotiation-matrix.pdf',
-    bodyHtml: `
-      <p>Negotiate to <em>certainty of close</em> and net. Compare terms using a structured matrix and keep communication professional.</p>
-      <h4>Verification</h4>
-      <ul>
-        <li>Confirm buyer's <strong>pre-approval</strong> with lender call, proof of funds for down/closing, and source of any gift funds.</li>
-        <li>Assess lender type, turn times, and appraisal risk. Prefer local underwriters with proven close rates.</li>
-      </ul>
-      <h4>Offer matrix</h4>
-      <ul>
-        <li>Columns: price, earnest money, financing type/LTV, appraisal terms, inspection scope, timelines, concessions, rent-back, contingencies, risk flags.</li>
-        <li>Multiple offers: use deadlines, clean counter terms, and—where customary—<strong>escalation clause</strong> with cap and proof of competing offer.</li>
-      </ul>
-      <h4>Repair economics</h4>
-      <ul>
-        <li>Prefer <strong>credits</strong> over repairs to avoid contractor delay; align credit with buyer's scope and lender rules.</li>
-        <li>If repairs required, define licensed trades, permits, receipts, and re-inspection rights.</li>
-      </ul>
-      <p class="text-sm">Compliance: observe fair-housing and anti-steering rules; document all material communications and counters.</p>
-    `,
-  },
-  {
-    id: 'close',
-    heading: 'Escrow, Legal, and Closing',
-    pdfUrl: '/docs/resources/escrow-closing-checklist.pdf',
-    bodyHtml: `
-      <p>Keep the file tight from acceptance to recording. Deadlines, documentation, and wire security are non-negotiable.</p>
-      <h4>Contract-to-close</h4>
-      <ul>
-        <li>Open escrow, deposit earnest money, calendar all contingency/remedy dates, and circulate executed disclosures.</li>
-        <li>Title search and curative actions (liens, judgments, encroachments). Order HOA/condo docs and resale certificates.</li>
-        <li>Appraisal scheduled within 48–72 hours. Support with upgrades list and comps packet. Monitor value risk.</li>
-        <li>Coordinate inspection access; negotiate repairs/credits via addenda; verify completion and receipts.</li>
-        <li>Lender milestones: conditional approval, conditions cleared, <strong>Closing Disclosure</strong> out ≥3 business days pre-signing.</li>
-      </ul>
-      <h4>Final steps</h4>
-      <ul>
-        <li>Final walkthrough 24–48 hours pre-close. Confirm inclusions, repairs, cleanliness, and utilities on.</li>
-        <li>Settlement statement review: prorations, fees, credits. Confirm payoff and release tracking.</li>
-        <li>Wire instructions verified by phone with settlement office; no changes via email. Record → keys/possession per contract.</li>
-        <li>Post-close: cancel insurance after transfer, forward mail, provide warranties/manuals, deliver 1099-S where applicable.</li>
-      </ul>
-    `,
-  },
+/** Core Selling Topics → each links to its own page */
+const topics = [
+  { title: 'Assessment & Pricing Strategy', href: '/resources/guides/selling/assessment-pricing', desc: 'Market intel, condition deltas, net-sheet targets.' },
+  { title: 'Preparation & Staging',         href: '/resources/guides/selling/prep-staging',       desc: 'High-ROI fixes, presentation, safety checklist.' },
+  { title: 'Launch & Marketing',            href: '/resources/guides/selling/launch-marketing',   desc: 'Media kit, listing accuracy, distribution, metrics.' },
+  { title: 'Offers & Negotiation',          href: '/resources/guides/selling/offers',             desc: 'Verification, matrices, credits vs. repairs.' },
+  { title: 'Escrow, Legal & Closing',       href: '/resources/guides/selling/closing',            desc: 'Title, appraisal, disclosures, settlement steps.' },
+  { title: 'Listing Compliance & Accuracy', href: '/resources/guides/selling/listing-compliance', desc: 'Data verification, fair-housing safe language.' },
 ];
 
-const checklistUrl = '/docs/resources/seller-prelisting-checklist.pdf';
+/** Additional concise guides (6) */
+const extraGuides = [
+  { label: 'Assessment & Pricing Framework (PDF)', href: '/docs/resources/assessment-pricing.pdf',           blurb: 'Comps, competition overlay, net-sheet rules.' },
+  { label: 'Prep & Staging Checklist (PDF)',       href: '/docs/resources/prep-staging-checklist.pdf',       blurb: 'Exterior, interior, systems, safety.' },
+  { label: 'Launch & Marketing Plan (PDF)',        href: '/docs/resources/launch-marketing-plan.pdf',        blurb: 'Media kit, distribution, paid boosts, baselines.' },
+  { label: 'Offers & Negotiation Matrix (PDF)',    href: '/docs/resources/offers-negotiation-matrix.pdf',    blurb: 'Terms, contingencies, appraisal and risk flags.' },
+  { label: 'Escrow & Closing Checklist (PDF)',     href: '/docs/resources/escrow-closing-checklist.pdf',     blurb: 'Deadlines, docs, wire security, walkthrough.' },
+  { label: 'Seller Pre-Listing Checklist (PDF)',   href: '/docs/resources/seller-prelisting-checklist.pdf',  blurb: 'Repairs, disclosures, media, showing readiness.' },
+];
 
+/** Related categories at bottom */
 const related = [
-  { title: 'Buying Guide',       href: '/resources/guides/buying',           desc: 'From search to ownership.',        image: '/images/guides/buying.webp',      alt: 'Couple reviewing purchase paperwork' },
-  { title: 'Renting & Landlord', href: '/resources/guides/renting-landlord', desc: 'Screening, leases, compliance.',   image: '/images/guides/renting.webp',     alt: 'Keys and lease documents' },
-  { title: 'Investment',         href: '/resources/guides/investment',       desc: 'Yields, financing, exits.',        image: '/images/guides/investment.webp',  alt: 'Apartment building and spreadsheet' },
+  { title: 'Buying Guides',              href: '/resources/guides/buying',           desc: 'From search to ownership.',        image: '/images/guides/buying.webp',      alt: 'Couple reviewing purchase paperwork' },
+  { title: 'Renting & Landlord Guides',  href: '/resources/guides/renting-landlord', desc: 'Screening, leases, compliance.',   image: '/images/guides/renting.webp',     alt: 'Keys and lease documents' },
+  { title: 'Investment Guides',          href: '/resources/guides/investment',       desc: 'Yields, financing, exits.',        image: '/images/guides/investment.webp',  alt: 'Apartment building and spreadsheet' },
 ];
 ---
 
 <MainLayout {title} {description}>
-  <GuideDetail
-    title="Selling Guide"
-    intro="End-to-end playbook to sell at speed without leaving money on the table."
-    estReadMin={14}
-    {steps}
-    {checklistUrl}
-    {related}
-  >
-    <Fragment slot="breadcrumbs">
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Resources', href: '/resources' },
-          { label: 'Guides', href: '/resources/guides' },
-          { label: 'Selling' }
-        ]}
-      />
-    </Fragment>
-  </GuideDetail>
+  <section class="section container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Resources', href: '/resources' },
+        { label: 'Guides', href: '/resources/guides' },
+        { label: 'Selling Guides' }
+      ]}
+      class="mb-2"
+    />
+
+    <header class="mb-5 md:mb-6">
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">Selling Guides</h1>
+      <p class="mt-2 text-neutral-700">
+        Choose a topic to go deeper. Each opens as its own page. Keep the quick PDFs handy for decisions in motion.
+      </p>
+    </header>
+
+    <!-- Core Selling Topics (link-out overview, no inline steps) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {topics.map((t) => (
+        <a href={t.href} class="category-tile tile-accent tile-tint" aria-label={t.title}>
+          <div class="tile-badge" aria-hidden="true">
+            <svg class="tile-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+              <path d="M12 6v12m6-6H6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+            </svg>
+          </div>
+          <h2 class="tile-title">{t.title}</h2>
+          <p class="tile-sub">{t.desc}</p>
+          <div class="mt-3"><span class="badge-cta">Open Topic</span></div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Additional Guides -->
+  <section class="section container">
+    <h2 class="text-lg md:text-xl font-bold text-primary mb-3">Additional Guides for Sellers</h2>
+    <p class="text-neutral-700 text-sm md:text-base mb-3">Short, practical downloads for pricing, presentation, and clean closings.</p>
+
+    <!-- Responsive grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {extraGuides.map((g) => (
+        <a href={g.href} class="card p-4 hover:shadow-md transition focus:outline-none ring-focus-brand" rel="noopener">
+          <div class="flex items-start gap-3">
+            <span class="pdf-badge">PDF</span>
+            <h3 class="text-base md:text-lg font-semibold leading-snug text-primary">{g.label}</h3>
+          </div>
+          <p class="mt-2 text-sm text-neutral-600">{g.blurb}</p>
+          <div class="mt-3"><span class="badge-cta">Open</span></div>
+        </a>
+      ))}
+    </div>
+
+    <!-- Risk callout -->
+    <div class="mt-6 rounded-2xl ring-1 ring-neutral-200 bg-white shadow-sm p-4">
+      <p class="text-sm">
+        <strong>Seller risk controls:</strong> verify buyer funds and lender, disclose known defects, confirm wire instructions by phone, and track all deadlines.
+      </p>
+    </div>
+  </section>
+
+  <!-- Related Guides -->
+  <section class="section container">
+    <h2 class="text-lg md:text-xl font-bold text-primary mb-3">Related Guides</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      {related.map((r) => (
+        <a href={r.href} class="category-tile tile-accent" aria-label={r.title}>
+          <img src={r.image} alt={r.alt} class="w-full h-36 object-cover rounded-xl mb-3" />
+          <h3 class="tile-title">{r.title}</h3>
+          <p class="tile-sub">{r.desc}</p>
+          <div class="mt-3"><span class="badge-cta">Open</span></div>
+        </a>
+      ))}
+    </div>
+  </section>
 </MainLayout>

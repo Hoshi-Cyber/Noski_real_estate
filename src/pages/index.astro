@@ -1,4 +1,5 @@
 ---
+// src/pages/index.astro
 import { getCollection } from 'astro:content';
 import MainLayout from '../layouts/MainLayout.astro';
 import HeroBanner from '../components/HeroBanner.astro';
@@ -7,7 +8,12 @@ import BlogCard from '../components/blog/BlogCard.astro';
 import ResourceCard from '../components/ResourceCard.astro';
 import FeaturedListingsRow from '../components/FeaturedListingsRow.astro';
 import BaseCard from '../components/BaseCard.astro';
-import { resolveListingImage, buildResourceHref, resolveResourceImage } from '../lib/utils/paths';
+import {
+  resolveListingImage,
+  buildResourceHref,
+  resolveResourceImage,
+  buildBlogHref
+} from '../lib/utils/paths';
 
 const listings = await getCollection('listings');
 const featured = await getCollection('featured');
@@ -15,8 +21,8 @@ const blog = await getCollection('blog');
 const resources = await getCollection('resources');
 
 // Blog posts
-const blogSorted = [...blog].sort((a, b) =>
-  new Date(b.data?.pubDate || 0).getTime() - new Date(a.data?.pubDate || 0).getTime()
+const blogSorted = [...blog].sort(
+  (a, b) => new Date(b.data?.pubDate || 0).getTime() - new Date(a.data?.pubDate || 0).getTime()
 );
 const featuredPosts = blogSorted.slice(0, 2);
 const blogFallbacks = ['/images/blog/01.webp', '/images/blog/02.webp'];
@@ -25,23 +31,39 @@ const pickBlogImg = (post: any, i: number) =>
 
 // Resources (latest 3 + build href/image)
 const latestResources = [...resources]
-  .sort((a, b) =>
-    new Date(b.data?.pubDate || 0).getTime() - new Date(a.data?.pubDate || 0).getTime()
+  .sort(
+    (a, b) => new Date(b.data?.pubDate || 0).getTime() - new Date(a.data?.pubDate || 0).getTime()
   )
   .slice(0, 3);
 
-const resourceItems = latestResources.map((res) => {
-  const href = buildResourceHref(res as any);
-  const img = resolveResourceImage(
-    res.slug,
-    (res.data as any)?.section,
-    (res.data as any)?.imagesFolder,
-    (res.data as any)?.heroImage,
-    (res.data as any)?.image
-  );
-  const cover = (res.data as any)?.icon || img;
-  return { res, href, cover };
-});
+const resourceItems = latestResources
+  .filter((r) => r?.data && r?.slug)
+  .map((res) => {
+    // default href from util
+    let href = buildResourceHref(res as any);
+
+    // Override specific resource to desired guides route
+    // Old: /resources/guides/landlords-guide-to-hassle-free-property-management
+    // New: /resources/guides/renting-landlord/hassle-free-property-management
+    const slug = (res.slug || '').toLowerCase();
+    const title = (res.data?.title || '').toLowerCase();
+    if (
+      slug.endsWith('landlords-guide-to-hassle-free-property-management') ||
+      title.includes('hassle-free property management')
+    ) {
+      href = '/resources/guides/renting-landlord/hassle-free-property-management';
+    }
+
+    const img = resolveResourceImage(
+      res.slug,
+      (res.data as any)?.section,
+      (res.data as any)?.imagesFolder,
+      (res.data as any)?.heroImage,
+      (res.data as any)?.image
+    );
+    const cover = (res.data as any)?.icon || img;
+    return { res, href, cover };
+  });
 
 // Featured listings
 const featuredItems = featured
@@ -55,7 +77,20 @@ const featuredItems = featured
         source?.data?.image
       ) || '/images/placeholder.webp';
 
-    return { ...feat, data: { ...feat.data, image } };
+    const availability =
+      (source as any)?.data?.availability ??
+      (feat as any)?.data?.availability ??
+      '';
+
+    return {
+      ...feat,
+      slug: source.slug,
+      data: {
+        ...(source as any).data,
+        availability,
+        image,
+      },
+    };
   })
   .slice(0, 4);
 
@@ -66,7 +101,9 @@ const allAreas = Array.from(
       (l.data.area || (l.data.location || '').split(',')[0].trim()).toLowerCase()
     )
   )
-).filter(Boolean).sort();
+)
+  .filter(Boolean)
+  .sort();
 
 const AREAS = allAreas.slice(0, 8).map((a) => ({
   href: `/areas/${a}`,
@@ -89,9 +126,9 @@ const TYPES = allCategories.slice(0, 8).map((c) => ({
 }));
 
 // (Non-breaking) helpers passed to HeroSearch if it supports props:
-const popularAreas = AREAS.map(a => a.label);
+const popularAreas = AREAS.map((a) => a.label);
 const propertyTypes = Array.from(
-  new Set(listings.map(l => (l.data.type || '').toLowerCase()).filter(Boolean))
+  new Set(listings.map((l) => (l.data.type || '').toLowerCase()).filter(Boolean))
 ).slice(0, 10);
 ---
 
@@ -108,7 +145,7 @@ const propertyTypes = Array.from(
     img="/images/hero/karen-villas.webp"
   />
 
-  <!-- Hero Search (landmark for accessibility; submits to /listings via GET) -->
+  <!-- Hero Search -->
   <section class="bg-white" role="search" aria-label="Property search">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <HeroSearch areas={popularAreas} types={propertyTypes} />
@@ -132,20 +169,131 @@ const propertyTypes = Array.from(
     <div class="container">
       <h2 class="section-title">Explore Categories</h2>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <a href="/types/sale" class="category-tile bg-white/80 backdrop-blur-sm ring-1 ring-neutral-200 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.125 1.125 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
-          <span class="label">For Sale</span>
+      <!-- Mobile: horizontal snap-scrolling tiles -->
+      <div class="md:hidden">
+        <div
+          id="cat-rail"
+          class="cat-rail flex gap-4 overflow-x-auto px-1 pt-1 pb-2 snap-x snap-mandatory scrollbar-hide"
+          role="list"
+          aria-label="Browse categories"
+        >
+          <!-- For Sale -->
+          <a href="/for-sale"
+             class="category-tile tile-tint cat-tile shrink-0 w-64 snap-start focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+             role="listitem" aria-label="For Sale">
+            <div class="tile-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12 11.2 3.05a1.125 1.125 0 0 1 1.59 0L21.75 12M4.5 9.75V20.25A1.125 1.125 0 0 0 5.625 21.375H9.75V16.5c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21.375h4.125A1.125 1.125 0 0 0 19.875 20.25V9.75"/>
+              </svg>
+            </div>
+            <span class="tile-title">For Sale</span>
+            <span class="tile-sub">Discover homes & land</span>
+          </a>
+
+          <!-- For Rent -->
+          <a href="/for-rent"
+             class="category-tile tile-tint cat-tile shrink-0 w-64 snap-start focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+             role="listitem" aria-label="For Rent">
+            <div class="tile-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v9.75m0 0 3.75-3.75M12 12.75l-3.75-3.75M4.5 19.5h15"/>
+              </svg>
+            </div>
+            <span class="tile-title">For Rent</span>
+            <span class="tile-sub">Apartments & houses</span>
+          </a>
+
+          <!-- Short Stays -->
+          <a href="/short-stays"
+             class="category-tile tile-tint cat-tile shrink-0 w-64 snap-start focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+             role="listitem" aria-label="Short Stays">
+            <div class="tile-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 7.5 12.75 2.25 3.75 7.5v9l9 5.25 9-5.25v-9m-9 5.25-9-5.25"/>
+              </svg>
+            </div>
+            <span class="tile-title">Short Stays</span>
+            <span class="tile-sub">Furnished options</span>
+          </a>
+
+          <!-- New Developments -->
+          <a href="/developments/new/"
+             class="category-tile tile-tint cat-tile shrink-0 w-64 snap-start focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+             role="listitem" aria-label="New Developments">
+            <div class="tile-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4.5 17.25h15M6 13.5h12M7.5 9.75h9M9 6h6"/>
+              </svg>
+            </div>
+            <span class="tile-title">New Developments</span>
+            <span class="tile-sub">Off-plan & launches</span>
+          </a>
+
+          <!-- Unfinished Projects -->
+          <a href="/developments/unfinished/"
+             class="category-tile tile-tint cat-tile shrink-0 w-64 snap-start focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+             role="listitem" aria-label="Unfinished Projects">
+            <div class="tile-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12M6 12h12"/>
+              </svg>
+            </div>
+            <span class="tile-title">Unfinished Projects</span>
+            <span class="tile-sub">Complete & customize</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- md+ : 5-column grid -->
+      <div class="hidden md:grid grid-cols-5 gap-6">
+        <a href="/for-sale" class="category-tile tile-tint cat-tile focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+          <div class="tile-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12 11.2 3.05a1.125 1.125 0 0 1 1.59 0L21.75 12M4.5 9.75V20.25A1.125 1.125 0 0 0 5.625 21.375H9.75V16.5c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21.375h4.125A1.125 1.125 0 0 0 19.875 20.25V9.75"/>
+            </svg>
+          </div>
+          <span class="tile-title">For Sale</span>
+          <span class="tile-sub">Discover homes & land</span>
         </a>
 
-        <a href="/types/rent" class="category-tile bg-white/80 backdrop-blur-sm ring-1 ring-neutral-200 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v9.75m0 0l3.75-3.75M12 12.75l-3.75-3.75M4.5 19.5h15"/></svg>
-          <span class="label">For Rent</span>
+        <a href="/for-rent" class="category-tile tile-tint cat-tile focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+          <div class="tile-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v9.75m0 0 3.75-3.75M12 12.75l-3.75-3.75M4.5 19.5h15"/>
+            </svg>
+          </div>
+          <span class="tile-title">For Rent</span>
+          <span class="tile-sub">Apartments & houses</span>
         </a>
 
-        <a href="/types/short" class="category-tile bg-white/80 backdrop-blur-sm ring-1 ring-neutral-200 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 7.5l-9-5.25-9 5.25m18 0v9l-9 5.25m9-14.25l-9 5.25m0 0l-9-5.25m9 5.25v9"/></svg>
-          <span class="label">Short Stays</span>
+        <a href="/short-stays" class="category-tile tile-tint cat-tile focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+          <div class="tile-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 7.5 12.75 2.25 3.75 7.5v9l9 5.25 9-5.25v-9m-9 5.25-9-5.25"/>
+            </svg>
+          </div>
+          <span class="tile-title">Short Stays</span>
+          <span class="tile-sub">Furnished options</span>
+        </a>
+
+        <a href="/developments/new/" class="category-tile tile-tint cat-tile focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+          <div class="tile-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4.5 17.25h15M6 13.5h12M7.5 9.75h9M9 6h6"/>
+            </svg>
+          </div>
+          <span class="tile-title">New Developments</span>
+          <span class="tile-sub">Off-plan & launches</span>
+        </a>
+
+        <a href="/developments/unfinished/" class="category-tile tile-tint cat-tile focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]">
+          <div class="tile-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" class="tile-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12M6 12h12"/>
+            </svg>
+          </div>
+          <span class="tile-title">Unfinished Projects</span>
+          <span class="tile-sub">Complete & customize</span>
         </a>
       </div>
     </div>
@@ -157,7 +305,7 @@ const propertyTypes = Array.from(
     <div class="container">
       <h2 class="section-title">Explore by Area</h2>
 
-      <div class="relative">
+    <div class="relative">
         <div class="flex overflow-x-auto gap-4 snap-x snap-mandatory scrollbar-hide py-2" role="list" aria-label="Browse areas">
           {AREAS.map(({ href, label }) => (
             <a href={href} class="area-card flex-shrink-0 w-48 snap-center focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]" role="listitem">
@@ -174,140 +322,174 @@ const propertyTypes = Array.from(
     <div class="absolute inset-0 -z-10 bg-gradient-to-b from-white to-neutral-50"></div>
     <div class="container">
       <h2 class="section-title">Why Choose Us</h2>
+
       <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-center">
-        <div class="why-card ring-1 ring-neutral-200 bg-white/90">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="why-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.125 1.125 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
-          <p class="why-label">Exclusive Listings</p>
-          <p class="mt-2 text-sm text-neutral-600 text-center">Curated high-value properties.</p>
+        <div class="why-card why-card--tint tint-blue">
+          <svg xmlns="http://www.w3.org/2000/svg" class="why-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 10.5 12 3l9 7.5V21H3zM8 21v-6h8v6"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="m7.5 13.5 2 2 4-4"/>
+          </svg>
+          <p class="why-label mt-3">Verified Listings</p>
+          <p class="mt-2 text-sm text-neutral-600 text-center">Each property is vetted for accuracy, legality, and quality—so you only view assets worth your time.</p>
         </div>
 
-        <div class="why-card ring-1 ring-neutral-200 bg-white/90">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="why-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v4.5m6.364 1.136-3.182 3.182M21 12h-4.5m-1.136 6.364-3.182-3.182M12 21v-4.5M5.636 16.364l3.182-3.182M3 12h4.5M8.636 5.636 11.818 8.818"/></svg>
-          <p class="why-label">Faster Closings</p>
-          <p class="mt-2 text-sm text-neutral-600 text-center">Streamlined and vetted.</p>
+        <div class="why-card why-card--tint tint-amber">
+          <svg xmlns="http://www.w3.org/2000/svg" class="why-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 11c-2.8 0-5 2.2-5 5v3h10v-3c0-2.8-2.2-5-5-5z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M15 11V8a3 3 0 0 0-6 0v3"/>
+          </svg>
+          <p class="why-label mt-3">Discreet Representation</p>
+          <p class="mt-2 text-sm text-neutral-600 text-center">Confidential handling of high-value transactions. Privacy preserved at every step.</p>
         </div>
 
-        <div class="why-card ring-1 ring-neutral-200 bg-white/90">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="why-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-9A2.25 2.25 0 0 0 2.25 5.25v9A2.25 2.25 0 0 0 4.5 16.5H9m6.75-7.5 5.25-5.25M21 3v5.25H15.75M15 18.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0z"/></svg>
-          <p class="why-label">Direct Owner Deals</p>
-          <p class="mt-2 text-sm text-neutral-600 text-center">Better terms, fewer layers.</p>
+        <div class="why-card why-card--tint tint-emerald">
+          <svg xmlns="http://www.w3.org/2000/svg" class="why-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M8 17h8M8 13h8M8 9h8M5 21h14M5 5h14"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="m9 13 2 2 4-4"/>
+          </svg>
+          <p class="why-label mt-3">Strategic Negotiation</p>
+          <p class="mt-2 text-sm text-neutral-600 text-center">Expert advocacy to secure optimal terms without compromising your objectives.</p>
         </div>
 
-        <div class="why-card ring-1 ring-neutral-200 bg-white/90">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="why-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7.5 13.5l3 3L18 9"/></svg>
-          <p class="why-label">Market Insights</p>
-          <p class="mt-2 text-sm text-neutral-600 text-center">Advisory backed by data.</p>
+        <div class="why-card why-card--tint tint-purple">
+          <svg xmlns="http://www.w3.org/2000/svg" class="why-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M7 3h7l5 5v13H7zM14 3v5h5M8 14h5M8 17h8M8 11h8"/>
+          </svg>
+          <p class="why-label mt-3">End-to-End Service</p>
+          <p class="mt-2 text-sm text-neutral-600 text-center">From brief to closing, we orchestrate the process for a seamless, time-efficient experience.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Knowledge Hub (Blog + Resources) -->
-  <section class="py-16 bg-neutral-50">
+  <section class="section bg-neutral-50">
     <div class="container">
-      <h2 class="section-title">Knowledge Hub</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <header class="hub-head">
+        <h2 class="section-title">Knowledge Hub</h2>
+        <p class="hub-sub">Guides, market reports, and insights to make better moves.</p>
+      </header>
+
+      <div class="hub-grid">
         <!-- Featured Blog -->
         <div>
-          {featuredPosts.slice(0,1).map((p, i) => (
-            <div class="card overflow-hidden">
-              <img 
-                src={pickBlogImg(p, i)} 
-                alt={p.data.title} 
-                class="w-full h-56 object-cover"
-                loading="lazy" decoding="async" width="880" height="224"
-              />
-              <div class="p-6">
-                <h3 class="text-xl font-semibold text-primary mb-3">{p.data.title}</h3>
-                <p class="text-neutral-600 mb-4">{p.data.excerpt}</p>
-                <a href={`/blog/${p.slug}`} class="btn-outline">Read More</a>
-              </div>
-            </div>
-          ))}
+          {featuredPosts.slice(0,1).map((p, i) => {
+            const href = buildBlogHref(p.slug);
+            return (
+              <a href={href} class="block post-card post-card--rich hub-feature" aria-labelledby={`feat-${i}`}>
+                <div class="post-media-wrap">
+                  <img
+                    src={pickBlogImg(p, i)}
+                    alt={p.data.title}
+                    class="post-media"
+                    loading="lazy" decoding="async" width="1200" height="675"
+                  />
+                  <div class="hub-chip">Featured</div>
+                </div>
+                <div class="post-body">
+                  <h3 id={`feat-${i}`} class="post-title">{p.data.title}</h3>
+                  <p class="post-desc">{p.data.excerpt ?? p.data.description}</p>
+                  <div class="post-meta">
+                    <span class="hub-meta">{p.data.readingTime || '3–5 min read'}</span>
+                    <span class="btn-outline">Read More</span>
+                  </div>
+                </div>
+              </a>
+            );
+          })}
         </div>
 
         <!-- Latest Resources -->
-        <div class="grid gap-6">
-          {resourceItems.map(({ res, href, cover }) => (
-            <div class="card-tight flex items-start gap-4">
-              <div class="flex-shrink-0 w-20 h-20 bg-neutral-100 rounded-lg overflow-hidden">
-                <img src={cover} alt={res.data.title} class="w-full h-full object-cover" loading="lazy" decoding="async" width="80" height="80" />
+        <div class="grid gap-4 md:gap-6">
+          {resourceItems.map(({ res, href, cover }, idx) => (
+            <a href={href} class="rel-card rel-card--compact hub-res block" aria-labelledby={`res-${idx}`}>
+              <div class="flex items-start gap-4">
+                <div class="hub-thumb" aria-hidden="true">
+                  <img src={cover} alt="" class="hub-thumb__img" loading="lazy" decoding="async" width="96" height="96" />
+                </div>
+                <div class="min-w-0">
+                  <h4 id={`res-${idx}`} class="rel-title">{res.data.title}</h4>
+                  <p class="rel-desc line-clamp-2">{res.data.excerpt ?? res.data.description}</p>
+                  <span class="hub-link">View Resource →</span>
+                </div>
               </div>
-              <div>
-                <h4 class="font-semibold text-primary mb-1">{res.data.title}</h4>
-                <p class="text-sm text-neutral-600">{res.data.excerpt}</p>
-                <a href={href} class="text-cta text-sm font-medium mt-2 inline-block">
-                  View Resource →
-                </a>
-              </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>
 
       <div class="mt-10 text-center">
-        <a href="/resources" class="btn-cta">Explore all articles &amp; guides</a>
+        <a href="/resources" class="btn-cta rounded-full cta-fluid">Explore all articles &amp; guides</a>
       </div>
     </div>
   </section>
 
-  <!-- Testimonials: Infinite carousel -->
-  <section class="py-16">
+  <!-- Testimonials: Infinite carousel (compact) -->
+  <section class="py-12">
     <div class="container">
       <h2 class="section-title">What Our Clients Say</h2>
 
       <div id="ts-wrap" class="relative overflow-hidden">
-        <div id="ts-track" class="flex gap-4 md:gap-6 will-change-transform">
-          <!-- Card 1 -->
-          <article class="testimonial testimonial--tint w-[85%] sm:w-[55%] md:w-[33%] 2xl:w-[28%] shrink-0 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]" aria-label="Testimonial from Jane Mwangi">
-            <div class="t-quote" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.1 4C4.8 6.2 3 9 3 12.6c0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L7.1 4zm10 0c-2.3 2.2-4.1 5-4.1 8.6 0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L17.1 4z"/></svg>
+        <div id="ts-track" class="flex gap-3 md:gap-4 will-change-transform">
+          <article
+            class="testimonial testimonial--tint p-3 md:p-4 w-[78%] sm:w-[52%] md:w-[30%] 2xl:w-[24%] shrink-0 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+            aria-label="Testimonial from Jane Mwangi"
+          >
+            <div class="t-quote w-6 h-6" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7.1 4C4.8 6.2 3 9 3 12.6c0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L7.1 4zm10 0c-2.3 2.2-4.1 5-4.1 8.6 0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L17.1 4z"/>
+              </svg>
             </div>
-            <p class="t-text t-text--clamp">“Professional and transparent. My house sold in less than a month!”</p>
-            <div class="t-meta">
-              <div class="t-avatar" aria-hidden="true"></div>
+            <p class="t-text t-text--clamp text-sm">“Professional and transparent. My house sold in less than a month!”</p>
+            <div class="t-meta gap-2">
               <div>
-                <div class="t-author">Jane Mwangi</div>
-                <div class="t-role">Home Seller</div>
+                <div class="t-author text-sm">Jane Mwangi</div>
+                <div class="t-role text-xs">Home Seller</div>
               </div>
             </div>
           </article>
 
-          <!-- Card 2 -->
-          <article class="testimonial w-[85%] sm:w-[55%] md:w-[33%] 2xl:w-[28%] shrink-0 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]" aria-label="Testimonial from David and Amina">
-            <div class="t-quote" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.1 4C4.8 6.2 3 9 3 12.6c0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L7.1 4zm10 0c-2.3 2.2-4.1 5-4.1 8.6 0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L17.1 4z"/></svg>
+          <article
+            class="testimonial p-3 md:p-4 w-[78%] sm:w-[52%] md:w-[30%] 2xl:w-[24%] shrink-0 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+            aria-label="Testimonial from David and Amina"
+          >
+            <div class="t-quote w-6 h-6" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7.1 4C4.8 6.2 3 9 3 12.6c0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L7.1 4zm10 0c-2.3 2.2-4.1 5-4.1 8.6 0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L17.1 4z"/>
+              </svg>
             </div>
-            <p class="t-text t-text--clamp">“They found us the perfect rental in Karen with zero stress.”</p>
-            <div class="t-meta">
-              <div class="t-avatar" aria-hidden="true"></div>
+            <p class="t-text t-text--clamp text-sm">“They found us the perfect rental in Karen with zero stress.”</p>
+            <div class="t-meta gap-2">
               <div>
-                <div class="t-author">David &amp; Amina</div>
-                <div class="t-role">Tenants</div>
+                <div class="t-author text-sm">David &amp; Amina</div>
+                <div class="t-role text-xs">Tenants</div>
               </div>
             </div>
           </article>
 
-          <!-- Card 3 -->
-          <article class="testimonial w-[85%] sm:w-[55%] md:w-[33%] 2xl:w-[28%] shrink-0 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]" aria-label="Testimonial from Michael Otieno">
-            <div class="t-quote" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.1 4C4.8 6.2 3 9 3 12.6c0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L7.1 4zm10 0c-2.3 2.2-4.1 5-4.1 8.6 0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L17.1 4z"/></svg>
+          <article
+            class="testimonial p-3 md:p-4 w-[78%] sm:w-[52%] md:w-[30%] 2xl:w-[24%] shrink-0 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-cta)]"
+            aria-label="Testimonial from Michael Otieno"
+          >
+            <div class="t-quote w-6 h-6" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7.1 4C4.8 6.2 3 9 3 12.6c0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L7.1 4zm10 0c-2.3 2.2-4.1 5-4.1 8.6 0 3 2.2 5.4 5 5.4 2 0 3.6-1.7 3.6-3.7 0-2-1.6-3.6-3.6-3.6-.5 0-1 .1-1.5.3.3-2 1.6-3.9 3.3-5.3L17.1 4z"/>
+              </svg>
             </div>
-            <p class="t-text t-text--clamp">“Trusted partner for investment properties. Highly recommend.”</p>
-            <div class="t-meta">
-              <div class="t-avatar" aria-hidden="true"></div>
+            <p class="t-text t-text--clamp text-sm">“Trusted partner for investment properties. Highly recommend.”</p>
+            <div class="t-meta gap-2">
               <div>
-                <div class="t-author">Michael Otieno</div>
-                <div class="t-role">Investor</div>
+                <div class="t-author text-sm">Michael Otieno</div>
+                <div class="t-role text-xs">Investor</div>
               </div>
             </div>
           </article>
         </div>
       </div>
 
-      <div class="mt-4 flex items-center justify-center gap-3">
-        <button id="ts-prev" class="btn-outline rounded-full px-3 py-1" aria-label="Previous">‹</button>
-        <button id="ts-next" class="btn-outline rounded-full px-3 py-1" aria-label="Next">›</button>
+      <div class="mt-3 flex items-center justify-center gap-2">
+        <button id="ts-prev" class="btn-outline rounded-full px-3 py-1 text-sm" aria-label="Previous">‹</button>
+        <button id="ts-next" class="btn-outline rounded-full px-3 py-1 text-sm" aria-label="Next">›</button>
       </div>
     </div>
 
@@ -320,7 +502,7 @@ const propertyTypes = Array.from(
         // Duplicate children for loop
         track.innerHTML += track.innerHTML;
 
-        let x = 0, speed = 0.4, raf;
+        let x = 0, speed = 0.38, raf;
         const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         function getGapPx() {
@@ -364,7 +546,7 @@ const propertyTypes = Array.from(
     </script>
   </section>
 
-  <!-- Lead Magnet: single, responsive -->
+  <!-- Lead Magnet -->
   <section class="py-16 max-w-3xl mx-auto">
     <div class="card p-6">
       <h3 class="font-semibold mb-3">Get first access to new listings</h3>

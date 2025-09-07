@@ -41,15 +41,12 @@ const listingsSchema = z.object({
   amenities: z.array(z.string()).optional(),
   features: z.array(z.string()).optional(),
 
-  // Accept either strings or objects like:
-  // - Easy access to international schools: Brookhouse, Hillcrest, Banda
   neighborhoodHighlights: z
     .array(z.union([z.string(), z.record(z.any())]))
     .optional()
     .transform((arr) =>
       (arr ?? []).map((item) => {
         if (typeof item === 'string') return item;
-        // flatten { key: value } -> "key: value" (and arrays -> comma list)
         return Object.entries(item)
           .map(([k, v]) =>
             v == null || v === ''
@@ -60,7 +57,6 @@ const listingsSchema = z.object({
       })
     ),
 
-  // Optional grouped variants (used by the UI when provided)
   amenitiesCategories: z.record(z.array(z.string())).optional(),
   neighborhoodCategories: z.record(z.array(z.string())).optional(),
 
@@ -82,8 +78,9 @@ const blog = defineCollection({
   schema: z.object({
     title: z.string(),
     pubDate: z.coerce.date(),
-    description: z.string(),
     category: z.string(),
+    excerpt: z.string().optional(),
+    description: z.string().optional(),
     heroImage: z.string().optional(),
   }),
 });
@@ -95,9 +92,11 @@ const resources = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    description: z.string(),
+    excerpt: z.string().optional(),
+    description: z.string().optional(),
     section: resourceSection,
     pubDate: z.coerce.date().optional(),
+    readingTime: z.string().optional(),
     download: urlNullish,
     ctaLink: urlNullish,
     heroImage: z.string().optional(),
@@ -105,6 +104,24 @@ const resources = defineCollection({
     imagesFolder: z.string().optional(),
     icon: z.string().optional(),
     category: z.string().optional(),
+  }),
+});
+
+/* --------------------------------
+   Guides (new content collection)
+   Powers /resources/guides/[category]/[slug]
+--------------------------------- */
+const guides = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    category: z.enum(['buying', 'selling', 'renting-landlord', 'investment']),
+    pdfHref: urlNullish,              // optional; shows Download button if present
+    heroImage: z.string().optional(), // optional hero image
+    updated: z.coerce.date().optional(),
+    tags: z.array(z.string()).default([]),
+    draft: z.boolean().default(false),
   }),
 });
 
@@ -192,6 +209,7 @@ export const collections = {
   featured,
   blog,
   resources,
+  guides,
   developments,
 };
 

@@ -1,163 +1,163 @@
 ---
 import MainLayout from '../../../../layouts/MainLayout.astro';
-import GuideDetail from '../../../../components/resources/GuideDetail.astro';
 import Breadcrumbs from '../../../../components/resources/Breadcrumbs.astro';
+import { getCollection } from 'astro:content';
 
-const title = 'Renting & Landlord Guide | Severino Realty';
+const title = 'Renting & Landlord Guides | Locate Properties Kenya';
 const description = 'Professional-grade landlording: screening, leasing, operations, compliance, and renewals with modern standards.';
 
-const steps = [
-  {
-    id: 'screening',
-    heading: 'Screening & Fair Housing',
-    pdfUrl: '/docs/resources/landlord-screening-policy.pdf',
-    bodyHtml: `
-      <p>Adopt a <strong>written rental criteria</strong> and apply it equally. Keep objective thresholds and document all decisions.</p>
-      <h4>Rental criteria</h4>
-      <ul>
-        <li>Income: verifiable gross income ≥ <strong>3× monthly rent</strong> (adjust for subsidies per local law).</li>
-        <li>Credit: minimum score band with allowance for medical/student debt; evaluate <em>total obligations</em>, not score alone.</li>
-        <li>History: no prior evictions in 5 yrs (consider context), on-time housing payments ≥ 12 months, clean landlord references.</li>
-        <li>Background: use compliant screening; follow <strong>FCRA</strong> adverse-action process for denials/conditional approvals.</li>
-      </ul>
-      <h4>Compliance</h4>
-      <ul>
-        <li><strong>Fair Housing:</strong> protected classes + local expansions. Prohibit steering, different terms, or discriminatory ads.</li>
-        <li><strong>Source-of-income:</strong> where applicable, treat vouchers the same; use payment-standards for affordability tests.</li>
-        <li><strong>Accessibility:</strong> reasonable accommodations/modifications; service and assistance animals are <em>not pets</em>.</li>
-        <li>Keep screening logs for 3–5 years; store IDs and reports securely.</li>
-      </ul>
-    `,
-  },
-  {
-    id: 'leasing',
-    heading: 'Leasing & Onboarding',
-    pdfUrl: '/docs/resources/lease-onboarding-checklist.pdf',
-    bodyHtml: `
-      <p>Use a state-specific lease with addenda and disclosures. Onboard like a professional to prevent disputes later.</p>
-      <h4>Lease package</h4>
-      <ul>
-        <li>State/association lease + addenda: lead-based paint (pre-1978), mold, pest, bedbug, HOA/strata rules, parking, smoking, pet/animal policy.</li>
-        <li>Key business terms: rent, deposit, late fee policy, grace period, utilities, renter's insurance requirement, renewal and notice periods.</li>
-        <li>Electronic signatures with audit trail; deliver <strong>signed copies</strong> to all parties.</li>
-      </ul>
-      <h4>Move-in</h4>
-      <ul>
-        <li>Collect certified move-in funds; confirm <strong>trust account</strong> deposit handling per statute; issue receipt.</li>
-        <li>Condition report with date-stamped photos/video; meter reads; keys/fobs/garage remotes logged; smart locks rekeyed.</li>
-        <li>Welcome sheet: utilities setup, maintenance request process, emergency numbers, trash/recycling, HOA rules.</li>
-      </ul>
-    `,
-  },
-  {
-    id: 'collections',
-    heading: 'Rent Collection & Accounting',
-    pdfUrl: '/docs/resources/rent-collection-policy.pdf',
-    bodyHtml: `
-      <p>Make payments easy and enforcement predictable. Separate client funds and operate on a monthly close cadence.</p>
-      <h4>Collections</h4>
-      <ul>
-        <li>Online portal with ACH/card; autopay and payment receipts. Define grace period, late fee schedule, and NSF fee.</li>
-        <li>Delinquency ladder: reminder → notice to pay or quit per statute → file only after cure window expires.</li>
-      </ul>
-      <h4>Accounting controls</h4>
-      <ul>
-        <li>Segregate security deposits and rent in compliance with <strong>trust accounting</strong>; reconcile bank accounts monthly.</li>
-        <li>Chart of accounts for rent, fees, deposits, maintenance, CapEx, reserves. Year-end owner P&amp;L and 1099/NR4 as applicable.</li>
-      </ul>
-      <h4>Insurance</h4>
-      <ul>
-        <li>Landlord policy with liability ≥ $1M; require tenant renter’s insurance and list landlord/PM as interested party.</li>
-      </ul>
-    `,
-  },
-  {
-    id: 'maintenance',
-    heading: 'Maintenance, Habitability & Turns',
-    pdfUrl: '/docs/resources/maintenance-turns-playbook.pdf',
-    bodyHtml: `
-      <p>Protect asset value and resident experience. Triage fast, document well, and schedule preventive work.</p>
-      <h4>Workflows</h4>
-      <ul>
-        <li>24/7 emergency line; response SLA: emergency &lt; 1 hr dispatch, urgent &lt; 24 hrs, routine &lt; 72 hrs.</li>
-        <li>Vendors W-9/COI on file; written scopes; photos before/after; invoices matched to work orders.</li>
-      </ul>
-      <h4>Habitability & safety</h4>
-      <ul>
-        <li>Smoke/CO detectors, hot-water temp, handrails, GFCI, locks/rekey, pest management, moisture/mold response protocol.</li>
-        <li>Annual inspections; filter program; seasonal checks: HVAC service, gutters, shutoff valves, weatherproofing.</li>
-      </ul>
-      <h4>Unit turns</h4>
-      <ul>
-        <li>Standard finishes for speed; paint spec, flooring SKUs, hardware kit; target ≤ 7 calendar days for basic turns.</li>
-      </ul>
-    `,
-  },
-  {
-    id: 'renewals',
-    heading: 'Renewals, Rent Increases & Retention',
-    pdfUrl: '/docs/resources/renewals-retention-guide.pdf',
-    bodyHtml: `
-      <p>Start 75–90 days out. Use data and law-compliant notices. Keep good residents.</p>
-      <h4>Process</h4>
-      <ul>
-        <li>Market survey + performance review; propose renewal terms and rent. Comply with rent control or notice rules if applicable.</li>
-        <li>Offer options: 12-month, 6-month, or month-to-month premium. Incentivize early decision with small credit or upgrade.</li>
-        <li>Track acceptance, follow up at 30/15/10 days. If non-renewing, issue notice and start turn planning.</li>
-      </ul>
-      <h4>Retention</h4>
-      <ul>
-        <li>Service quality drives renewals: fast maintenance, clean common areas, respectful communication, digital convenience.</li>
-      </ul>
-    `,
-  },
-  {
-    id: 'moveout',
-    heading: 'Move-out, Deposit Accounting & Legal',
-    pdfUrl: '/docs/resources/deposit-accounting-checklist.pdf',
-    bodyHtml: `
-      <p>Close files cleanly and on time. Follow statute to the day.</p>
-      <h4>Move-out steps</h4>
-      <ul>
-        <li>Written notice acknowledged; pre-move-out guidance to reduce deductions; lock in walkthrough date.</li>
-        <li>Walkthrough with condition form and photos. Compare to move-in; normal wear vs. damage by statute.</li>
-        <li>Itemized deposit accounting with receipts sent within the legal window; refund via traceable method.</li>
-      </ul>
-      <h4>Legal & risk</h4>
-      <ul>
-        <li>Document all communications. Use counsel for evictions, fair-housing questions, and complex disputes.</li>
-      </ul>
-    `,
-  },
+/** Core Renting & Landlord Topics → each links to its own page */
+const topics = [
+  { title: "Landlord's Guide to Hassle-Free Property Management", href: '/resources/guides/renting-landlord/hassle-free-property-management', desc: 'A simple, durable operating system: policies, cadence, vendors, controls.' },
+  { title: 'Screening & Fair Housing',              href: '/resources/guides/renting-landlord/screening',   desc: 'Written criteria, compliance, documentation.' },
+  { title: 'Leasing & Onboarding',                  href: '/resources/guides/renting-landlord/leasing',     desc: 'Lease package, disclosures, move-in process.' },
+  { title: 'Rent Collection & Accounting',          href: '/resources/guides/renting-landlord/collections', desc: 'Payment flows, delinquency ladder, trust accounting.' },
+  { title: 'Maintenance, Habitability & Turns',     href: '/resources/guides/renting-landlord/maintenance', desc: 'SLAs, safety standards, preventive schedules.' },
+  { title: 'Renewals, Rent Increases & Retention',  href: '/resources/guides/renting-landlord/renewals',    desc: 'Notice rules, offer options, churn control.' },
+  { title: 'Move-out, Deposit Accounting & Legal',  href: '/resources/guides/renting-landlord/move-out',    desc: 'Walkthrough, itemization, timelines, disputes.' },
 ];
 
-const checklistUrl = '/docs/resources/landlord-starter-pack.pdf';
+/** Additional concise guides (PDFs) */
+const extraGuides = [
+  { label: 'Landlord Starter Pack (PDF)',            href: '/docs/resources/landlord-starter-pack.pdf',          blurb: 'Templates, checklists, and policy starters.' },
+  { label: 'Screening Policy Template (PDF)',        href: '/docs/resources/landlord-screening-policy.pdf',       blurb: 'Criteria, documentation, FCRA process.' },
+  { label: 'Lease & Onboarding Checklist (PDF)',     href: '/docs/resources/lease-onboarding-checklist.pdf',      blurb: 'Disclosures, keys, condition report.' },
+  { label: 'Rent Collection Policy (PDF)',           href: '/docs/resources/rent-collection-policy.pdf',          blurb: 'Grace periods, fees, delinquency workflow.' },
+  { label: 'Maintenance & Turns Playbook (PDF)',     href: '/docs/resources/maintenance-turns-playbook.pdf',      blurb: 'Work orders, habitability, standard finishes.' },
+  { label: 'Renewals & Retention Guide (PDF)',       href: '/docs/resources/renewals-retention-guide.pdf',        blurb: 'Market survey, options, notice timing.' },
+  { label: 'Deposit Accounting Checklist (PDF)',     href: '/docs/resources/deposit-accounting-checklist.pdf',    blurb: 'Itemization, receipts, deadline compliance.' },
+];
 
+/** Dynamic Articles from content/guides/renting-landlord */
+const articlesRaw = await getCollection('guides', (e) => !e.data.draft && e.data.category === 'renting-landlord');
+const articles = articlesRaw
+  .sort((a, b) => {
+    const da = a.data.updated ? new Date(a.data.updated).getTime() : 0;
+    const db = b.data.updated ? new Date(b.data.updated).getTime() : 0;
+    return db - da || a.data.title.localeCompare(b.data.title);
+  })
+  .map((a) => ({
+    href: `/resources/guides/${a.slug}`,
+    title: a.data.title,
+    desc: a.data.description ?? '',
+    image: a.data.heroImage ?? '',
+    imageAlt: a.data.imageAlt ?? '',
+  }));
+
+/** Related at bottom */
 const related = [
-  { title: 'Buying Guide',     href: '/resources/guides/buying',     desc: 'From search to ownership.',       image: '/images/guides/buying.webp',     alt: 'New homeowners with keys' },
-  { title: 'Selling Guide',    href: '/resources/guides/selling',    desc: 'Prep, pricing, marketing, closing.', image: '/images/guides/selling.webp',    alt: 'Staged living room ready for sale' },
-  { title: 'Investment Guide', href: '/resources/guides/investment', desc: 'Yields, financing, exits.',        image: '/images/guides/investment.webp', alt: 'Multifamily building and spreadsheet' },
+  { title: 'Buying Guides',     href: '/resources/guides/buying',      desc: 'From search to ownership.',            image: '/images/guides/buying.webp',     alt: 'New homeowners with keys' },
+  { title: 'Selling Guides',    href: '/resources/guides/selling',     desc: 'Prep, pricing, marketing, closing.',  image: '/images/guides/selling.webp',    alt: 'Staged living room ready for sale' },
+  { title: 'Investment Guides', href: '/resources/guides/investment',  desc: 'Yields, financing, exits.',           image: '/images/guides/investment.webp', alt: 'Multifamily building and spreadsheet' },
 ];
 ---
 
 <MainLayout {title} {description}>
-  <GuideDetail
-    title="Renting & Landlord"
-    intro="Screening, leasing, operations, and compliance built for durable cash flow and low risk."
-    estReadMin={16}
-    {steps}
-    {checklistUrl}
-    {related}
-  >
-    <Fragment slot="breadcrumbs">
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Resources', href: '/resources' },
-          { label: 'Guides', href: '/resources/guides' },
-          { label: 'Renting & Landlord' }
-        ]}
-      />
-    </Fragment>
-  </GuideDetail>
+  <section class="section container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Resources', href: '/resources' },
+        { label: 'Guides', href: '/resources/guides' },
+        { label: 'Renting & Landlord Guides' }
+      ]}
+      class="mb-2"
+    />
+
+    <header class="mb-5 md:mb-6">
+      <h1 class="text-2xl md:text-3xl font-bold text-primary">Renting & Landlord Guides</h1>
+      <p class="mt-2 text-neutral-700">
+        Choose a topic to go deeper. Each opens as its own page. Keep the quick PDFs handy for daily operations.
+      </p>
+    </header>
+
+    <!-- Core Topics grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {topics.map((t) => (
+        <a href={t.href} class="category-tile tile-accent tile-tint" aria-label={t.title}>
+          <div class="tile-badge" aria-hidden="true">
+            <svg class="tile-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+              <path d="M12 6v12m6-6H6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+            </svg>
+          </div>
+          <h2 class="tile-title">{t.title}</h2>
+          <p class="tile-sub">{t.desc}</p>
+          <div class="mt-3"><span class="badge-cta">Open Topic</span></div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Articles (auto from content) -->
+  <section class="section container">
+    <h2 class="text-lg md:text-xl font-bold text-primary mb-3">Articles</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {articles.map((a) => (
+        <a href={a.href} class="group rounded-2xl ring-1 ring-neutral-200 bg-white hover:shadow-md transition block overflow-hidden">
+          {a.image
+            ? <img src={a.image} alt={a.imageAlt} class="w-full h-40 object-cover" loading="lazy" />
+            : <div class="w-full h-40 bg-gradient-to-br from-neutral-100 to-neutral-200" aria-hidden="true"></div>}
+          <div class="p-4">
+            <h3 class="font-semibold leading-snug text-primary group-hover:underline">{a.title}</h3>
+            {a.desc && <p class="mt-1 text-sm text-neutral-600 line-clamp-2">{a.desc}</p>}
+            <div class="mt-3"><span class="badge-cta">Open</span></div>
+          </div>
+        </a>
+      ))}
+      {articles.length === 0 && (
+        <div class="rounded-2xl ring-1 ring-neutral-200 bg-white p-4 text-sm text-neutral-600">
+          Guides will appear here once added to <code>src/content/guides/renting-landlord</code>.
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Additional Guides (PDFs) -->
+  <section class="section container">
+    <h2 class="text-lg md:text-xl font-bold text-primary mb-3">Additional Guides for Landlords</h2>
+    <p class="text-neutral-700 text-sm md:text-base mb-3">Short, practical downloads for compliance and operational control.</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {extraGuides.map((g) => (
+        <a href={g.href} class="card p-4 hover:shadow-md transition focus:outline-none ring-focus-brand" rel="noopener">
+          <div class="flex items-start gap-3">
+            <span class="pdf-badge">PDF</span>
+            <h3 class="text-base md:text-lg font-semibold leading-snug text-primary">{g.label}</h3>
+          </div>
+          <p class="mt-2 text-sm text-neutral-600">{g.blurb}</p>
+          <div class="mt-3"><span class="badge-cta">Open</span></div>
+        </a>
+      ))}
+    </div>
+
+    <div class="mt-6 rounded-2xl ring-1 ring-neutral-200 bg-white shadow-sm p-4">
+      <p class="text-sm">
+        <strong>Landlord risk controls:</strong> standardize screening, use trust accounting, document repairs with photos, and issue deposit accounting on time.
+      </p>
+    </div>
+  </section>
+
+  <!-- Related Guides -->
+  <section class="section container">
+    <h2 class="text-lg md:text-xl font-bold text-primary mb-3">Related Guides</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      {related.map((r) => (
+        <a href={r.href} class="category-tile tile-accent" aria-label={r.title}>
+          <img src={r.image} alt={r.alt} class="w-full h-36 object-cover rounded-xl mb-3" />
+          <h3 class="tile-title">{r.title}</h3>
+          <p class="tile-sub">{r.desc}</p>
+          <div class="mt-3"><span class="badge-cta">Open</span></div>
+        </a>
+      ))}
+    </div>
+  </section>
 </MainLayout>
+
+<style is:global>
+  .line-clamp-2{
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+</style>

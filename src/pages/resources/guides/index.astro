@@ -1,5 +1,4 @@
 ---
-// src/pages/resources/guides/index.astro
 /** Guides Landing — v11 (Popular Articles removed; WhatsApp + FAQ removed) */
 import MainLayout from '../../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../../components/resources/Breadcrumbs.astro';
@@ -9,18 +8,18 @@ const description = 'Step-by-step help for buying, selling, renting/landlord, an
 
 /** Subcategory tiles */
 const tiles = [
-  { title: 'Buying Guide',          href: '/resources/guides/buying',           desc: 'From search to ownership.' },
-  { title: 'Selling Guide',         href: '/resources/guides/selling',          desc: 'Prep, pricing, marketing, closing.' },
-  { title: 'Renting & Landlord',    href: '/resources/guides/renting-landlord', desc: 'Screening, leases, compliance.' },
-  { title: 'Investment',            href: '/resources/guides/investment',       desc: 'Yields, financing, exits.' },
+  { title: 'Buying Guides',                 href: '/resources/guides/buying',           desc: 'From search to ownership.' },
+  { title: 'Selling Guides',                href: '/resources/guides/selling',          desc: 'Prep, pricing, marketing, closing.' },
+  { title: 'Renting & Landlord Guides',     href: '/resources/guides/renting-landlord', desc: 'Screening, leases, compliance.' },
+  { title: 'Investment Guides',             href: '/resources/guides/investment',       desc: 'Yields, financing, exits.' },
 ];
 
 /** Chips */
 const chips = [
-  { label: 'Buying',    href: '/resources/guides/buying' },
-  { label: 'Selling',   href: '/resources/guides/selling' },
-  { label: 'Renting',   href: '/resources/guides/renting-landlord' },
-  { label: 'Investment',href: '/resources/guides/investment' },
+  { label: 'Buying Guides',              href: '/resources/guides/buying' },
+  { label: 'Selling Guides',             href: '/resources/guides/selling' },
+  { label: 'Renting & Landlord Guides',  href: '/resources/guides/renting-landlord' },
+  { label: 'Investment Guides',          href: '/resources/guides/investment' },
 ];
 
 /** Lead magnet */
@@ -48,6 +47,7 @@ const testimonials = [
   { q:'Investment brief was concise and data-led. Will work with them again.', a:'Investor, Westlands · Multi-unit' },
 ];
 ---
+
 <MainLayout {title} {description}>
   <section class="section container">
     <!-- Breadcrumbs immediately above title -->

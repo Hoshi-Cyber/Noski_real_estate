@@ -25,7 +25,7 @@ const {
 const norm = (s: string = '') => s.toLowerCase().replace(/\s+/g, '-');
 
 const finalHref =
-  href || `/properties/${norm(String(listing.availability || ''))}/${slug}`;
+  href || `/properties/${norm(String((listing as any).availability || ''))}/${slug}`;
 
 function resolveCardImage(
   slug: string,
@@ -60,9 +60,9 @@ const srcset = `
   ${finalImg}?w=1024 1024w
 `;
 
-const altText = listing.title && listing.location
-  ? `${listing.title} - ${listing.location}`
-  : listing.title || 'Property image';
+const altText = (listing as any).title && (listing as any).location
+  ? `${(listing as any).title} - ${(listing as any).location}`
+  : (listing as any).title || 'Property image';
 
 const statusColors: Record<string, string> = {
   'for sale': 'bg-blue-600',
@@ -70,12 +70,12 @@ const statusColors: Record<string, string> = {
   'short-stays': 'bg-neutral-800',
   'short-stay': 'bg-neutral-800'
 };
-const availSeg = norm(String(listing.availability || ''));
+const availSeg = norm(String((listing as any).availability || ''));
 const statusClass = statusColors[availSeg] || 'bg-neutral-800';
 
 const priceText =
-  typeof listing.price === 'number'
-    ? `KSh ${listing.price.toLocaleString()}`
+  typeof (listing as any).price === 'number'
+    ? `KSh ${(listing as any).price.toLocaleString()}`
     : 'Price N/A';
 
 const imgAspect = compact ? 'aspect-[4/3]' : 'aspect-[16/9]';
@@ -83,7 +83,7 @@ const titleSize = compact ? 'text-base' : 'text-lg';
 const pad = compact ? 'p-3' : 'p-4';
 const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
 
-const titleText = listing.title || 'Untitled Property';
+const titleText = (listing as any).title || 'Untitled Property';
 ---
 
 <article
@@ -94,12 +94,12 @@ const titleText = listing.title || 'Untitled Property';
   <!-- Media -->
   <a href={finalHref} class="block overflow-hidden focus:outline-none" aria-label={`Open ${titleText} details`}>
     <figure class={`w-full ${imgAspect} relative`}>
-      {listing.availability && (
+      {(listing as any).availability && (
         <span
           class={`absolute top-2 left-2 ${statusClass} text-white text-[11px] font-medium px-2 py-1 rounded z-10`}
-          aria-label={`Status: ${listing.availability}`}
+          aria-label={`Status: ${(listing as any).availability}`}
         >
-          {listing.availability}
+          {(listing as any).availability}
         </span>
       )}
       <img
@@ -124,33 +124,29 @@ const titleText = listing.title || 'Untitled Property';
       </a>
     </h3>
 
-    <p class="text-sm text-neutral-600">{listing.location || 'Unknown Location'}</p>
+    <p class="text-sm text-neutral-600">{(listing as any).location || 'Unknown Location'}</p>
 
-    <div class="flex items-baseline justify-between">
-      <div class="text-sm text-neutral-700 fact-label">
-        {listing.bedrooms ? `${listing.bedrooms} bd` : '— bd'}
-        {' • '}
-        {listing.bathrooms ? `${listing.bathrooms} ba` : '— ba'}
-      </div>
+    <!-- PRICE ONLY (removed bd/ba initials row) -->
+    <div class="flex items-baseline justify-end">
       <div class="text-sm md:text-base font-semibold text-neutral-900">{priceText}</div>
     </div>
 
-    {(listing.bedrooms || listing.bathrooms) && (
+    {(listing as any).bedrooms || (listing as any).bathrooms ? (
       <div class="mt-1 flex flex-wrap gap-2">
-        {listing.bedrooms && (
+        {(listing as any).bedrooms && (
           <span class="pill pill-slate">
             <span class="pill-dot"></span>
-            {listing.bedrooms} {listing.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
+            {(listing as any).bedrooms} {(listing as any).bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
           </span>
         )}
-        {listing.bathrooms && (
+        {(listing as any).bathrooms && (
           <span class="pill pill-emerald">
             <span class="pill-dot"></span>
-            {listing.bathrooms} {listing.bathrooms === 1 ? 'Bathroom' : 'Bathrooms'}
+            {(listing as any).bathrooms} {(listing as any).bathrooms === 1 ? 'Bathroom' : 'Bathrooms'}
           </span>
         )}
       </div>
-    )}
+    ) : null}
 
     <!-- CTA pinned to bottom -->
     <div class="mt-3">
