@@ -1,12 +1,21 @@
 ---
 title: "Kitengela 4BR Maisonette + Garden"
-slug: "kitengela-4br-maisonette-garden-rent"
-availability: "For Rent"
+availability: "rent"
 location: "Kitengela, Kajiado"
 price: 85000
 bedrooms: 4
 bathrooms: 3
 type: "Maisonette"
+
+# Quick Facts
+lotSize: "Private garden plot (estate)"
+parking: "2+ cars"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in rent"
+
+# Media
+heroImage: "/images/listings/kitengela-4br-maisonette-garden-rent/hero.webp"
 images:
   - /images/listings/kitengela-4br-maisonette-garden-rent/hero.webp
   - /images/listings/kitengela-4br-maisonette-garden-rent/1.webp
@@ -14,6 +23,7 @@ images:
   - /images/listings/kitengela-4br-maisonette-garden-rent/3.webp
   - /images/listings/kitengela-4br-maisonette-garden-rent/4.webp
   - /images/listings/kitengela-4br-maisonette-garden-rent/5.webp
+
 amenities:
   - Spacious lounge and dining opening to garden
   - Modern fitted kitchen with pantry
@@ -23,20 +33,18 @@ amenities:
   - Secure parking for 2+ cars
   - Reliable water and backup power
   - Gated community with 24/7 security
+
 neighborhoodHighlights:
-  - Located in Kitengela near Namanga Road
-  - Close to malls, supermarkets, and banks
-  - Proximity to international schools and hospitals
-  - Family-friendly environment with strong community presence
+  - Near Namanga Road, malls, supermarkets, banks
+  - Proximity to schools and hospitals
+
 description: |
-  This 4-bedroom maisonette in Kitengela offers a perfect blend of space, 
-  security, and functionality. The home features an ensuite master, fitted 
-  kitchen, spacious lounge, and a private garden.  
+  4BR maisonette with private garden, DSQ, and secure estate living. Functional layout,
+  reliable utilities, and family-friendly location.
 
-  A DSQ, secure parking, and gated estate facilities ensure convenience. With 
-  reliable water and power, residents enjoy uninterrupted living.  
-
-  The property’s location offers easy access to schools, malls, and major roads, 
-  making it ideal for families seeking suburban comfort.
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
 Spacious Kitengela rental with private garden and community security.

@@ -1,12 +1,21 @@
 ---
 title: "Kisii 4BR Hilltop Villa"
-slug: "kisii-4br-hilltop-villa"
-availability: "For Sale"
+availability: "sale"
 location: "Kisii, Kisii County"
 price: 31000000
 bedrooms: 4
 bathrooms: 4
 type: "Villa"
+
+# Quick Facts (required)
+lotSize: "Approx. 1/2 acre"
+parking: "4+ vehicles"
+yearBuilt: "Unknown"
+tenure: "Freehold"
+serviceCharge: "N/A"
+
+# Media
+heroImage: "/images/listings/kisii-4br-hilltop-villa/hero.webp"
 images:
   - /images/listings/kisii-4br-hilltop-villa/hero.webp
   - /images/listings/kisii-4br-hilltop-villa/1.webp
@@ -14,6 +23,7 @@ images:
   - /images/listings/kisii-4br-hilltop-villa/3.webp
   - /images/listings/kisii-4br-hilltop-villa/4.webp
   - /images/listings/kisii-4br-hilltop-villa/5.webp
+
 amenities:
   - Panoramic hilltop terraces with sweeping green views
   - Backup inverter and solar water heating
@@ -25,6 +35,7 @@ amenities:
   - Landscaped garden with mature hedges
   - High perimeter wall with electric fencing
   - Ample parking for 4+ vehicles
+
 neighborhoodHighlights:
   - Elevated breezy setting with cool climate
   - Quick access to Kisii town center and business hubs
@@ -32,6 +43,12 @@ neighborhoodHighlights:
   - Short drive to Kisii University and Kisii Golf Course
   - Access to supermarkets, banks, and entertainment spots
   - Quiet community with strong security presence
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
+
 description: |
   Set on a serene hilltop, this 4-bedroom villa offers commanding views over Kisii’s lush landscape. 
   Designed for family comfort, the residence features spacious lounges, wide terraces, and a fully 

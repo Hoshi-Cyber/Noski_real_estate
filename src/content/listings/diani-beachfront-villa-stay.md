@@ -1,70 +1,51 @@
 ---
 title: "Diani Beachfront Villa"
 slug: "diani-beachfront-villa-stay"
-availability: "Short Stays"
+availability: "short-stay"
 location: "Diani, Kwale"
 price: 25000
 bedrooms: 4
 bathrooms: 3
 type: "Villa"
 
+# Quick Facts
+lotSize: "Beachfront plot"
+parking: "2–3 cars, on-site"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in stay"
+
+# Media
+heroImage: "/images/listings/diani-beachfront-villa-stay/hero.webp"
 images:
   - /images/listings/diani-beachfront-villa-stay/hero.webp
   - /images/listings/diani-beachfront-villa-stay/1.webp
   - /images/listings/diani-beachfront-villa-stay/2.webp
   - /images/listings/diani-beachfront-villa-stay/3.webp
 
-description: >
-  Diani Beachfront Villa located in Diani, Kwale. Perfect for holidaymakers,
-  business travelers, or family retreats. Fully furnished with reliable utilities,
-  internet access, and outdoor spaces for relaxation.
-
-features:
-  - Comfortable bedrooms with fresh linens
-  - Fully equipped kitchen or kitchenette
-  - Spacious lounge and dining areas
-  - Internet and smart TV
-  - Backup power and reliable water supply
-  - Outdoor seating or garden space
-  - Secure parking and gated compound
-  - Housekeeping service included
-
-amenitiesCategories:
-  "Interior":
-    - Cozy lounge and dining
-    - Comfortable bedrooms
-  "Kitchen & Utility":
-    - Fully equipped kitchen
-    - Laundry area
-  "Connectivity":
-    - Internet and TV ready
-  "Security":
-    - Gated compound with security
-  "Outdoor":
-    - Garden or balcony space
-
 amenities:
   - Fresh linens and towels
   - Smart TV and Wi-Fi
-  - Equipped kitchen
+  - Fully equipped kitchen
   - Housekeeping service
-  - Backup power and water
-  - Secure parking
-  - Outdoor seating
-
-neighborhoodCategories:
-  "Attractions":
-    - Local beaches, parks, or cultural sites
-  "Shopping":
-    - Nearby malls and supermarkets
-  "Transport":
-    - Easy access to main roads
-  "Dining":
-    - Cafes and restaurants nearby
+  - Backup power and reliable water
+  - Outdoor seating and garden space
+  - Secure parking within gated compound
 
 neighborhoodHighlights:
-  - Prime short-stay location
-  - Close to shopping and dining
-  - Access to local attractions
-  - Safe and serene environment
+  - Direct access to Diani Beach and marine activities
+  - Close to restaurants, cafes and supermarkets
+  - Easy reach to Ukunda Airstrip
+  - Safe, serene coastal environment
+
+description: |
+  Beachfront 4-bedroom villa for short stays. Ensuite rooms, furnished lounge,
+  equipped kitchen and outdoor seating. Reliable utilities, housekeeping and
+  secure parking in a prime Diani location.
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: true
 ---
+Coastal Diani villa stay offering beach access, comfort and privacy.

@@ -23,27 +23,46 @@ const strNullish = z.string().optional().nullable();
 const urlNullish = urlish.optional().nullable();
 
 /* --------------------------------
-   Listings (tolerant schema)
+   Listings (STRICT schema per audit)
+   Note: Do NOT define a 'slug' field. Astro reserves it.
 --------------------------------- */
+const availabilityEnum = z.enum(['sale', 'rent', 'short-stay']);
+
 const listingsSchema = z.object({
-  title: z.string(),
-  price: z.number().optional(),
-  location: z.string(),
-  bedrooms: z.number().optional(),
-  bathrooms: z.number().optional(),
-  type: z.string().describe('e.g., Apartment, House, Villa, Bedsitter/Studio, Commercial'),
-  availability: z.string().describe('e.g., For Rent, For Sale, Short Stays'),
-  heroImage: z.string().optional(),
-  image: z.string().optional(),
-  images: z.array(z.string()).optional(),
+  /* Core identity */
+  title: z.string().min(3),
+
+  /* Classifiers */
+  availability: availabilityEnum, // sale|rent|short-stay
+  type: z.string().min(2).describe('e.g., apartment, house, villa, studio, commercial'),
+  location: z.string().min(2),
+
+  /* Pricing + specs */
+  price: z.number().int().nonnegative(),
+  bedrooms: z.number().int().nonnegative(),
+  bathrooms: z.number().int().nonnegative(),
+
+  /* Quick Facts (required per audit) */
+  lotSize: z.string().min(1),
+  parking: z.string().min(1),
+  yearBuilt: z.string().min(1),
+  tenure: z.string().min(1),
+  serviceCharge: z.string().min(1),
+
+  /* Media */
+  heroImage: z.string().min(1), // e.g. "/images/listings/xxx/hero.webp"
+  image: z.string().optional(), // legacy single image (kept for compatibility)
+  images: z.array(z.string()).default([]),
   imagesFolder: z.string().optional(),
 
-  amenities: z.array(z.string()).optional(),
-  features: z.array(z.string()).optional(),
+  /* Amenities / features */
+  amenities: z.array(z.string()).default([]),
+  features: z.array(z.string()).default([]),
 
+  /* Neighborhood highlights (stringify object entries if provided as records) */
   neighborhoodHighlights: z
     .array(z.union([z.string(), z.record(z.any())]))
-    .optional()
+    .default([])
     .transform((arr) =>
       (arr ?? []).map((item) => {
         if (typeof item === 'string') return item;
@@ -60,13 +79,19 @@ const listingsSchema = z.object({
   amenitiesCategories: z.record(z.array(z.string())).optional(),
   neighborhoodCategories: z.record(z.array(z.string())).optional(),
 
+  /* Content */
   description: z.string().optional(),
+
+  /* Badges for cards */
+  isNew: z.boolean().default(false),
+  isReduced: z.boolean().default(false),
+  isFurnished: z.boolean().default(false),
 });
 
 const listings = defineCollection({ type: 'content', schema: listingsSchema });
 
 /* --------------------------------
-   Featured Listings (reuse)
+   Featured Listings (reuse strict)
 --------------------------------- */
 const featured = defineCollection({ type: 'content', schema: listingsSchema });
 
@@ -108,8 +133,7 @@ const resources = defineCollection({
 });
 
 /* --------------------------------
-   Guides (new content collection)
-   Powers /resources/guides/[category]/[slug]
+   Guides
 --------------------------------- */
 const guides = defineCollection({
   type: 'content',
@@ -117,8 +141,8 @@ const guides = defineCollection({
     title: z.string(),
     description: z.string().optional(),
     category: z.enum(['buying', 'selling', 'renting-landlord', 'investment']),
-    pdfHref: urlNullish,              // optional; shows Download button if present
-    heroImage: z.string().optional(), // optional hero image
+    pdfHref: urlNullish,
+    heroImage: z.string().optional(),
     updated: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
@@ -127,6 +151,7 @@ const guides = defineCollection({
 
 /* --------------------------------
    Developments (NEW)
+   Note: Do NOT define a 'slug' field. Astro reserves it.
 --------------------------------- */
 const geoSchema = z.object({
   city: z.string().min(1),
@@ -148,7 +173,7 @@ const ctaSchema = z.object({
 
 const developmentBase = z.object({
   title: z.string(),
-  slug: strNullish,
+  // slug: (removed) — use entry.slug from file path
   status: strNullish,
   location: geoSchema,
   priceFrom: z.number().optional(),

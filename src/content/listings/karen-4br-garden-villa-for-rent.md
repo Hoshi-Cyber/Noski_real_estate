@@ -1,13 +1,21 @@
 ---
 title: "Karen 4BR Garden Villa"
-slug: "karen-4br-garden-villa-for-rent"
-availability: "For Rent"
+availability: "rent"
 location: "Karen, Nairobi"
 price: 220000
 bedrooms: 4
 bathrooms: 3
 type: "Villa"
 
+# Quick Facts
+lotSize: "Approx. 1/2 acre"
+parking: "4+ cars"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "TBD"
+
+# Media
+heroImage: "/images/listings/karen-4br-garden-villa-for-rent/hero.webp"
 images:
   - /images/listings/karen-4br-garden-villa-for-rent/hero.webp
   - /images/listings/karen-4br-garden-villa-for-rent/1.webp
@@ -16,7 +24,6 @@ images:
   - /images/listings/karen-4br-garden-villa-for-rent/4.webp
   - /images/listings/karen-4br-garden-villa-for-rent/5.webp
 
-# Short, value-first property description (3–5 sentences)
 description: |
   Premium 4-bedroom garden villa in leafy Karen offering privacy, space and indoor–outdoor living.
   Set on a mature, landscaped compound, it pairs a fireplace lounge and dining room with a modern
@@ -25,7 +32,6 @@ description: |
   parking add convenience. Reliable borehole water, backup power and secure gated access complete
   a comfortable, high-quality rental.
 
-# Key Features (5–8 bullets)
 features:
   - En-suite master bedroom with walk-in closet
   - Spacious lounge with fireplace and separate dining
@@ -36,7 +42,6 @@ features:
   - Ample parking for 4+ cars
   - Backup power and borehole water
 
-# Amenities (grouped into logical categories)
 amenitiesCategories:
   Interior:
     - Lounge with fireplace
@@ -57,7 +62,6 @@ amenitiesCategories:
     - Ample parking for 4+ cars
     - Detached DSQ with separate access
 
-# Neighborhood Highlights (grouped)
 neighborhoodCategories:
   Shopping & Leisure:
     - The Hub Karen (nearby)
@@ -76,7 +80,6 @@ neighborhoodCategories:
   Community:
     - Quiet, secure avenues with strong community presence
 
-# (Optional) keep plain arrays for backward-compat (not used when categories exist)
 amenities:
   - Expansive mature garden with shaded trees
   - Spacious lounge with fireplace and dining area
@@ -92,8 +95,13 @@ amenities:
 neighborhoodHighlights:
   - Located in leafy Karen near malls such as The Hub and Galleria
   - Proximity to Karen Hospital and Nairobi Hospital branches
-  - "Easy access to international schools: Brookhouse, Hillcrest, Banda"
-  - "Nearby attractions: Giraffe Centre, Karen Blixen Museum"
+  - Easy access to international schools: Brookhouse, Hillcrest, Banda
+  - Nearby attractions: Giraffe Centre, Karen Blixen Museum
   - Quiet, secure avenues with strong community presence
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
 Elegant garden villa for rent in Karen, offering privacy, comfort, and convenience.

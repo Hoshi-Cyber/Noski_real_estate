@@ -1,23 +1,32 @@
 ---
 title: "Watamu Coastal Bungalow"
 slug: "watamu-coastal-bungalow-stay"
-availability: "Short Stays"
+availability: "short-stay"
 location: "Watamu, Kilifi"
 price: 18000
 bedrooms: 3
 bathrooms: 2
 type: "Bungalow"
 
+# Quick Facts
+lotSize: "Coastal plot near beach"
+parking: "2–3 cars, on-site"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in stay"
+
+# Media
+heroImage: "/images/listings/watamu-coastal-bungalow-stay/hero.webp"
 images:
   - /images/listings/watamu-coastal-bungalow-stay/hero.webp
   - /images/listings/watamu-coastal-bungalow-stay/1.webp
   - /images/listings/watamu-coastal-bungalow-stay/2.webp
   - /images/listings/watamu-coastal-bungalow-stay/3.webp
 
-description: >
-  Watamu Coastal Bungalow located in Watamu, Kilifi. Perfect for holidaymakers,
-  business travelers, or family retreats. Fully furnished with reliable utilities,
-  internet access, and outdoor spaces for relaxation.
+description: |
+  Furnished coastal 3BR bungalow ideal for short stays. Lounge and dining areas,
+  equipped kitchen, Wi-Fi and outdoor seating. Backup power and reliable water.
+  Secure parking in a serene Watamu setting close to beaches and attractions.
 
 features:
   - Comfortable bedrooms with fresh linens
@@ -28,6 +37,15 @@ features:
   - Outdoor seating or garden space
   - Secure parking and gated compound
   - Housekeeping service included
+
+amenities:
+  - Fresh linens and towels
+  - Smart TV and Wi-Fi
+  - Equipped kitchen
+  - Housekeeping service
+  - Backup power and water
+  - Secure parking
+  - Outdoor seating
 
 amenitiesCategories:
   "Interior":
@@ -43,14 +61,11 @@ amenitiesCategories:
   "Outdoor":
     - Garden or balcony space
 
-amenities:
-  - Fresh linens and towels
-  - Smart TV and Wi-Fi
-  - Equipped kitchen
-  - Housekeeping service
-  - Backup power and water
-  - Secure parking
-  - Outdoor seating
+neighborhoodHighlights:
+  - Prime short-stay location near beaches and marine parks
+  - Close to shopping and dining
+  - Easy access to main roads and local attractions
+  - Safe and serene environment
 
 neighborhoodCategories:
   "Attractions":
@@ -62,9 +77,9 @@ neighborhoodCategories:
   "Dining":
     - Cafes and restaurants nearby
 
-neighborhoodHighlights:
-  - Prime short-stay location
-  - Close to shopping and dining
-  - Access to local attractions
-  - Safe and serene environment
+# Badges
+isNew: false
+isReduced: false
+isFurnished: true
 ---
+Coastal Watamu bungalow stay offering comfort, access, and privacy.

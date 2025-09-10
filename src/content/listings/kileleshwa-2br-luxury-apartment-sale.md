@@ -1,13 +1,21 @@
 ---
 title: "Kileleshwa 2BR Luxury Apartment"
-slug: "kileleshwa-2br-luxury-apartment-sale"
-availability: "For Sale"
+availability: "sale"
 location: "Kileleshwa, Nairobi"
 price: 20000000
 bedrooms: 2
 bathrooms: 2
 type: "Apartment"
 
+# Quick Facts
+lotSize: "N/A (apartment unit)"
+parking: "2 cars per unit + visitors"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "TBD"
+
+# Media
+heroImage: "/images/listings/kileleshwa-2br-luxury-apartment-sale/hero.webp"
 images:
   - /images/listings/kileleshwa-2br-luxury-apartment-sale/hero.webp
   - /images/listings/kileleshwa-2br-luxury-apartment-sale/1.webp
@@ -69,4 +77,9 @@ neighborhoodHighlights:
   - Strong community presence
   - Reliable transport connections
   - Secure and serene environment
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---

@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
+    "start": "npm run dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "check": "astro check",
+    "validate": "npm run check && npm run build"
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
@@ -23,11 +26,13 @@
     "tailwindcss": "^3.3.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.4",
     "@astrojs/netlify": "^5.5.4",
     "@astrojs/tailwind": "^6.0.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
     "globby": "^14.1.0",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "typescript": "^5.9.2"
   }
 }

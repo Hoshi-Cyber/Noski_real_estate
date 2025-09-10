@@ -1,12 +1,21 @@
 ---
 title: "Kilimani 2BR Modern Apartment"
-slug: "kilimani-2br-modern-apartment-rent"
-availability: "For Rent"
+availability: "rent"
 location: "Kilimani, Nairobi"
 price: 120000
 bedrooms: 2
 bathrooms: 2
 type: "Apartment"
+
+# Quick Facts
+lotSize: "N/A (apartment unit)"
+parking: "2 cars per unit"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in rent"
+
+# Media
+heroImage: "/images/listings/kilimani-2br-modern-apartment-rent/hero.webp"
 images:
   - /images/listings/kilimani-2br-modern-apartment-rent/hero.webp
   - /images/listings/kilimani-2br-modern-apartment-rent/1.webp
@@ -14,6 +23,7 @@ images:
   - /images/listings/kilimani-2br-modern-apartment-rent/3.webp
   - /images/listings/kilimani-2br-modern-apartment-rent/4.webp
   - /images/listings/kilimani-2br-modern-apartment-rent/5.webp
+
 amenities:
   - Rooftop lounge with panoramic views
   - Residents’ gym and fitness area
@@ -25,6 +35,7 @@ amenities:
   - Spacious lounge with balcony
   - Secure parking for 2 cars per unit
   - 24/7 manned security and CCTV coverage
+
 neighborhoodHighlights:
   - Walking distance to Yaya Centre and Prestige Plaza
   - Surrounded by top restaurants, cafes, and entertainment spots
@@ -32,6 +43,7 @@ neighborhoodHighlights:
   - Easy access to CBD, Upper Hill, and Westlands
   - Nearby international schools including Cavina and French School
   - Vibrant lifestyle hub with shopping and nightlife
+
 description: |
   This modern 2-bedroom apartment for rent in Kilimani combines convenience, 
   style, and comfort. It features ensuite bedrooms, a modern kitchen, and a 
@@ -43,5 +55,10 @@ description: |
 
   Its central location ensures quick access to malls, schools, hospitals, and 
   business hubs, making it a top choice for professionals and families.
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
 Contemporary Kilimani rental offering lifestyle amenities and prime location.

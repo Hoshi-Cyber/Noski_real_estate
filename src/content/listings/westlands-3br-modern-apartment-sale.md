@@ -1,72 +1,61 @@
 ---
 title: "Westlands 3BR Modern Apartment"
 slug: "westlands-3br-modern-apartment-sale"
-availability: "For Sale"
+availability: "sale"
 location: "Westlands, Nairobi"
 price: 25000000
 bedrooms: 3
 bathrooms: 2
 type: "Apartment"
 
+# Quick Facts
+lotSize: "N/A (apartment unit)"
+parking: "2 cars per unit"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "TBD"
+
+# Media
+heroImage: "/images/listings/westlands-3br-modern-apartment-sale/hero.webp"
 images:
   - /images/listings/westlands-3br-modern-apartment-sale/hero.webp
   - /images/listings/westlands-3br-modern-apartment-sale/1.webp
   - /images/listings/westlands-3br-modern-apartment-sale/2.webp
   - /images/listings/westlands-3br-modern-apartment-sale/3.webp
 
-description: >
-  Westlands 3BR Modern Apartment located in Westlands, Nairobi. Designed with modern comfort and convenience,
-  featuring spacious interiors, secure gated living, and premium finishes. Perfect for homeowners or
-  investors seeking high-value property in a prime location.
-
 features:
   - Spacious lounge and dining area
   - Modern fitted kitchen with pantry
-  - Ensuite bedrooms with wardrobes
-  - Secure gated community with 24/7 security
-  - Borehole water and backup power
-  - Internet and cable TV ready
-  - Landscaped outdoor spaces
-  - Parking for multiple cars
-
-amenitiesCategories:
-  "Interior":
-    - Bright lounge and dining
-    - Built-in wardrobes
-    - Tiled floors
-  "Kitchen & Utility":
-    - Modern fitted kitchen
-    - Pantry and laundry
-  "Connectivity":
-    - Internet and TV ready
-  "Security":
-    - Gated compound with security
-  "Parking":
-    - Multiple parking slots
+  - Ensuite master bedroom with wardrobe
+  - Lift, CCTV and access control
+  - Borehole water and backup generator
+  - High-speed internet and cable TV ready
+  - Landscaped common areas
+  - Parking for 2 cars
 
 amenities:
-  - Spacious lounge
+  - Bright lounge
   - Built-in wardrobes
   - Modern fitted kitchen
   - Pantry and laundry area
-  - Gated compound
+  - Secure gated compound
   - Backup water and power
   - Internet ready
-  - Parking
-
-neighborhoodCategories:
-  "Education":
-    - Local schools and international institutions
-  "Healthcare":
-    - Nearby hospitals and clinics
-  "Shopping":
-    - Malls, markets, and supermarkets
-  "Transport":
-    - Good road network and public transport
+  - On-site parking
 
 neighborhoodHighlights:
-  - Prime location with shopping and schools nearby
-  - Strong community presence
-  - Reliable transport connections
-  - Secure and serene environment
+  - Prime Westlands location near Sarit and Westgate
+  - Quick access to CBD and major roads
+  - Close to hospitals, schools and offices
+
+description: |
+  3-bedroom Westlands apartment for sale with a bright lounge, fitted kitchen with pantry
+  and an ensuite master. The block offers lifts, CCTV, borehole and backup power. Two-car
+  parking and fast internet complete a practical, central investment.
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
+Prime Westlands 3BR with strong utilities and central access.

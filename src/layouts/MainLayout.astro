@@ -88,18 +88,18 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
         '/developments/',
         '/developments/new/',
         '/developments/unfinished/',
-        '/listings',
-        '/for-sale',
-        '/for-rent',
-        '/short-stays',
-        '/resources/guides',
-        '/resources/faqs',
-        '/resources/market-reports',
-        '/blog'
+        '/listings/',
+        '/for-sale/',
+        '/for-rent/',
+        '/short-stays/',
+        '/resources/guides/',
+        '/resources/faqs/',
+        '/resources/market-reports/',
+        '/blog/'
       ];
 
       function prefetch(href) {
-        if (!href || document.querySelector(\`link[rel="prefetch"][href="\${href}"]\`)) return;
+        if (!href || document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
         const l = document.createElement('link');
         l.rel = 'prefetch';
         l.href = href;

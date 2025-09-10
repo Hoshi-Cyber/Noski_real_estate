@@ -15,15 +15,17 @@ function getParams(input: SearchParamsInput): URLSearchParams {
 export function parseSearchParams(input: SearchParamsInput) {
   const params = getParams(input);
 
-  const availability =
-    coerceAvailability(params.get("availability") || params.get("serviceType") || "");
+  // Normalize legacy values to strict schema: sale | rent | short-stay
+  const availability = coerceAvailability(
+    params.get("availability") || params.get("serviceType") || ""
+  );
 
-  // NEW: accept ?location= and map it into q for filtering; keep legacy ?q=
+  // Accept ?location= and legacy ?q=
   const location = (params.get("location") || "").trim().toLowerCase();
   const legacyQ = (params.get("q") || "").trim().toLowerCase();
   const q = location || legacyQ;
 
-  // Canonical type parsing (e.g. "studio" | "bedsitter" => "studio/bedsitter")
+  // Canonical type parsing (e.g., "studio" | "bedsitter" => "studio/bedsitter")
   const type = coerceType(params.get("type") || "");
 
   let minPrice = moneyToNumber(params.get("minPrice") || "");
@@ -41,15 +43,60 @@ export function parseSearchParams(input: SearchParamsInput) {
     maxPrice = tmp;
   }
 
-  // Return both q and location (non-breaking; callers can use either)
   return { page, availability, q, location, type, minPrice, maxPrice, beds };
+}
+
+/**
+ * Remove duplicate listings across sources (“listings”, “featured”, etc.)
+ * Key order preference:
+ *  1) explicit slug
+ *  2) normalized "title|location"
+ * Winner selection preference:
+ *  - featured collection over others
+ *  - has heroImage over missing
+ *  - more images
+ *  - first seen (stable)
+ */
+export function dedupeListings(listings: any[]): any[] {
+  const keyOf = (it: any) => {
+    const d = (it && it.data) || {};
+    const slug = (d.slug || it.slug || "").toString().trim().toLowerCase();
+    if (slug) return `slug:${slug}`;
+    const title = (d.title || "").toString().trim().toLowerCase().replace(/\s+/g, " ");
+    const loc = (d.location || "").toString().trim().toLowerCase().replace(/\s+/g, " ");
+    return `tl:${title}|${loc}`;
+  };
+
+  const score = (it: any) => {
+    const coll = (it && it.collection) || "";
+    const d = (it && it.data) || {};
+    const hasHero = !!d.heroImage;
+    const imgCount = Array.isArray(d.images) ? d.images.length : 0;
+    return (
+      (coll === "featured" ? 1_000_000 : 0) +
+      (hasHero ? 10_000 : 0) +
+      imgCount
+    );
+  };
+
+  const map = new Map<string, any>();
+  for (const it of listings) {
+    const k = keyOf(it);
+    const cur = map.get(k);
+    if (!cur) {
+      map.set(k, it);
+    } else {
+      map.set(k, score(it) >= score(cur) ? it : cur);
+    }
+  }
+  return Array.from(map.values());
 }
 
 /**
  * Filter a list of "listings" collection entries using the
  * object returned by parseSearchParams.
  *
- * Each item is expected to look like: { data: { ...fields } }
+ * Each item is expected to look like: { data: { ...fields }, collection, slug }
  */
 export function filterListings(listings: any[], filters: ReturnType<typeof parseSearchParams>) {
   const norm = (s: string = "") => s.toLowerCase().replace(/\s+/g, "-");
@@ -69,7 +116,7 @@ export function filterListings(listings: any[], filters: ReturnType<typeof parse
       if (narrowTypeMismatch(t, filters.type)) return false;
     }
 
-    // q/location: try exact area match, else fuzzy match on title/location/description
+    // q/location: exact area match, else fuzzy match on title/location/description
     if (filters.q) {
       const area = areaOf(String(d.location || "")).toLowerCase();
       const q = filters.q;
@@ -82,9 +129,7 @@ export function filterListings(listings: any[], filters: ReturnType<typeof parse
     }
 
     // price (treat non-numeric as missing)
-    const priceVal =
-      typeof d.price === "number" ? d.price : moneyToNumber(d.price ?? "");
-
+    const priceVal = typeof d.price === "number" ? d.price : moneyToNumber(d.price ?? "");
     if (filters.minPrice != null && filters.minPrice !== 0) {
       if (typeof priceVal !== "number" || priceVal < filters.minPrice) return false;
     }
@@ -108,11 +153,25 @@ export function filterListings(listings: any[], filters: ReturnType<typeof parse
   });
 }
 
+/**
+ * Convenience: apply dedupe then filtering.
+ */
+export function getFilteredDeduped(
+  listings: any[],
+  filters: ReturnType<typeof parseSearchParams>
+): any[] {
+  return filterListings(dedupeListings(listings), filters);
+}
+
 // -------- helpers (SSR-safe coercions) --------
+
 function coerceAvailability(val: string) {
-  const v = (val || "").toLowerCase().replace(/\s+/g, "-");
-  const allowed = ["for-sale", "for-rent", "short-stays"];
-  return allowed.includes(v) ? v : "";
+  const raw = (val || "").toLowerCase().replace(/\s+/g, "-");
+  // map legacy → normalized
+  if (["sale", "for-sale", "buy", "sell"].includes(raw)) return "sale";
+  if (["rent", "for-rent", "rental", "to-let"].includes(raw)) return "rent";
+  if (["short-stay", "short-stays", "short", "stay"].includes(raw)) return "short-stay";
+  return "";
 }
 
 function coerceType(val: string) {
@@ -156,7 +215,6 @@ function setQueryParam(key: string, value: string | number | null | undefined) {
   } else {
     url.searchParams.set(key, String(value));
   }
-  // replaceState so we don't reload
   window.history.replaceState({}, "", url);
 }
 
@@ -168,7 +226,6 @@ function getQueryParamInt(name: string, fallback = 1) {
 
 /**
  * Prefill common search controls from the URL.
- * Pass a root element (form or document) and the control names/IDs that exist on your page.
  */
 export function hydrateControlsFromURL(root: Document | HTMLElement = document) {
   if (!hasWindow) return;
@@ -177,22 +234,19 @@ export function hydrateControlsFromURL(root: Document | HTMLElement = document) 
     const el = root.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${name}"], #${name}`);
     if (el) el.value = url.searchParams.get(name) || "";
   };
-  // NEW: include 'location' as first-class; keep legacy 'q' for back-compat
   ["location", "q", "minPrice", "maxPrice", "beds", "type", "availability"].forEach(set);
 }
 
 /**
- * Lightweight, client-side pager for search result pages.
- * - Expects the results already rendered as a list of cards.
- * - Shows 12 per page by default.
+ * Client-side pager for already-rendered cards.
  */
 export function initSearchPagination(opts: {
-  cardSelector: string;        // e.g. '#cards .card'
-  pagerSelector: string;       // e.g. '#pager'
-  resultCountSelector?: string;// e.g. '#result-count'
-  emptySelector?: string;      // e.g. '#empty'
-  pageSize?: number;           // default 12
-  scrollTo?: string;           // optional CSS selector to scroll into view when page changes
+  cardSelector: string;
+  pagerSelector: string;
+  resultCountSelector?: string;
+  emptySelector?: string;
+  pageSize?: number;
+  scrollTo?: string;
 }): void {
   if (!hasWindow) return;
 
@@ -222,17 +276,14 @@ export function initSearchPagination(opts: {
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     if (page > totalPages) page = totalPages;
 
-    // show/hide cards
     cards.forEach((c, i) => {
       const on = i >= (page - 1) * pageSize && i < page * pageSize;
       c.style.display = on ? "" : "none";
     });
 
-    // result count + empty
     if (resultEl) resultEl.textContent = `${total} result${total !== 1 ? "s" : ""}`;
     if (emptyEl) emptyEl.classList.toggle("hidden", total !== 0);
 
-    // build pager
     if (pagerEl) {
       pagerEl.innerHTML = "";
       if (totalPages > 1) {
@@ -261,7 +312,6 @@ export function initSearchPagination(opts: {
     }
   }
 
-  // expose a tiny hook so other scripts can force a refresh after they mutate DOM
   (window as any).ListingPager = {
     refresh: (resetPage = false) => {
       if (resetPage) setQueryParam("page", "");
@@ -269,6 +319,5 @@ export function initSearchPagination(opts: {
     },
   };
 
-  // initial render
   render(getQueryParamInt("page", 1));
 }

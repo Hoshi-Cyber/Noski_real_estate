@@ -1,12 +1,21 @@
 ---
 title: "Nakuru 3BR Townhouse"
-slug: "nakuru-3br-townhouse-rent"
-availability: "For Rent"
+availability: "rent"
 location: "Nakuru, Nakuru"
 price: 75000
 bedrooms: 3
 bathrooms: 3
 type: "Townhouse"
+
+# Quick Facts
+lotSize: "Estate plot (community)"
+parking: "2 cars + visitors"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in rent"
+
+# Media
+heroImage: "/images/listings/nakuru-3br-townhouse-rent/hero.webp"
 images:
   - /images/listings/nakuru-3br-townhouse-rent/hero.webp
   - /images/listings/nakuru-3br-townhouse-rent/1.webp
@@ -14,6 +23,7 @@ images:
   - /images/listings/nakuru-3br-townhouse-rent/3.webp
   - /images/listings/nakuru-3br-townhouse-rent/4.webp
   - /images/listings/nakuru-3br-townhouse-rent/5.webp
+
 amenities:
   - Spacious lounge with dining area
   - Modern fitted kitchen with pantry
@@ -23,17 +33,19 @@ amenities:
   - Gated compound with 24/7 security
   - Reliable water and backup power
   - Landscaped garden and outdoor seating
-neighborhoodHighlights:
-  - Located near Nakuru CBD and highways
-  - Close to shopping centers, banks, and schools
-  - Proximity to Nakuru National Park
-  - Quiet residential neighborhood with security
-description: |
-  This 3-bedroom townhouse in Nakuru offers modern living with spacious 
-  interiors, ensuite master, and fitted kitchen.  
 
-  With secure parking, reliable utilities, and strong security, the property 
-  provides convenience and comfort. Its location ensures easy access to CBD, 
-  schools, hospitals, and recreational amenities.  
+neighborhoodHighlights:
+  - Near Nakuru CBD and major highways
+  - Close to shopping, banks, and schools
+  - Proximity to Lake Nakuru National Park
+
+description: |
+  Practical 3BR townhouse with ensuite master, fitted kitchen, and secure parking.
+  Reliable services and strong security in a convenient Nakuru location.
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
 Spacious Nakuru townhouse rental offering comfort and prime location.

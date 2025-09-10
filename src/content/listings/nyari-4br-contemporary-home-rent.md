@@ -1,12 +1,21 @@
 ---
 title: "Nyari 4BR Contemporary Home"
-slug: "nyari-4br-contemporary-home-rent"
-availability: "For Rent"
+availability: "rent"
 location: "Nyari, Nairobi"
 price: 300000
 bedrooms: 4
 bathrooms: 4
 type: "House"
+
+# Quick Facts
+lotSize: "Approx. 1/2 acre"
+parking: "4+ cars"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in rent"
+
+# Media
+heroImage: "/images/listings/nyari-4br-contemporary-home-rent/hero.webp"
 images:
   - /images/listings/nyari-4br-contemporary-home-rent/hero.webp
   - /images/listings/nyari-4br-contemporary-home-rent/1.webp
@@ -14,25 +23,26 @@ images:
   - /images/listings/nyari-4br-contemporary-home-rent/3.webp
   - /images/listings/nyari-4br-contemporary-home-rent/4.webp
   - /images/listings/nyari-4br-contemporary-home-rent/5.webp
+
 amenities:
-  - Spacious lounge and dining area
-  - Modern fitted kitchen with pantry
+  - Spacious lounge and dining
+  - Fitted kitchen with pantry
   - Ensuite bedrooms with wardrobes
   - Home office and private study
-  - Secure parking for multiple vehicles
-  - Landscaped garden and outdoor spaces
+  - Landscaped garden and outdoor areas
   - Reliable water and backup power
   - Gated community with 24/7 security
-neighborhoodHighlights:
-  - Prime Nyari location near UN, embassies, and diplomatic zones
-  - Proximity to top schools, malls, and hospitals
-  - Quiet cul-de-sac environment
-description: |
-  This 4-bedroom home in Nyari for rent offers spacious interiors, ensuite 
-  bedrooms, a fitted kitchen, and landscaped garden.  
 
-  With a home office, secure parking, and reliable utilities, it is ideal for 
-  professionals and families. Its location near embassies, schools, and malls 
-  ensures convenience with exclusivity.  
+neighborhoodHighlights:
+  - Diplomatic zone near UN and embassies
+  - Access to international schools and malls
+
+description: |
+  4BR rental with office, garden and strong utilities in a secure Nyari enclave.
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
-Premium Nyari rental offering modern living in a secure neighborhood.
+Premium Nyari rental in a secure, convenient location.

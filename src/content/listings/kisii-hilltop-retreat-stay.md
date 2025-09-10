@@ -1,12 +1,21 @@
 ---
 title: "Kisii Hilltop Retreat"
-slug: "kisii-hilltop-retreat-stay"
-availability: "Short Stays"
+availability: "short-stay"
 location: "Kisii, Kisii County"
 price: 6000
 bedrooms: 2
 bathrooms: 1
 type: "Cottage"
+
+# Quick Facts
+lotSize: "Cottage plot (shared compound)"
+parking: "1–2 cars, on-site"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in stay"
+
+# Media
+heroImage: "/images/listings/kisii-hilltop-retreat-stay/hero.webp"
 images:
   - /images/listings/kisii-hilltop-retreat-stay/hero.webp
   - /images/listings/kisii-hilltop-retreat-stay/1.webp
@@ -14,32 +23,31 @@ images:
   - /images/listings/kisii-hilltop-retreat-stay/3.webp
   - /images/listings/kisii-hilltop-retreat-stay/4.webp
   - /images/listings/kisii-hilltop-retreat-stay/5.webp
+
 amenities:
   - Fast Wi-Fi and smart TV
-  - Hot shower and modern bathroom fittings
-  - Fully fitted kitchenette
+  - Fitted kitchenette
+  - Hot shower
   - Comfortable lounge with views
   - Backup power and reliable water
-  - Secure parking within compound
-  - Fresh linens, towels, and housekeeping
+  - Secure parking
+  - Housekeeping and fresh linens
   - Outdoor seating with hilltop views
-  - Flexible check-in/out options
+  - Flexible check-in/out
+
 neighborhoodHighlights:
-  - Scenic hilltop location with cool breezes
-  - Quick access to Kisii town and shopping amenities
-  - Proximity to Kisii Teaching & Referral Hospital
-  - Nearby Kisii University and local schools
-  - Peaceful retreat with privacy and security
+  - Scenic hilltop location
+  - Quick access to town and shopping
+  - Proximity to hospital and university
+  - Peaceful, secure setting
+
 description: |
-  Perched on a Kisii hilltop, this 2-bedroom retreat is ideal for short stays 
-  whether for leisure or business. It includes a fitted kitchenette, lounge, 
-  hot shower, and high-speed Wi-Fi.  
+  2-bedroom hilltop retreat for short stays. Cozy interiors, reliable utilities and 
+  scenic outdoor spaces, minutes from town.
 
-  Guests enjoy scenic outdoor spaces, secure parking, and reliable utilities. 
-  The peaceful setting combines privacy with quick access to Kisii town, 
-  schools, and hospitals.  
-
-  Designed for flexibility, it is perfect for families, couples, or 
-  professionals seeking a restful countryside experience.
+# Badges
+isNew: false
+isReduced: false
+isFurnished: true
 ---
 Scenic Kisii cottage stay blending comfort, privacy, and views.
