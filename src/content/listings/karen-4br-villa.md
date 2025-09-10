@@ -1,12 +1,21 @@
 ---
 title: "Luxury 4BR Villa in Karen"
-slug: "karen-4br-villa"
-availability: "For Sale"
+availability: "sale"
 location: "Karen, Nairobi"
 price: 150000000
 bedrooms: 4
 bathrooms: 3
 type: "Villa"
+
+# Quick Facts
+lotSize: "1/2 acre"
+parking: "5+ cars"
+yearBuilt: "Unknown"
+tenure: "Freehold"
+serviceCharge: "N/A"
+
+# Media
+heroImage: "/images/listings/karen-4br-villa/hero.webp"
 images:
   - /images/listings/karen-4br-villa/hero.webp
   - /images/listings/karen-4br-villa/1.webp
@@ -14,6 +23,7 @@ images:
   - /images/listings/karen-4br-villa/3.webp
   - /images/listings/karen-4br-villa/4.webp
   - /images/listings/karen-4br-villa/5.webp
+
 amenities:
   - Half-acre manicured garden with mature trees
   - Formal lounge with fireplace and dining area
@@ -25,6 +35,7 @@ amenities:
   - Secure gated community with 24/7 security patrols
   - Ample parking for 5+ cars
   - Entertainment terrace and landscaped outdoor spaces
+
 neighborhoodHighlights:
   - Located in Karen’s exclusive gated communities
   - Close to The Hub, Galleria, and Karen Crossroads malls
@@ -32,6 +43,7 @@ neighborhoodHighlights:
   - Near Nairobi National Park and Karen Blixen Museum
   - Proximity to Karen Hospital and other leading health facilities
   - Leafy, serene environment with strong security presence
+
 description: |
   This luxurious 4-bedroom villa in Karen is set on half an acre of manicured 
   grounds. The design combines open-plan living with elegant details, including 
@@ -45,5 +57,10 @@ description: |
   complement the home’s functional design. With borehole water, backup 
   generator, and top-tier security, this villa guarantees secure, 
   uninterrupted living in one of Nairobi’s most desirable suburbs.
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
 Prestigious Karen villa offering elegance, privacy, and high-end comfort.

@@ -1,12 +1,21 @@
 ---
 title: "Lavington 3BR Townhouse + DSQ"
-slug: "lavington-3br-townhouse-dsq-rent"
-availability: "For Rent"
+availability: "rent"
 location: "Lavington, Nairobi"
 price: 180000
 bedrooms: 3
 bathrooms: 3
 type: "Townhouse"
+
+# Quick Facts
+lotSize: "Estate plot (community)"
+parking: "2+ cars"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in rent"
+
+# Media
+heroImage: "/images/listings/lavington-3br-townhouse-dsq-rent/hero.webp"
 images:
   - /images/listings/lavington-3br-townhouse-dsq-rent/hero.webp
   - /images/listings/lavington-3br-townhouse-dsq-rent/1.webp
@@ -14,6 +23,7 @@ images:
   - /images/listings/lavington-3br-townhouse-dsq-rent/3.webp
   - /images/listings/lavington-3br-townhouse-dsq-rent/4.webp
   - /images/listings/lavington-3br-townhouse-dsq-rent/5.webp
+
 amenities:
   - Spacious lounge with dining area
   - Modern fitted kitchen with pantry
@@ -23,20 +33,18 @@ amenities:
   - Secure parking for 2+ vehicles
   - Gated compound with 24/7 security
   - Reliable water and backup power
+
 neighborhoodHighlights:
-  - Located in leafy Lavington suburb
-  - Close to Lavington Mall and Junction Mall
-  - Proximity to international schools and health facilities
+  - Leafy Lavington suburb near malls, schools, hospitals
   - Quick access to CBD and Westlands
+
 description: |
-  This 3-bedroom townhouse with DSQ in Lavington offers spacious interiors, 
-  modern kitchen, ensuite bedrooms, and a private garden.  
+  3BR townhouse with DSQ, private garden, and secure gated estate living.
+  Practical layout, reliable utilities, and premium address.
 
-  A detached DSQ, secure parking, and reliable utilities ensure convenience. 
-  The gated community provides strong security and a family-friendly 
-  environment.  
-
-  Its location offers easy access to schools, malls, and major roads, making 
-  it ideal for families and professionals.
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
 Elegant Lavington townhouse with DSQ and private garden for rent.

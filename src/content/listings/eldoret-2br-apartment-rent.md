@@ -1,13 +1,21 @@
 ---
 title: "Eldoret 2BR Apartment"
-slug: "eldoret-2br-apartment-rent"
-availability: "For Rent"
+availability: "rent"
 location: "Eldoret, Uasin Gishu"
 price: 50000
 bedrooms: 2
 bathrooms: 1
 type: "Apartment"
 
+# Quick Facts
+lotSize: "N/A (apartment unit)"
+parking: "1 car, on-site shared"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in rent"
+
+# Media
+heroImage: "/images/listings/eldoret-2br-apartment-rent/hero.webp"
 images:
   - /images/listings/eldoret-2br-apartment-rent/hero.webp
   - /images/listings/eldoret-2br-apartment-rent/1.webp
@@ -16,7 +24,6 @@ images:
   - /images/listings/eldoret-2br-apartment-rent/4.webp
   - /images/listings/eldoret-2br-apartment-rent/5.webp
 
-# 1) Property Description: 3–5 sentences, value-first
 description: >
   Affordable and secure 2-bedroom apartment in Eldoret offering reliable utilities
   and everyday convenience. Bright lounge opens to a balcony, while the modern
@@ -25,7 +32,6 @@ description: >
   friction. Ideal for professionals, small families, or students seeking a clean,
   well-managed home close to town.
 
-# 2) Key Features: 5–8 bullets
 features:
   - Two-bedroom plan with bright lounge and balcony
   - Modern fitted kitchen with pantry and ample cabinetry
@@ -36,7 +42,6 @@ features:
   - Gated compound with 24/7 security and controlled access
   - High-speed internet and cable TV ready; secure on-site parking
 
-# 3) Amenities grouped into logical columns (fallback 'amenities' kept)
 amenitiesCategories:
   "Interior & Layout":
     - Spacious lounge with balcony
@@ -66,7 +71,6 @@ amenities:
   - High-speed internet and cable TV ready
   - Perimeter wall, gatehouse & 24/7 security
 
-# 4) Neighbourhood Highlights grouped
 neighborhoodCategories:
   "Education":
     - Moi University Town Campus
@@ -89,5 +93,9 @@ neighborhoodHighlights:
   - Access to supermarkets, banks, and shopping malls
   - Quiet residential neighborhood with good community feel
   - Short drive to Eldoret Airport
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
-Affordable and secure apartment in Eldoret’s fast-growing residential zone.

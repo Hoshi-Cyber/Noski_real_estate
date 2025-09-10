@@ -1,13 +1,21 @@
 ---
 title: "Malindi Oceanfront Retreat"
-slug: "malindi-oceanfront-retreat-stay"
-availability: "Short Stays"
+availability: "short-stay"
 location: "Malindi, Kilifi"
 price: 22000
 bedrooms: 3
 bathrooms: 3
 type: "Retreat"
 
+# Quick Facts
+lotSize: "Oceanfront plot"
+parking: "2–3 cars, on-site"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in stay"
+
+# Media
+heroImage: "/images/listings/malindi-oceanfront-retreat-stay/hero.webp"
 images:
   - /images/listings/malindi-oceanfront-retreat-stay/hero.webp
   - /images/listings/malindi-oceanfront-retreat-stay/1.webp
@@ -15,56 +23,33 @@ images:
   - /images/listings/malindi-oceanfront-retreat-stay/3.webp
 
 description: >
-  Malindi Oceanfront Retreat located in Malindi, Kilifi. Perfect for holidaymakers,
-  business travelers, or family retreats. Fully furnished with reliable utilities,
-  internet access, and outdoor spaces for relaxation.
+  Oceanfront 3BR retreat for short stays. Fully furnished with reliable utilities,
+  Wi-Fi, outdoor seating, and housekeeping.
 
 features:
   - Comfortable bedrooms with fresh linens
-  - Fully equipped kitchen or kitchenette
-  - Spacious lounge and dining areas
+  - Fully equipped kitchen
+  - Lounge and dining areas
   - Internet and smart TV
-  - Backup power and reliable water supply
-  - Outdoor seating or garden space
+  - Backup power and reliable water
+  - Outdoor seating facing the ocean
   - Secure parking and gated compound
   - Housekeeping service included
 
-amenitiesCategories:
-  "Interior":
-    - Cozy lounge and dining
-    - Comfortable bedrooms
-  "Kitchen & Utility":
-    - Fully equipped kitchen
-    - Laundry area
-  "Connectivity":
-    - Internet and TV ready
-  "Security":
-    - Gated compound with security
-  "Outdoor":
-    - Garden or balcony space
-
 amenities:
-  - Fresh linens and towels
   - Smart TV and Wi-Fi
   - Equipped kitchen
-  - Housekeeping service
   - Backup power and water
-  - Secure parking
   - Outdoor seating
-
-neighborhoodCategories:
-  "Attractions":
-    - Local beaches, parks, or cultural sites
-  "Shopping":
-    - Nearby malls and supermarkets
-  "Transport":
-    - Easy access to main roads
-  "Dining":
-    - Cafes and restaurants nearby
+  - Secure parking
 
 neighborhoodHighlights:
-  - Prime short-stay location
-  - Close to shopping and dining
-  - Access to local attractions
-  - Safe and serene environment
+  - Prime oceanfront setting near Malindi town
+  - Access to marine parks and restaurants
+  - Easy reach to shopping and airport
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: true
 ---

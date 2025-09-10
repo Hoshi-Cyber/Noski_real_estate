@@ -1,12 +1,21 @@
 ---
 title: "Nyari Guest Wing (Private Entry)"
-slug: "nyari-guest-wing-stay"
-availability: "Short Stays"
+availability: "short-stay"
 location: "Nyari, Nairobi"
 price: 9000
 bedrooms: 1
 bathrooms: 1
-type: "House"
+type: "Guest Wing"
+
+# Quick Facts
+lotSize: "Within main compound"
+parking: "1–2 cars, on-site"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in stay"
+
+# Media
+heroImage: "/images/listings/nyari-guest-wing-stay/hero.webp"
 images:
   - /images/listings/nyari-guest-wing-stay/hero.webp
   - /images/listings/nyari-guest-wing-stay/1.webp
@@ -14,6 +23,7 @@ images:
   - /images/listings/nyari-guest-wing-stay/3.webp
   - /images/listings/nyari-guest-wing-stay/4.webp
   - /images/listings/nyari-guest-wing-stay/5.webp
+
 amenities:
   - Private entry for full privacy
   - Fast Wi-Fi and smart TV
@@ -23,17 +33,18 @@ amenities:
   - Secure parking within compound
   - Flexible check-in/out
   - Housekeeping and laundry available
-neighborhoodHighlights:
-  - Exclusive Nyari neighborhood near UN and embassies
-  - Close to Village Market and Gigiri shopping hubs
-  - Proximity to international schools and hospitals
-  - Secure, leafy environment with quiet ambiance
-description: |
-  This 1-bedroom guest wing in Nyari offers a private-entry setup perfect for 
-  short stays. It includes a kitchenette, lounge area, Wi-Fi, and modern bathroom.  
 
-  Guests enjoy secure parking, backup utilities, and flexible check-in/out.  
-  Its location near diplomatic zones and malls ensures convenience while 
-  providing a peaceful retreat.  
+neighborhoodHighlights:
+  - Close to UN, embassies and Village Market
+  - Quiet, leafy and secure environment
+
+description: |
+  One-bedroom guest wing for short stays. Private entry, kitchenette, Wi-Fi and
+  backup utilities in an elite neighborhood.
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: true
 ---
-Private Nyari guest wing stay offering security, comfort, and privacy.
+Private Nyari stay with security and convenience.

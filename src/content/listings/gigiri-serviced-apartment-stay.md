@@ -1,13 +1,21 @@
 ---
 title: "Gigiri Serviced Apartment"
-slug: "gigiri-serviced-apartment-stay"
-availability: "Short Stays"
+availability: "short-stay"
 location: "Gigiri, Nairobi"
 price: 15000
 bedrooms: 2
 bathrooms: 2
 type: "Apartment"
 
+# Quick Facts
+lotSize: "N/A (apartment unit)"
+parking: "1–2 cars, on-site"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in stay"
+
+# Media
+heroImage: "/images/listings/gigiri-serviced-apartment-stay/hero.webp"
 images:
   - /images/listings/gigiri-serviced-apartment-stay/hero.webp
   - /images/listings/gigiri-serviced-apartment-stay/1.webp
@@ -67,4 +75,9 @@ neighborhoodHighlights:
   - Close to shopping and dining
   - Access to local attractions
   - Safe and serene environment
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: true
 ---

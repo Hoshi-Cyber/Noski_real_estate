@@ -1,12 +1,21 @@
 ---
 title: "Ongata Rongai 2BR Apartment"
-slug: "ongata-rongai-2br-apartment-rent"
-availability: "For Rent"
+availability: "rent"
 location: "Ongata Rongai, Kajiado"
 price: 50000
 bedrooms: 2
 bathrooms: 1
 type: "Apartment"
+
+# Quick Facts
+lotSize: "N/A (apartment unit)"
+parking: "1 car, on-site"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in rent"
+
+# Media
+heroImage: "/images/listings/ongata-rongai-2br-apartment-rent/hero.webp"
 images:
   - /images/listings/ongata-rongai-2br-apartment-rent/hero.webp
   - /images/listings/ongata-rongai-2br-apartment-rent/1.webp
@@ -14,25 +23,26 @@ images:
   - /images/listings/ongata-rongai-2br-apartment-rent/3.webp
   - /images/listings/ongata-rongai-2br-apartment-rent/4.webp
   - /images/listings/ongata-rongai-2br-apartment-rent/5.webp
-amenities:
-  - Spacious lounge with balcony
-  - Modern fitted kitchen
-  - Built-in wardrobes in bedrooms
-  - Reliable water and prepaid power
-  - Secure parking for residents
-  - High-speed internet ready
-  - Gated compound with 24/7 security
-neighborhoodHighlights:
-  - Located in Ongata Rongai near Maasai Mall
-  - Close to universities including Multimedia and Catholic
-  - Proximity to Nairobi National Park and Galleria Mall
-  - Good public transport connections to CBD
-description: |
-  This 2-bedroom apartment in Ongata Rongai offers affordable and secure 
-  living in a growing neighborhood. It features a fitted kitchen, lounge with 
-  balcony, and built-in wardrobes.  
 
-  Secure parking, reliable utilities, and internet readiness add convenience.  
-  Its location provides easy access to schools, malls, and Nairobi National Park.  
+amenities:
+  - Lounge with balcony
+  - Modern fitted kitchen
+  - Built-in wardrobes
+  - Reliable water and prepaid power
+  - Internet ready
+  - Gated compound with 24/7 security
+
+neighborhoodHighlights:
+  - Near Maasai Mall, universities and Nairobi National Park
+  - Good public transport to CBD
+
+description: |
+  Secure 2BR rental with balcony lounge and fitted kitchen. Reliable utilities
+  and convenient access to schools, malls and parks.
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
-Modern Ongata Rongai apartment rental offering value and convenience.
+Value Ongata Rongai rental with strong connectivity.

@@ -34,7 +34,7 @@ function isNew(d: DevelopmentEntry): d is DevelopmentNew {
   return d.category === 'new_development';
 }
 
-function monthYear(d?: Date): string | null {
+function monthYear(d?: Date | null): string | null {
   if (!d) return null;
   try {
     return d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });

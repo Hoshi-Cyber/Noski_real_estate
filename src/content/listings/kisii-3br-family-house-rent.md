@@ -1,13 +1,21 @@
 ---
 title: "Kisii 3BR Family House"
-slug: "kisii-3br-family-house-rent"
-availability: "For Rent"
+availability: "rent"
 location: "Kisii, Nyamira"
 price: 55000
 bedrooms: 3
 bathrooms: 2
 type: "House"
 
+# Quick Facts
+lotSize: "Standard town plot"
+parking: "2 cars"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in rent"
+
+# Media
+heroImage: "/images/listings/kisii-3br-family-house-rent/hero.webp"
 images:
   - /images/listings/kisii-3br-family-house-rent/hero.webp
   - /images/listings/kisii-3br-family-house-rent/1.webp
@@ -15,57 +23,28 @@ images:
   - /images/listings/kisii-3br-family-house-rent/3.webp
 
 description: >
-  Kisii 3BR Family House located in Kisii, Nyamira. Modern design with reliable utilities,
-  secure gated access, and convenient proximity to key services. Perfect for tenants seeking
-  a comfortable home with long-term value.
+  Functional 3BR family house close to services. Reliable utilities, secure access, and private parking.
 
 features:
-  - Spacious living area with natural light
-  - Modern kitchen with cabinets and storage
-  - Bedrooms with built-in wardrobes
-  - Constant water supply and prepaid power
-  - Secure gated compound with 24/7 security
+  - Bright living area
+  - Fitted kitchen with storage
+  - Built-in wardrobes
+  - Laundry area
+  - Constant water and prepaid power
   - Internet and TV ready
-  - On-site parking
-
-amenitiesCategories:
-  "Interior":
-    - Bright lounge
-    - Built-in wardrobes
-    - Tiled floors
-  "Kitchen & Utility":
-    - Modern fitted kitchen
-    - Laundry area
-  "Connectivity":
-    - Internet and TV ready
-  "Security":
-    - 24/7 gated compound
-  "Parking":
-    - On-site parking
+  - Secure gated compound
 
 amenities:
-  - Bright lounge
-  - Built-in wardrobes
+  - On-site parking
+  - Perimeter wall and gate
   - Tiled floors
-  - Laundry area
-  - Secure gated compound
-  - Constant water supply
-  - Internet and TV ready
-  - Parking on site
-
-neighborhoodCategories:
-  "Education":
-    - Local schools and colleges
-  "Healthcare":
-    - Nearby hospitals and clinics
-  "Shopping":
-    - Markets, malls, and supermarkets
-  "Transport":
-    - Main road access and public transport
 
 neighborhoodHighlights:
-  - Prime location with nearby services
-  - Secure and vibrant community
-  - Reliable transport connections
-  - Access to shopping, schools, and hospitals
+  - Near schools, clinics and markets
+  - Good transport links
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---

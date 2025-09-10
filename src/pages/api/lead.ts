@@ -32,10 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     return json({ ok: true }, 200);
   } catch (err: any) {
-    return json(
-      { ok: false, error: err?.message ?? 'Invalid Request' },
-      400
-    );
+    return json({ ok: false, error: err?.message ?? 'Invalid Request' }, 400);
   }
 };
 
@@ -51,18 +48,31 @@ function json(body: unknown, status = 200) {
   });
 }
 
-async function readBody(request: Request) {
+async function readBody(request: Request): Promise<Record<string, string>> {
   const ct = request.headers.get('content-type') || '';
+
   if (ct.includes('multipart/form-data') || ct.includes('application/x-www-form-urlencoded')) {
     const fd = await request.formData();
     const obj: Record<string, string> = {};
-    for (const [k, v] of fd.entries()) obj[k] = String(v);
+    // TS-safe: FormData.forEach is always available
+    fd.forEach((v, k) => {
+      obj[k] = typeof v === 'string' ? v : (v as File).name;
+    });
     return obj;
   }
+
   if (ct.includes('application/json')) {
-    return await request.json();
+    const j = await request.json().catch(() => ({}));
+    const obj: Record<string, string> = {};
+    if (j && typeof j === 'object') {
+      for (const [k, v] of Object.entries(j as Record<string, unknown>)) {
+        obj[k] = v == null ? '' : String(v);
+      }
+    }
+    return obj;
   }
-  // Fallback: try text querystring
+
+  // Fallback: querystring
   const url = new URL(request.url);
   const obj: Record<string, string> = {};
   url.searchParams.forEach((v, k) => (obj[k] = v));
@@ -114,13 +124,11 @@ function isValidEmail(e: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 }
 function isValidPhone(p: string) {
-  // allow +, digits, spaces, hyphens. Require at least 7 digits.
   const digits = p.replace(/[^\d]/g, '');
   return digits.length >= 7;
 }
 function normalizePhone(p: string) {
   const d = p.replace(/[^\d]/g, '');
-  // Prefer E.164 without + for WhatsApp compatibility if country prefix provided
   return d;
 }
 
@@ -162,17 +170,28 @@ async function forward(payload: Record<string, any>) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ type: 'lead', payload }),
       });
-      results.push({ name: t.name, ok: res.ok, status: res.status, error: res.ok ? undefined : await safeText(res) });
+      results.push({
+        name: t.name,
+        ok: res.ok,
+        status: res.status,
+        error: res.ok ? undefined : await safeText(res),
+      });
     } catch (e: any) {
       results.push({ name: t.name, ok: false, error: e?.message || 'network_error' });
     }
   }
 
   const ok = results.some((r) => r.ok);
-  const errors = results.filter((r) => !r.ok).map((r) => `${r.name}:${r.status ?? ''} ${r.error ?? ''}`.trim());
+  const errors = results
+    .filter((r) => !r.ok)
+    .map((r) => `${r.name}:${r.status ?? ''} ${r.error ?? ''}`.trim());
   return { ok, errors };
 }
 
 async function safeText(res: Response) {
-  try { return await res.text(); } catch { return ''; }
+  try {
+    return await res.text();
+  } catch {
+    return '';
+  }
 }

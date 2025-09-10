@@ -1,12 +1,21 @@
 ---
 title: "Malindi Beach Bungalow"
-slug: "malindi-beach-bungalow-stay"
-availability: "Short Stays"
+availability: "short-stay"
 location: "Malindi, Kilifi"
 price: 13000
 bedrooms: 2
 bathrooms: 2
 type: "Bungalow"
+
+# Quick Facts
+lotSize: "Beachfront plot"
+parking: "1–2 cars, on-site"
+yearBuilt: "Unknown"
+tenure: "Leasehold"
+serviceCharge: "Included in stay"
+
+# Media
+heroImage: "/images/listings/malindi-beach-bungalow-stay/hero.webp"
 images:
   - /images/listings/malindi-beach-bungalow-stay/hero.webp
   - /images/listings/malindi-beach-bungalow-stay/1.webp
@@ -14,31 +23,30 @@ images:
   - /images/listings/malindi-beach-bungalow-stay/3.webp
   - /images/listings/malindi-beach-bungalow-stay/4.webp
   - /images/listings/malindi-beach-bungalow-stay/5.webp
+
 amenities:
   - Beachfront access with ocean views
   - Fast Wi-Fi and smart TV
   - Modern kitchen with appliances
   - Outdoor veranda and garden
   - Backup power and borehole water
-  - Hot showers and clean linens
+  - Hot showers and fresh linens
   - Secure on-site parking
-  - Flexible check-in/out options
   - Daily housekeeping available
+  - Flexible check-in/out options
+
 neighborhoodHighlights:
-  - Prime beachfront location near Malindi town
-  - Close to marine parks, diving, and fishing spots
-  - Proximity to shopping, restaurants, and nightlife
+  - Steps to beach activities and marine parks
+  - Close to restaurants, shopping, and nightlife
   - Easy access to Malindi Airport
-  - Peaceful, secure area with coastal charm
+
 description: |
-  This beachfront 2-bedroom bungalow in Malindi is designed for short stays, 
-  offering direct access to the ocean, modern amenities, and a relaxed coastal 
-  setting.  
+  Beachfront 2BR short-stay bungalow delivering ocean views, outdoor living,
+  and reliable utilities. Ideal for relaxed coastal getaways.
 
-  Guests enjoy outdoor living with a private veranda and garden, while fast Wi-Fi, 
-  backup power, and daily housekeeping ensure comfort.  
-
-  Its location combines the tranquility of the beach with proximity to Malindi’s 
-  vibrant lifestyle.  
+# Badges
+isNew: false
+isReduced: false
+isFurnished: true
 ---
 Beachfront Malindi stay offering comfort, views, and relaxation.

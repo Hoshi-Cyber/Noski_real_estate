@@ -1,12 +1,21 @@
 ---
 title: "Karen 5BR Estate Home"
-slug: "karen-5br-estate-home"
-availability: "For Sale"
+availability: "sale"
 location: "Karen, Nairobi"
 price: 150000000
 bedrooms: 5
 bathrooms: 5
 type: "House"
+
+# Quick Facts
+lotSize: "1 acre"
+parking: "6+ cars"
+yearBuilt: "Unknown"
+tenure: "Freehold"
+serviceCharge: "N/A"
+
+# Media
+heroImage: "/images/listings/karen-5br-estate-home/hero.webp"
 images:
   - /images/listings/karen-5br-estate-home/hero.webp
   - /images/listings/karen-5br-estate-home/1.webp
@@ -14,6 +23,7 @@ images:
   - /images/listings/karen-5br-estate-home/3.webp
   - /images/listings/karen-5br-estate-home/4.webp
   - /images/listings/karen-5br-estate-home/5.webp
+
 amenities:
   - 1 Acre Landscaped Garden with mature trees
   - Detached DSQ & Guard House with separate access
@@ -25,6 +35,7 @@ amenities:
   - Family TV lounge & study room
   - Walk-in wardrobes in all bedrooms
   - Spacious modern kitchen with pantry & utility area
+
 neighborhoodHighlights:
   - Near Karen Blixen Museum, Giraffe Centre & malls
   - Proximity to Karen Hospital & top international schools
@@ -32,6 +43,7 @@ neighborhoodHighlights:
   - Easy access to Southern Bypass and Wilson Airport
   - Close to Karen Country Club (golf, tennis, fine dining)
   - Quiet, leafy environment with strong community presence
+
 description: |
   This stately 5-bedroom estate home sits on a full acre in the heart of Karen, 
   offering a rare combination of privacy, space, and luxury. Designed for 
@@ -45,5 +57,10 @@ description: |
   self-sufficient. Located near Karen’s best schools, hospitals, and malls, 
   this property epitomizes the sought-after Karen lifestyle — secure, private, 
   and prestigious.
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
 A classic Karen estate home with modern comforts and prime location.

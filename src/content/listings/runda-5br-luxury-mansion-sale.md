@@ -1,13 +1,22 @@
 ---
 title: "Runda 5BR Luxury Mansion"
 slug: "runda-5br-luxury-mansion-sale"
-availability: "For Sale"
+availability: "sale"
 location: "Runda, Nairobi"
 price: 180000000
 bedrooms: 5
 bathrooms: 5
 type: "Mansion"
 
+# Quick Facts
+lotSize: "Approx. 1/2 acre landscaped"
+parking: "6+ cars inside compound"
+yearBuilt: "Unknown"
+tenure: "Freehold"
+serviceCharge: "N/A"
+
+# Media
+heroImage: "/images/listings/runda-5br-luxury-mansion-sale/hero.webp"
 images:
   - /images/listings/runda-5br-luxury-mansion-sale/hero.webp
   - /images/listings/runda-5br-luxury-mansion-sale/1.webp
@@ -15,9 +24,9 @@ images:
   - /images/listings/runda-5br-luxury-mansion-sale/3.webp
 
 description: >
-  Runda 5BR Luxury Mansion located in Runda, Nairobi. Designed with modern comfort and convenience,
-  featuring spacious interiors, secure gated living, and premium finishes. Perfect for homeowners or
-  investors seeking high-value property in a prime location.
+  Runda 5BR Luxury Mansion designed for modern comfort and convenience with
+  spacious interiors, premium finishes and secure gated living. Suits homeowners
+  or investors seeking a blue-chip address.
 
 features:
   - Spacious lounge and dining area
@@ -69,4 +78,10 @@ neighborhoodHighlights:
   - Strong community presence
   - Reliable transport connections
   - Secure and serene environment
+
+# Badges
+isNew: false
+isReduced: false
+isFurnished: false
 ---
+Luxury Runda mansion offering grandeur, security, and exclusivity.
