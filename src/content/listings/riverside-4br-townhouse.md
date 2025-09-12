@@ -1,6 +1,6 @@
 ---
 title: "Elegant 4BR Townhouse in Riverside"
-availability: "sale"
+availability: "rent"
 location: "Riverside, Nairobi"
 price: 185000
 bedrooms: 4

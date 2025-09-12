@@ -3,149 +3,115 @@ import { getCollection } from 'astro:content';
 import MainLayout from '../../layouts/MainLayout.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
 
-// Helpers
-const areaOf = (loc = '') => (loc || '').split(',')[0].trim();
-const canonType = (t = '') => {
-  const v = (t || '').trim().toLowerCase();
-  return v === 'studio' || v === 'bedsitter' ? 'studio/bedsitter' : v;
+// Utils
+const num = (v:any) => {
+  if (typeof v === 'number') return v;
+  const n = Number(String(v || '').replace(/[^\d]/g, ''));
+  return Number.isFinite(n) ? n : 0;
 };
-const cardImg = (entry: any) =>
-  entry?.data?.imagesFolder ? `${entry.data.imagesFolder}/1.webp` : '/images/placeholder.webp';
+const ts = (d:any) => {
+  const val = d?.updatedAt || d?.availableFrom || d?.publishedAt || d?.createdAt || d?.date || 0;
+  const n = new Date(val).getTime();
+  return Number.isFinite(n) ? n : 0;
+};
 
-// Data (pre-scope to RENT only; case-insensitive)
+// Data: RENT only
 const all = await getCollection('listings');
-const rentOnly = all.filter((e) => (e.data.availability || '').toLowerCase().includes('rent'));
+const rentOnly = all.filter(e => (e.data.availability || '').toLowerCase().includes('rent'));
 
-// Facets (from rentOnly)
-const allLocations = Array.from(
-  new Set(rentOnly.map(e => areaOf(e.data.location)).filter(Boolean))
-).sort();
-const allTypesCanon = Array.from(
-  new Set(rentOnly.map(e => canonType(e.data.type)).filter(Boolean))
-).sort();
-
-// Buttons (styling matches listings page)
-const btn = {
-  ghost: 'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-200',
+// Sections (dedupe)
+const seen = new Set<string>();
+const take = (arr:any[], limit:number) => {
+  const out:any[] = [];
+  for (const e of arr) {
+    if (seen.has(e.slug)) continue;
+    out.push(e);
+    seen.add(e.slug);
+    if (out.length >= limit) break;
+  }
+  return out;
 };
+
+// Featured & New
+const featured = rentOnly.filter(e => !!(e.data as any).featured);
+const newest   = [...rentOnly].sort((a,b) => ts(b.data) - ts(a.data));
+const secFeaturedNew = take([...featured, ...newest], 4);
+
+// Affordable (≤ KSh 150k)
+const affordable = rentOnly.filter(e => num((e.data as any).price) > 0 && num((e.data as any).price) <= 150_000);
+const secAffordable = take(affordable.sort((a,b)=> num(a.data.price)-num(b.data.price)), 4);
+
+// Premium (≥ KSh 250k)
+const premium = rentOnly.filter(e => num((e.data as any).price) >= 250_000);
+const secPremium = take(premium.sort((a,b)=> num(b.data.price)-num(a.data.price)), 4);
 ---
 
 <MainLayout
   title="Homes for Rent in Nairobi"
-  description="Discover houses, apartments and villas available for rent in Nairobi."
+  description="Curated rentals: featured & new, affordable, and premium picks. Jump to full search for filters and pagination."
 >
   <section class="py-12 max-w-7xl mx-auto px-4">
-    <div class="flex items-center justify-between gap-3 mb-4">
-      <h1 class="text-3xl font-bold text-primary">Homes for Rent in Nairobi</h1>
-      <div class="hidden sm:flex gap-2">
-        <a href="/listings" class={btn.ghost}>All Listings</a>
-        <a href="/for-sale" class={btn.ghost}>For Sale</a>
-        <a href="/short-stays" class={btn.ghost}>Short Stays</a>
+    <!-- Mobile-friendly header actions -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <h1 class="text-3xl font-bold text-primary">Homes for Rent</h1>
+
+      <!-- Compact, single-row, scrollable on small screens -->
+      <div class="-mx-1 max-w-full overflow-x-auto scrollbar-hide">
+        <div class="flex gap-2 px-1">
+          <a href="/listings?availability=for-rent" class="btn-cta cta-fluid shrink-0 whitespace-nowrap">Browse all for rent</a>
+          <a href="/for-sale" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Sale</a>
+          <a href="/short-stays" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">Short Stays</a>
+        </div>
       </div>
     </div>
 
-    <p class="text-neutral-700 mb-6">
-      Find the perfect rental in your preferred neighbourhood. Use the filters below to refine your search.
-    </p>
+    {secFeaturedNew.length > 0 && (
+      <>
+        <header class="landing-head mb-3">
+          <h2 class="landing-h2">Featured & New</h2>
+          <a href="/listings?availability=for-rent&sort=date_desc" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See more</a>
+        </header>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+          {secFeaturedNew.map(e => (<li><PropertyCard listing={e.data} slug={e.slug} /></li>))}
+        </ul>
+      </>
+    )}
 
-    <!-- Filters (client-side; URL is synced via pagination.js) -->
-    <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-      <!-- Location -->
-      <select id="f-location" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="">All Locations</option>
-        {allLocations.map(loc => (<option value={loc.toLowerCase()}>{loc}</option>))}
-      </select>
+    {secAffordable.length > 0 && (
+      <>
+        <header class="landing-head mb-3">
+          <h2 class="landing-h2">Affordable (≤ KSh 150k)</h2>
+          <a href="/listings?availability=for-rent" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all affordable</a>
+        </header>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+          {secAffordable.map(e => (<li><PropertyCard listing={e.data} slug={e.slug} /></li>))}
+        </ul>
+      </>
+    )}
 
-      <!-- Beds (EXACT 1–4; MIN 5+) -->
-      <select id="f-bed" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="">Beds</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5+">5+</option>
-      </select>
-
-      <!-- Type (canonical) -->
-      <select id="f-type" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="">All Property Types</option>
-        {allTypesCanon.map(t => (
-          <option value={t}>
-            {t === 'studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g, c => c.toUpperCase())}
-          </option>
-        ))}
-      </select>
-
-      <!-- Clear -->
-      <button id="f-clear" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        Clear filters
-      </button>
-    </div>
-
-    <!-- Results header (will be hydrated) -->
-    <div class="flex items-center justify-between mb-3">
-      <div id="result-count" class="text-sm text-neutral-600"></div>
-    </div>
-
-    <!-- Listings grid: render ALL; client JS paginates & filters -->
-    <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {rentOnly.map((e) => {
-        const d = e.data;
-        const loc = areaOf(d.location).toLowerCase();
-        const beds = Number.isFinite(d.bedrooms) ? Number(d.bedrooms) : 0;
-        const typeCanon = canonType(d.type);
-        const avail = 'for-rent';
-
-        return (
-          <li
-            data-title={(d.title || '').toLowerCase()}
-            data-loc={loc}
-            data-beds={beds}
-            data-type={typeCanon}
-            data-avail={avail}
-          >
-            <PropertyCard
-              listing={{ ...d, image: cardImg(e) }}
-              slug={e.slug}
-              compact={false}
-            />
-          </li>
-        );
-      })}
-    </ul>
-
-    <div id="empty" class="hidden text-center text-neutral-600 mt-8">
-      No rentals match your filters.
-    </div>
-
-    <!-- Pagination container (client-rendered; keeps styling) -->
-    <div id="pager" class="mt-8 flex flex-wrap items-center justify-center gap-2"></div>
-
-    <!-- Bottom shortcuts (mobile) -->
-    <div class="sm:hidden mt-8 flex justify-center gap-2">
-      <a href="/listings" class={btn.ghost}>All Listings</a>
-      <a href="/for-sale" class={btn.ghost}>For Sale</a>
-      <a href="/short-stays" class={btn.ghost}>Short Stays</a>
-    </div>
+    {secPremium.length > 0 && (
+      <>
+        <header class="landing-head mb-3">
+          <h2 class="landing-h2">Premium (≥ KSh 250k)</h2>
+          <a href="/listings?availability=for-rent" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all premium</a>
+        </header>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {secPremium.map(e => (<li><PropertyCard listing={e.data} slug={e.slug} /></li>))}
+        </ul>
+      </>
+    )}
   </section>
 </MainLayout>
 
-<!-- Reusable client pagination+filters -->
-<script type="module" is:inline>
-  import { initPaginationAndFilters } from '/src/lib/pagination.js';
-
-  initPaginationAndFilters({
-    pageSize: 12,
-    filterSelectors: {
-      location: '#f-location',
-      beds: '#f-bed',         // supports "", "1","2","3","4","5+"
-      type: '#f-type',
-      // availability not exposed on this page; it's implicitly for-rent
-    },
-    clearSelector: '#f-clear',
-    cardSelector: '#cards li',
-    pagerSelector: '#pager',
-    emptySelector: '#empty',
-    resultCountSelector: '#result-count',
-  });
+<!-- Cosmetic: ensure URL shows ?availability=for-rent for share/back/forward context -->
+<script is:inline>
+  (function () {
+    try {
+      const u = new URL(window.location.href);
+      if (u.searchParams.get('availability') !== 'for-rent') {
+        u.searchParams.set('availability', 'for-rent');
+        history.replaceState({}, '', u);
+      }
+    } catch {}
+  })();
 </script>

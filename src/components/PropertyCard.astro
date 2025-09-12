@@ -22,68 +22,95 @@ const {
 } = Astro.props as Props;
 
 /* ---------- Helpers ---------- */
-const norm = (s: string = '') => s.toLowerCase().replace(/\s+/g, '-');
+function availabilityToSegment(a?: string) {
+  const v = (a || '').toLowerCase();
+  if (v.includes('rent')) return 'rent';
+  if (v.includes('sale')) return 'sale';
+  if (v.includes('short')) return 'short-stay';
+  return 'sale';
+}
 
 const finalHref =
-  href || `/properties/${norm(String((listing as any).availability || ''))}/${slug}`;
+  href || `/properties/${availabilityToSegment((listing as any).availability)}/${slug}`;
 
-function resolveCardImage(
+/** Ensure a path starts with a single leading slash */
+function withLeadingSlash(p?: string) {
+  if (!p) return undefined;
+  return p.startsWith('/') ? p : `/${p}`;
+}
+
+/**
+ * Resolve the best image for the card:
+ * 1) listing.image (explicit) or listing.heroImage (frontmatter)
+ * 2) first of listing.images[]
+ * 3) imagesFolder: hero.webp → cover.webp → main.webp → 1.webp
+ * 4) placeholder
+ */
+function resolveCardImage(opts: {
   slug: string,
   imagesFolder?: string,
   images?: string[] | undefined,
-  image?: string | undefined
-): string {
-  const base = (imagesFolder ? imagesFolder.replace(/^\/+|\/+$/g, '') : `images/listings/${slug}`);
+  image?: string | undefined,
+  heroImage?: string | undefined
+}): string {
+  const base =
+    opts.imagesFolder
+      ? opts.imagesFolder.replace(/^\/+|\/+$/g, '')
+      : `images/listings/${opts.slug}`;
+
   const candidates = [
+    withLeadingSlash(opts.image),
+    withLeadingSlash(opts.heroImage),
+    ...(Array.isArray(opts.images) ? opts.images.map(withLeadingSlash) : []),
     `/${base}/hero.webp`,
     `/${base}/cover.webp`,
     `/${base}/main.webp`,
     `/${base}/1.webp`,
-    ...(Array.isArray(images) ? images : []),
-    image,
     '/images/placeholder.webp'
   ].filter(Boolean) as string[];
-  return candidates[0];
+
+  return candidates[0]!;
 }
 
-const finalImg = resolveCardImage(
+const finalImg = resolveCardImage({
   slug,
-  (listing as any).imagesFolder,
-  (listing as any).images,
-  (listing as any).image
-);
+  imagesFolder: (listing as any).imagesFolder,
+  images: (listing as any).images,
+  image: (listing as any).image,
+  heroImage: (listing as any).heroImage
+});
 
-/* Responsive srcset */
+/* Responsive srcset (works with versioned URLs like ?v=v2) */
+const qsep = finalImg.includes('?') ? '&' : '?';
 const srcset = `
-  ${finalImg}?w=480 480w,
-  ${finalImg}?w=768 768w,
-  ${finalImg}?w=1024 1024w
+  ${finalImg}${qsep}w=480 480w,
+  ${finalImg}${qsep}w=768 768w,
+  ${finalImg}${qsep}w=1024 1024w
 `;
 
-const altText = (listing as any).title && (listing as any).location
-  ? `${(listing as any).title} - ${(listing as any).location}`
-  : (listing as any).title || 'Property image';
+const titleText = (listing as any).title || 'Untitled Property';
+const altText =
+  (listing as any).title && (listing as any).location
+    ? `${(listing as any).title} - ${(listing as any).location}`
+    : (listing as any).title || 'Property image';
 
 const statusColors: Record<string, string> = {
-  'for sale': 'bg-blue-600',
-  'for rent': 'bg-emerald-600',
-  'short-stays': 'bg-neutral-800',
+  'sale': 'bg-blue-600',
+  'rent': 'bg-emerald-600',
   'short-stay': 'bg-neutral-800'
 };
-const availSeg = norm(String((listing as any).availability || ''));
-const statusClass = statusColors[availSeg] || 'bg-neutral-800';
+const statusKey = availabilityToSegment((listing as any).availability);
+const statusClass = statusColors[statusKey] || 'bg-neutral-800';
 
 const priceText =
   typeof (listing as any).price === 'number'
     ? `KSh ${(listing as any).price.toLocaleString()}`
-    : 'Price N/A';
+    : ((listing as any).price || 'Price N/A');
 
 const imgAspect = compact ? 'aspect-[4/3]' : 'aspect-[16/9]';
 const titleSize = compact ? 'text-base' : 'text-lg';
 const pad = compact ? 'p-3' : 'p-4';
 const btnPad = compact ? 'px-3 py-2' : 'px-4 py-2';
-
-const titleText = (listing as any).title || 'Untitled Property';
 ---
 
 <article
@@ -126,7 +153,7 @@ const titleText = (listing as any).title || 'Untitled Property';
 
     <p class="text-sm text-neutral-600">{(listing as any).location || 'Unknown Location'}</p>
 
-    <!-- PRICE ONLY (removed bd/ba initials row) -->
+    <!-- PRICE ONLY -->
     <div class="flex items-baseline justify-end">
       <div class="text-sm md:text-base font-semibold text-neutral-900">{priceText}</div>
     </div>

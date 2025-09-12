@@ -23,29 +23,32 @@ const all = await getCollection('listings');
 
 const allLocations = Array.from(new Set(all.map(e => areaOf(e.data.location)).filter(Boolean))).sort();
 const allTypesCanon = Array.from(new Set(all.map(e => canonType(e.data.type)).filter(Boolean))).sort();
-
-const btn = {
-  ghost:'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50',
-};
 ---
 
 <MainLayout title="All Listings – Locate Properties Kenya">
   <section class="py-10 max-w-7xl mx-auto px-4">
-    <div class="flex items-center justify-between mb-6 gap-3">
-      <h1 class="text-3xl font-bold text-primary">All Listings</h1>
-      <div class="hidden sm:flex gap-2">
-        <a href="/for-sale" class={btn.ghost}>For Sale</a>
-        <a href="/for-rent" class={btn.ghost}>For Rent</a>
-        <a href="/short-stays" class={btn.ghost}>Short Stays</a>
+    <!-- Title + CTAs: stack on mobile, side-by-side on ≥sm -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-primary leading-none whitespace-nowrap">
+        All Listings
+      </h1>
+
+      <!-- Compact, single-row, scrollable on small screens -->
+      <div class="-mx-1 max-w-full overflow-x-auto scrollbar-hide">
+        <div class="flex gap-2 px-1">
+          <a href="/for-sale" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Sale</a>
+          <a href="/for-rent" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Rent</a>
+          <a href="/short-stays" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">Short Stays</a>
+        </div>
       </div>
     </div>
 
-    <!-- Filters: single horizontal row on md+ -->
+    <!-- Filters: **same structure & IDs**; only styling enhanced -->
     <form id="filters" class="mb-6">
-      <div class="flex flex-wrap md:flex-nowrap items-stretch gap-2">
+      <div class="flex flex-wrap md:flex-nowrap items-stretch gap-2 surface rounded-lg p-3 md:p-4">
         <!-- Availability -->
         <select id="f-availability" name="availability"
-          class="flex-1 min-w-[140px] rounded-md border border-neutral-300 p-2 text-sm">
+          class="flex-1 min-w-[140px] rounded-md border border-neutral-300 p-2 text-sm bg-white">
           <option value="">All</option>
           <option value="for-sale">For Sale</option>
           <option value="for-rent">For Rent</option>
@@ -54,14 +57,14 @@ const btn = {
 
         <!-- Location -->
         <select id="f-location" name="location"
-          class="flex-1 min-w-[160px] rounded-md border border-neutral-300 p-2 text-sm">
+          class="flex-1 min-w-[160px] rounded-md border border-neutral-300 p-2 text-sm bg-white">
           <option value="">All Locations</option>
           {allLocations.map(loc => <option value={loc.toLowerCase()}>{loc}</option>)}
         </select>
 
         <!-- Beds -->
         <select id="f-beds" name="beds"
-          class="flex-1 min-w-[110px] rounded-md border border-neutral-300 p-2 text-sm">
+          class="flex-1 min-w-[110px] rounded-md border border-neutral-300 p-2 text-sm bg-white">
           <option value="">Beds</option>
           <option value="1">1</option><option value="2">2</option>
           <option value="3">3</option><option value="4">4</option>
@@ -70,7 +73,7 @@ const btn = {
 
         <!-- Type -->
         <select id="f-type" name="type"
-          class="flex-1 min-w-[170px] rounded-md border border-neutral-300 p-2 text-sm">
+          class="flex-1 min-w-[170px] rounded-md border border-neutral-300 p-2 text-sm bg-white">
           <option value="">All Property Types</option>
           {allTypesCanon.map(t => (
             <option value={t}>{t==='studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g,c=>c.toUpperCase())}</option>
@@ -78,20 +81,20 @@ const btn = {
         </select>
 
         <!-- Min price -->
-        <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden basis-28 shrink-0">
+        <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden basis-32 md:basis-40 shrink-0 bg-white">
           <span class="px-2 text-xs text-neutral-500">KES</span>
           <input name="minPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Min" class="w-full p-2 text-sm outline-none"/>
         </div>
 
         <!-- Max price -->
-        <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden basis-28 shrink-0">
+        <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden basis-32 md:basis-40 shrink-0 bg-white">
           <span class="px-2 text-xs text-neutral-500">KES</span>
           <input name="maxPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Max" class="w-full p-2 text-sm outline-none"/>
         </div>
 
         <!-- Clear -->
         <button type="button" id="f-clear"
-          class="shrink-0 rounded-md border border-neutral-300 px-3 py-2 text-sm">
+          class="shrink-0 btn-subtle px-4 py-2 text-sm">
           Clear filters
         </button>
       </div>

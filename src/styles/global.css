@@ -22,6 +22,7 @@
   --color-neutral-300: #D6D3CE;
   --color-neutral-500: #6B7280;
   --color-neutral-600: #4B5563;
+  --color-neutral-700: #374151; /* added */
   --color-neutral-800: #394449; /* Neutral Dark for body text */
 
   /* Typography */
@@ -462,6 +463,38 @@ a:disabled {
   .section-title { @apply text-2xl md:text-3xl font-bold text-primary mb-8 text-center; }
   .section-subtitle { @apply text-sm font-semibold text-neutral-700 uppercase tracking-wide; }
 
+  /* ---- Landing page section headers (shared) ---- */
+  .landing-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:.5rem;
+    min-width:0;
+  }
+  @media (max-width:640px){
+    .landing-head{ flex-direction:column; align-items:flex-start; }
+  }
+  .landing-h2{
+    font-weight:800;
+    letter-spacing:-.01em;
+    color: var(--color-primary);
+    line-height:1.2;
+    white-space:nowrap;
+    font-size: clamp(1.05rem, 0.9rem + 1.2vw, 1.375rem);
+    display:inline-flex; align-items:center; gap:.5rem;
+  }
+  .landing-h2::after{
+    content:"";
+    display:inline-block;
+    height:.45em; width:36px;
+    border-radius:9999px;
+    background: color-mix(in srgb, var(--color-cta) 70%, transparent);
+  }
+  @media (min-width:640px){
+    .landing-h2{ font-size:1.25rem; }
+    .landing-h2::after{ width:44px; }
+  }
+
   /* ---- Popular Articles (base) ---- */
   .post-card  { @apply bg-white rounded-2xl shadow ring-1 ring-neutral-200 overflow-hidden hover:shadow-md transition; }
   .post-media { @apply w-full h-44 object-cover; }
@@ -716,3 +749,18 @@ footer.bg-primary h6 { color: var(--color-neutral-100); }
 /* Optional: hide scrollbars on horizontal areas */
 .scrollbar-hide{ scrollbar-width:none; }
 .scrollbar-hide::-webkit-scrollbar{ display:none; }
+
+/* ——— Fix: Prevent green focus ring “bleed” at top of page ——— */
+header[role="banner"], .site-header {
+  outline: none !important;
+}
+header[role="banner"]:focus, .site-header:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Optional polish for horizontal pill strips in page headers */
+.overflow-x-auto > .flex {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}

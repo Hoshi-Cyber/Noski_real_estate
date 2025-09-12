@@ -5,12 +5,12 @@ const hasWindow = typeof window !== 'undefined';
 
 /**
  * @typedef {Object} FilterSelectors
- * @property {string=} q          // text search input
- * @property {string=} location   // location select/input
- * @property {string=} beds       // beds select (values: "", "1","2","3","4","5+")
- * @property {string=} bedrooms   // alias
- * @property {string=} type       // exact match
- * @property {string=} availability // optional: for-sale | for-rent | short-stays
+ * @property {string=} q            // text search input
+ * @property {string=} location     // location select/input (value lowercased)
+ * @property {string=} beds         // beds select (values: "", "1","2","3","4","5+")
+ * @property {string=} bedrooms     // alias for beds
+ * @property {string=} type         // canonical type, exact match
+ * @property {string=} availability // for-sale | for-rent | short-stays
  */
 
 /**
@@ -18,9 +18,9 @@ const hasWindow = typeof window !== 'undefined';
  * @property {number=} pageSize
  * @property {FilterSelectors=} filterSelectors
  * @property {string=} clearSelector
- * @property {string} cardSelector      // e.g. '#cards li'
- * @property {string} pagerSelector     // e.g. '#pager'
- * @property {string} emptySelector     // e.g. '#empty'
+ * @property {string} cardSelector       // e.g. '#cards li'
+ * @property {string} pagerSelector      // e.g. '#pager'
+ * @property {string} emptySelector      // e.g. '#empty'
  * @property {string=} resultCountSelector // e.g. '#result-count'
  */
 
@@ -32,6 +32,7 @@ function setQuery(params, replace = true) {
   const url = getURL();
   Object.entries(params).forEach(([k, v]) => {
     if (v === undefined || v === null || v === '' || (typeof v === 'number' && !v)) {
+      // only delete the keys we explicitly pass in
       url.searchParams.delete(k);
     } else {
       url.searchParams.set(k, String(v));
@@ -65,8 +66,13 @@ function setFieldValue(sel, value) {
 }
 
 function cardSearchText(node) {
+  // cache a lowercase haystack for performance
+  let cached = node.dataset.search;
+  if (cached) return cached;
   const dt = node.getAttribute('data-title');
-  return (dt || node.textContent || '').toLowerCase();
+  cached = (dt || node.textContent || '').toLowerCase();
+  node.dataset.search = cached;
+  return cached;
 }
 
 function cardMeta(node) {
@@ -88,12 +94,24 @@ function renderPager(container, currentPage, totalPages, makeHref, onClick) {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   const html = [
     `<nav aria-label="Pagination" class="mt-8 flex items-center justify-center gap-2">`,
-    `<a href="${makeHref(Math.max(1, currentPage - 1))}" data-pg="${Math.max(1, currentPage - 1)}" rel="prev" class="pg-btn ${currentPage === 1 ? 'pg-disabled' : ''}" aria-disabled="${currentPage === 1}">Prev</a>`,
+    `<a href="${makeHref(Math.max(1, currentPage - 1))}" data-pg="${Math.max(
+      1,
+      currentPage - 1
+    )}" rel="prev" class="pg-btn ${currentPage === 1 ? 'pg-disabled' : ''}" aria-disabled="${
+      currentPage === 1
+    }">Prev</a>`,
     ...pages.map((p) => {
       const active = p === currentPage;
-      return `<a href="${makeHref(p)}" data-pg="${p}" class="pg-num ${active ? 'pg-active' : ''}" ${active ? 'aria-current="page"' : ''}>${p}</a>`;
+      return `<a href="${makeHref(p)}" data-pg="${p}" class="pg-num ${
+        active ? 'pg-active' : ''
+      }" ${active ? 'aria-current="page"' : ''}>${p}</a>`;
     }),
-    `<a href="${makeHref(Math.min(totalPages, currentPage + 1))}" data-pg="${Math.min(totalPages, currentPage + 1)}" rel="next" class="pg-btn ${currentPage === totalPages ? 'pg-disabled' : ''}" aria-disabled="${currentPage === totalPages}">Next</a>`,
+    `<a href="${makeHref(Math.min(totalPages, currentPage + 1))}" data-pg="${Math.min(
+      totalPages,
+      currentPage + 1
+    )}" rel="next" class="pg-btn ${currentPage === totalPages ? 'pg-disabled' : ''}" aria-disabled="${
+      currentPage === totalPages
+    }">Next</a>`,
     `</nav>`,
   ].join('');
 
@@ -163,7 +181,7 @@ function makeEngine(opts) {
       const meta = cardMeta(node);
 
       const passQ = !q || cardSearchText(node).includes(q);
-      const passLoc = !location || meta.location.includes(location);
+      const passLoc = !location || meta.location === location || meta.location.includes(location);
 
       // Beds: EXACT for 1–4, MIN for "5+"
       let passBeds = true;
@@ -213,6 +231,7 @@ function makeEngine(opts) {
 
     const makeHref = (p) => {
       const url = getURL();
+      // Keep existing params; only adjust known ones to reflect current filters
       url.searchParams.set('page', String(p));
       const { q, location, bedsRaw, type, availability } = readFilters();
       q ? url.searchParams.set('q', q) : url.searchParams.delete('q');
@@ -222,11 +241,13 @@ function makeEngine(opts) {
       availability
         ? url.searchParams.set('availability', availability)
         : url.searchParams.delete('availability');
-      return url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '');
+      const qs = url.searchParams.toString();
+      return url.pathname + (qs ? `?${qs}` : '');
     };
 
     renderPager(pagerEl, currentPage, totalPages, makeHref, (p) => {
-      setQuery({ page: p }, true); // update URL without reload
+      // Only change the page param; keep existing filters intact
+      setQuery({ page: p }, true);
       showPage(p);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
@@ -262,7 +283,7 @@ function makeEngine(opts) {
     hookUI() {
       hydrateFieldsFromURL();
 
-      // Filter change handlers
+      // Filter change handlers (input + change for good UX)
       ['q', 'location', 'beds', 'bedrooms', 'type', 'availability'].forEach((key) => {
         const sel = filterSelectors[key];
         const el = sel ? bySel(sel) : null;
@@ -308,7 +329,7 @@ export function initPaginationAndFilters(options = {}) {
   engine.hookUI();
   engine.refresh(false);
 
-  // Optional global handle
+  // Optional global handle (for other scripts to call)
   window.ListingPager = {
     refresh: () => engine.refresh(false),
     resetAndRefresh: () => engine.refresh(true),

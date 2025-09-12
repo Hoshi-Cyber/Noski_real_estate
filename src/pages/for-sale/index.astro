@@ -3,149 +3,124 @@ import { getCollection } from 'astro:content';
 import MainLayout from '../../layouts/MainLayout.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
 
-// Helpers
-const areaOf = (loc = '') => (loc || '').split(',')[0].trim();
-const canonType = (t = '') => {
-  const v = (t || '').trim().toLowerCase();
-  return v === 'studio' || v === 'bedsitter' ? 'studio/bedsitter' : v;
+// Utils
+const num = (v:any) => {
+  if (typeof v === 'number') return v;
+  const n = Number(String(v || '').replace(/[^\d]/g, ''));
+  return Number.isFinite(n) ? n : 0;
 };
-const cardImg = (entry: any) =>
-  entry?.data?.imagesFolder ? `${entry.data.imagesFolder}/1.webp` : '/images/placeholder.webp';
+const ts = (d:any) => {
+  const val = d?.updatedAt || d?.publishedAt || d?.createdAt || d?.date || 0;
+  const n = new Date(val).getTime();
+  return Number.isFinite(n) ? n : 0;
+};
 
-// Data (pre-scope to SALE only; case-insensitive)
+// Data: SALE only (case-insensitive)
 const all = await getCollection('listings');
-const saleOnly = all.filter((e) => (e.data.availability || '').toLowerCase().includes('sale'));
+const saleOnly = all.filter(e => (e.data.availability || '').toLowerCase().includes('sale'));
 
-// Facets (from saleOnly)
-const allLocations = Array.from(
-  new Set(saleOnly.map(e => areaOf(e.data.location)).filter(Boolean))
-).sort();
-const allTypesCanon = Array.from(
-  new Set(saleOnly.map(e => canonType(e.data.type)).filter(Boolean))
-).sort();
-
-// Buttons (styling matches listings page)
-const btn = {
-  ghost:
-    'inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-200',
+// Section slices (dedupe between sections)
+const seen = new Set<string>();
+const take = (arr:any[], limit:number) => {
+  const out:any[] = [];
+  for (const e of arr) {
+    if (seen.has(e.slug)) continue;
+    out.push(e);
+    seen.add(e.slug);
+    if (out.length >= limit) break;
+  }
+  return out;
 };
+
+// Featured & New (feature flag + recency)
+const featured = saleOnly.filter(e => !!(e.data as any).featured);
+const newest   = [...saleOnly].sort((a,b) => ts(b.data) - ts(a.data));
+const secFeaturedNew = take([...featured, ...newest], 4);
+
+// Budget (≤ KSh 10M)
+const budget = saleOnly.filter(e => num((e.data as any).price) > 0 && num((e.data as any).price) <= 10_000_000);
+const secBudget = take(budget.sort((a,b)=> num(a.data.price)-num(b.data.price)), 4);
+
+// Luxury (≥ KSh 40M)
+const luxury = saleOnly.filter(e => num((e.data as any).price) >= 40_000_000);
+const secLuxury = take(luxury.sort((a,b)=> num(b.data.price)-num(a.data.price)), 4);
 ---
 
 <MainLayout
   title="Properties for Sale – Severino Realty"
-  description="Browse properties currently available for purchase across Nairobi's vibrant neighbourhoods."
+  description="Browse hand-picked properties for sale across Nairobi and beyond. Featured, budget, and luxury picks — with a link to the full search."
 >
   <section class="py-12 max-w-7xl mx-auto px-4">
-    <div class="flex items-center justify-between gap-3 mb-4">
-      <h1 class="text-3xl font-bold text-primary">Homes for Sale in Nairobi</h1>
-      <div class="hidden sm:flex gap-2">
-        <a href="/listings" class={btn.ghost}>All Listings</a>
-        <a href="/for-rent" class={btn.ghost}>For Rent</a>
-        <a href="/short-stays" class={btn.ghost}>Short Stays</a>
+    <!-- Mobile-friendly header actions -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <h1 class="text-3xl font-bold text-primary">Homes for Sale</h1>
+
+      <!-- Compact, single-row, scrollable on small screens -->
+      <div class="-mx-1 max-w-full overflow-x-auto scrollbar-hide">
+        <div class="flex gap-2 px-1">
+          <a href="/listings?availability=for-sale" class="btn-cta cta-fluid shrink-0 whitespace-nowrap">Browse all for sale</a>
+          <a href="/for-rent" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Rent</a>
+          <a href="/short-stays" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">Short Stays</a>
+        </div>
       </div>
     </div>
 
-    <p class="text-neutral-700 mb-6">
-      Explore our collection of properties for sale. Use the filters below to narrow your search by neighbourhood, bedrooms or property type.
-    </p>
+    <!-- Featured & New -->
+    {secFeaturedNew.length > 0 && (
+      <>
+        <header class="landing-head mb-3">
+          <h2 class="landing-h2">Featured & New</h2>
+          <a href="/listings?availability=for-sale&sort=date_desc" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See more</a>
+        </header>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+          {secFeaturedNew.map(e => (
+            <li><PropertyCard listing={e.data} slug={e.slug} /></li>
+          ))}
+        </ul>
+      </>
+    )}
 
-    <!-- Filters (client-side; URL is synced via pagination.js) -->
-    <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-      <!-- Location -->
-      <select id="f-location" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="">All Locations</option>
-        {allLocations.map(loc => (<option value={loc.toLowerCase()}>{loc}</option>))}
-      </select>
+    <!-- Budget -->
+    {secBudget.length > 0 && (
+      <>
+        <header class="landing-head mb-3">
+          <h2 class="landing-h2">Budget Picks (≤ KSh 10M)</h2>
+          <a href="/listings?availability=for-sale" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all budget</a>
+        </header>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+          {secBudget.map(e => (
+            <li><PropertyCard listing={e.data} slug={e.slug} /></li>
+          ))}
+        </ul>
+      </>
+    )}
 
-      <!-- Beds (EXACT 1–4; MIN 5+) -->
-      <select id="f-bed" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="">Beds</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5+">5+</option>
-      </select>
-
-      <!-- Type (canonical) -->
-      <select id="f-type" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        <option value="">All Property Types</option>
-        {allTypesCanon.map(t => (
-          <option value={t}>
-            {t === 'studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g, c => c.toUpperCase())}
-          </option>
-        ))}
-      </select>
-
-      <!-- Clear -->
-      <button id="f-clear" class="w-full rounded-md border border-neutral-300 p-2 text-sm">
-        Clear filters
-      </button>
-    </div>
-
-    <!-- Results header (hydrated by client JS) -->
-    <div class="flex items-center justify-between mb-3">
-      <div id="result-count" class="text-sm text-neutral-600"></div>
-    </div>
-
-    <!-- Listings grid: render ALL; client JS paginates & filters -->
-    <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {saleOnly.map((e) => {
-        const d = e.data;
-        const loc = areaOf(d.location).toLowerCase();
-        const beds = Number.isFinite(d.bedrooms) ? Number(d.bedrooms) : 0;
-        const typeCanon = canonType(d.type);
-        const avail = 'for-sale';
-
-        return (
-          <li
-            data-title={(d.title || '').toLowerCase()}
-            data-loc={loc}
-            data-beds={beds}
-            data-type={typeCanon}
-            data-avail={avail}
-          >
-            <PropertyCard
-              listing={{ ...d, image: cardImg(e) }}
-              slug={e.slug}
-              compact={false}
-            />
-          </li>
-        );
-      })}
-    </ul>
-
-    <div id="empty" class="hidden text-center text-neutral-600 mt-8">
-      No properties match your filters.
-    </div>
-
-    <!-- Pagination container (client-rendered; keeps styling) -->
-    <div id="pager" class="mt-8 flex flex-wrap items-center justify-center gap-2"></div>
-
-    <!-- Bottom shortcuts (mobile) -->
-    <div class="sm:hidden mt-8 flex justify-center gap-2">
-      <a href="/listings" class={btn.ghost}>All Listings</a>
-      <a href="/for-rent" class={btn.ghost}>For Rent</a>
-      <a href="/short-stays" class={btn.ghost}>Short Stays</a>
-    </div>
+    <!-- Luxury -->
+    {secLuxury.length > 0 && (
+      <>
+        <header class="landing-head mb-3">
+          <h2 class="landing-h2">Luxury Collection (≥ KSh 40M)</h2>
+          <a href="/listings?availability=for-sale" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all luxury</a>
+        </header>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {secLuxury.map(e => (
+            <li><PropertyCard listing={e.data} slug={e.slug} /></li>
+          ))}
+        </ul>
+      </>
+    )}
   </section>
 </MainLayout>
 
-<!-- Reusable client pagination+filters -->
-<script type="module" is:inline>
-  import { initPaginationAndFilters } from '/src/lib/pagination.js';
-
-  initPaginationAndFilters({
-    pageSize: 12,
-    filterSelectors: {
-      location: '#f-location',
-      beds: '#f-bed',         // supports "", "1","2","3","4","5+"
-      type: '#f-type',
-    },
-    clearSelector: '#f-clear',
-    cardSelector: '#cards li',
-    pagerSelector: '#pager',
-    emptySelector: '#empty',
-    resultCountSelector: '#result-count',
-  });
+<!-- Cosmetic: ensure URL shows ?availability=for-sale for share/back/forward context -->
+<script is:inline>
+  (function () {
+    try {
+      const u = new URL(window.location.href);
+      if (u.searchParams.get('availability') !== 'for-sale') {
+        u.searchParams.set('availability', 'for-sale');
+        history.replaceState({}, '', u);
+      }
+    } catch {}
+  })();
 </script>

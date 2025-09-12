@@ -1,9 +1,10 @@
 ---
-// src/layouts/MainLayout.astro
 /**
  * MainLayout.astro
- * SEO upgrades: canonical URL, OG/Twitter defaults. Safe UTM stripping.
- * Accepts optional: canonical, noIndex, seoImage
+ * - Canonical URL (strips UTM)
+ * - OG/Twitter defaults
+ * - Skip-to-content for a11y
+ * - Optional hero image preloads via `preloadImages` (string | string[])
  */
 const {
   title = 'Severino Realty',
@@ -11,6 +12,7 @@ const {
   seoImage,
   canonical,
   noIndex = false,
+  preloadImages = [], // NEW: string or string[]
 } = Astro.props;
 
 import Header from '../components/Header.astro';
@@ -25,12 +27,18 @@ const canonicalUrl = canonical ?? url.toString();
 const siteName = 'Severino Realty';
 const ogImgPath = seoImage ?? '/images/og-default.jpg';
 const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, url.origin).toString();
+
+/* Normalize preloadImages to array */
+const toArray = (v) => Array.isArray(v) ? v : (v ? [v] : []);
+const preloadList = toArray(preloadImages);
 ---
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#065f46" />
 
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -54,9 +62,15 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImgAbs} />
 
-    <!-- Icons -->
+    <!-- Icons (keep your current, add a safe fallback) -->
+    <link rel="icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" href="/images/placeholder.webp" sizes="32x32" />
     <link rel="icon" type="image/png" href="/images/placeholder.webp" sizes="64x64" />
+
+    <!-- Optional hero preloads (supply via `preloadImages`) -->
+    {preloadList.map((src) => (
+      <link rel="preload" as="image" href={src} imagesrcset="" />
+    ))}
 
     <!-- Passive prefetch hints (safe) -->
     <link rel="prefetch" href="/developments/">
@@ -64,6 +78,9 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
     <link rel="prefetch" href="/developments/unfinished/">
   </head>
   <body class="overflow-x-hidden bg-neutral-50 text-neutral-900">
+    <!-- Skip link (a11y) -->
+    <a href="#main" class="skip-link">Skip to content</a>
+
     <Header />
 
     <main id="main" class="min-h-[70vh] overflow-x-hidden" role="main">
@@ -99,7 +116,7 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
       ];
 
       function prefetch(href) {
-        if (!href || document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
+        if (!href || document.querySelector(\`link[rel="prefetch"][href="\${href}"]\`)) return;
         const l = document.createElement('link');
         l.rel = 'prefetch';
         l.href = href;
@@ -123,13 +140,26 @@ const ogImgAbs = ogImgPath.startsWith('http') ? ogImgPath : new URL(ogImgPath, u
       }, { passive: true });
     </script>
 
-    <!-- Tighten spacing between breadcrumbs and the first section/heading -->
+    <!-- Skip link styles + tighten spacing after breadcrumbs -->
     <style is:global>
-      /* Collapse any top margin/padding on the first block after breadcrumbs */
+      .skip-link {
+        position: absolute;
+        left: 0.5rem;
+        top: -40px;
+        padding: 0.5rem 0.75rem;
+        background: #ffffff;
+        color: #065f46;
+        border: 2px solid #065f46;
+        border-radius: 0.375rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.1);
+        z-index: 1000;
+        transition: top .15s ease;
+      }
+      .skip-link:focus { top: 0.5rem; outline: none; }
+
+      /* Collapse top spacing on the first block after breadcrumbs */
       #breadcrumbs + #page-body > :first-child { margin-top: 0 !important; padding-top: 0 !important; }
-      /* If the first child is a header element */
       #breadcrumbs + #page-body > header:first-child { margin-top: 0 !important; padding-top: 0 !important; }
-      /* If the first child uses a .section wrapper */
       #breadcrumbs + #page-body > .section:first-child { margin-top: 0 !important; padding-top: 0 !important; }
     </style>
   </body>
