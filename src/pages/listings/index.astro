@@ -1,107 +1,135 @@
 ---
-import { getCollection } from 'astro:content';
-import MainLayout from '../../layouts/MainLayout.astro';
-import PropertyCard from '../../components/PropertyCard.astro';
+import { getCollection } from "astro:content";
+import MainLayout from "../../layouts/MainLayout.astro";
+import PropertyCard from "../../components/PropertyCard.astro";
+import { LISTING_TYPES, type ListingType } from "/src/lib/build-utils.ts";
 
 // helpers
-const areaOf = (loc = '') => (loc || '').split(',')[0].trim();
-const canonType = (t = '') => {
-  const v = (t || '').trim().toLowerCase();
-  return v === 'studio' || v === 'bedsitter' ? 'studio/bedsitter' : v;
+const areaOf = (loc = "") => (loc || "").split(",")[0].trim();
+const canonType = (t = "") => {
+  const v = (t || "").trim().toLowerCase();
+  return v === "studio" || v === "bedsitter" ? "studio/bedsitter" : v;
 };
-const canonAvail = (a = '') => {
-  const v = (a || '').toLowerCase().replace(/\s+/g,'-');
-  if (v.includes('sale')) return 'for-sale';
-  if (v.includes('rent')) return 'for-rent';
-  if (v.includes('short')) return 'short-stays';
-  return '';
+const canonAvail = (a = "") => {
+  const v = (a || "").toLowerCase().replace(/\s+/g, "-");
+  if (v.includes("sale")) return "sale";
+  if (v.includes("rent")) return "rent";
+  if (v.includes("short")) return "short-stays";
+  return "";
 };
-const num = (x:any)=> Number(String(x??'').replace(/[^0-9]/g,''))||0;
-const cardImg = (e:any) => e?.data?.imagesFolder ? `${e.data.imagesFolder}/1.webp` : '/images/placeholder.webp';
+const num = (x: unknown) => Number(String(x ?? "").replace(/[^0-9]/g, "")) || 0;
+const cardImg = (e: any) =>
+  (e?.data?.imagesFolder ? `${e.data.imagesFolder}/1.webp` : "/images/placeholder.webp");
 
-const all = await getCollection('listings');
+// read URL (?type=... or legacy ?availability=for-rent) but DO NOT filter server-side
+const rawParam = (Astro.url.searchParams.get("type") ?? Astro.url.searchParams.get("availability") ?? "").toString();
+const parsed = canonAvail(rawParam);
+// Default is "ALL" (no type preselected)
+const activeType: ListingType | "" = (LISTING_TYPES as readonly string[]).includes(parsed)
+  ? (parsed as ListingType)
+  : "";
 
-const allLocations = Array.from(new Set(all.map(e => areaOf(e.data.location)).filter(Boolean))).sort();
-const allTypesCanon = Array.from(new Set(all.map(e => canonType(e.data.type)).filter(Boolean))).sort();
+// data: render ALL listings; client filters by type
+const all = await getCollection("listings");
+
+// facet options are from ALL listings (richer UX)
+const allLocations = Array.from(new Set(all.map((e) => areaOf(e.data.location)).filter(Boolean))).sort();
+const allTypesCanon = Array.from(new Set(all.map((e) => canonType(e.data.type)).filter(Boolean))).sort();
 ---
 
 <MainLayout title="All Listings – Locate Properties Kenya">
   <section class="py-10 max-w-7xl mx-auto px-4">
-    <!-- Title + CTAs: stack on mobile, side-by-side on ≥sm -->
+    <!-- Title + CTAs -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
       <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-primary leading-none whitespace-nowrap">
         All Listings
       </h1>
 
-      <!-- Compact, single-row, scrollable on small screens -->
       <div class="-mx-1 max-w-full overflow-x-auto scrollbar-hide">
         <div class="flex gap-2 px-1">
-          <a href="/for-sale" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Sale</a>
-          <a href="/for-rent" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Rent</a>
-          <a href="/short-stays" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">Short Stays</a>
+          <a href="/listings?type=sale" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Sale</a>
+          <a href="/listings?type=rent" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Rent</a>
+          <a href="/listings?type=short-stays" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">Short Stays</a>
         </div>
       </div>
     </div>
 
-    <!-- Filters: **same structure & IDs**; only styling enhanced -->
+    <!-- Filters -->
     <form id="filters" class="mb-6">
       <div class="flex flex-wrap md:flex-nowrap items-stretch gap-2 surface rounded-lg p-3 md:p-4">
-        <!-- Availability -->
-        <select id="f-availability" name="availability"
-          class="flex-1 min-w-[140px] rounded-md border border-neutral-300 p-2 text-sm bg-white">
-          <option value="">All</option>
-          <option value="for-sale">For Sale</option>
-          <option value="for-rent">For Rent</option>
-          <option value="short-stays">Short Stays</option>
+        <!-- Availability (default: All) -->
+        <select
+          id="f-availability"
+          name="availability"
+          class="flex-1 min-w-[140px] rounded-md border border-neutral-300 p-2 text-sm bg-white"
+        >
+          <option value="" selected={!activeType}>All</option>
+          {LISTING_TYPES.map((t) => (
+            <option value={t} selected={t === activeType}>
+              {t === "short-stays" ? "Short Stays" : t.replace(/\b\w/g, (c) => c.toUpperCase())}
+            </option>
+          ))}
         </select>
 
         <!-- Location -->
-        <select id="f-location" name="location"
-          class="flex-1 min-w-[160px] rounded-md border border-neutral-300 p-2 text-sm bg-white">
+        <select
+          id="f-location"
+          name="location"
+          class="flex-1 min-w-[160px] rounded-md border border-neutral-300 p-2 text-sm bg-white"
+        >
           <option value="">All Locations</option>
-          {allLocations.map(loc => <option value={loc.toLowerCase()}>{loc}</option>)}
+          {allLocations.map((loc) => <option value={loc.toLowerCase()}>{loc}</option>)}
         </select>
 
         <!-- Beds -->
-        <select id="f-beds" name="beds"
-          class="flex-1 min-w-[110px] rounded-md border border-neutral-300 p-2 text-sm bg-white">
+        <select
+          id="f-beds"
+          name="beds"
+          class="flex-1 min-w-[110px] rounded-md border border-neutral-300 p-2 text-sm bg-white"
+        >
           <option value="">Beds</option>
           <option value="1">1</option><option value="2">2</option>
           <option value="3">3</option><option value="4">4</option>
           <option value="5+">5+</option>
         </select>
 
-        <!-- Type -->
-        <select id="f-type" name="type"
-          class="flex-1 min-w-[170px] rounded-md border border-neutral-300 p-2 text-sm bg-white">
+        <!-- Property Type -->
+        <select
+          id="f-ptype"
+          name="ptype"
+          class="flex-1 min-w-[170px] rounded-md border border-neutral-300 p-2 text-sm bg-white"
+        >
           <option value="">All Property Types</option>
-          {allTypesCanon.map(t => (
-            <option value={t}>{t==='studio/bedsitter' ? 'Studio/Bedsitter' : t.replace(/\b\w/g,c=>c.toUpperCase())}</option>
+          {allTypesCanon.map((t) => (
+            <option value={t}>
+              {t === "studio/bedsitter" ? "Studio/Bedsitter" : t.replace(/\b\w/g, (c) => c.toUpperCase())}
+            </option>
           ))}
         </select>
 
         <!-- Min price -->
         <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden basis-32 md:basis-40 shrink-0 bg-white">
           <span class="px-2 text-xs text-neutral-500">KES</span>
-          <input name="minPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Min" class="w-full p-2 text-sm outline-none"/>
+          <input name="minPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Min" class="w-full p-2 text-sm outline-none" />
         </div>
 
         <!-- Max price -->
         <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden basis-32 md:basis-40 shrink-0 bg-white">
           <span class="px-2 text-xs text-neutral-500">KES</span>
-          <input name="maxPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Max" class="w-full p-2 text-sm outline-none"/>
+          <input name="maxPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Max" class="w-full p-2 text-sm outline-none" />
         </div>
 
         <!-- Clear -->
-        <button type="button" id="f-clear"
-          class="shrink-0 btn-subtle px-4 py-2 text-sm">
-          Clear filters
-        </button>
+        <button type="button" id="f-clear" class="shrink-0 btn-subtle px-4 py-2 text-sm">Clear filters</button>
       </div>
     </form>
 
-    <div id="result-count" class="text-sm text-neutral-600 mb-3"></div>
+    <div class="text-sm text-neutral-600 mb-3">
+      <span id="result-count"></span>
+      <span id="category-tag" class="ml-2 opacity-70"></span>
+    </div>
 
+    <!-- Cards: ALL listings; filtered on client -->
     <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {all.map((e) => {
         const d = e.data;
@@ -110,7 +138,7 @@ const allTypesCanon = Array.from(new Set(all.map(e => canonType(e.data.type)).fi
           <li
             data-avail={canonAvail(d.availability)}
             data-loc={areaOf(d.location).toLowerCase()}
-            data-type={canonType(d.type)}
+            data-ptype={canonType(d.type)}
             data-beds={beds}
             data-price={num(d.price)}
           >
@@ -125,107 +153,136 @@ const allTypesCanon = Array.from(new Set(all.map(e => canonType(e.data.type)).fi
   </section>
 
   <script is:inline>
-    (function(){
-      const $ = s => document.querySelector(s);
-      const form = $('#filters');
+    (function () {
+      const $ = (s) => document.querySelector(s);
+      const form = document.getElementById("filters");
       const els = {
-        avail: $('#f-availability'),
-        loc:   $('#f-location'),
-        type:  $('#f-type'),
-        beds:  $('#f-beds'),
-        min:   form.querySelector('[name="minPrice"]'),
-        max:   form.querySelector('[name="maxPrice"]'),
-        cards: Array.from(document.querySelectorAll('#cards > li')),
-        count: $('#result-count'),
-        empty: $('#empty'),
-        pager: $('#pager'),
-        clear: $('#f-clear'),
+        avail: $("#f-availability"),
+        loc: $("#f-location"),
+        ptype: $("#f-ptype"),
+        beds: $("#f-beds"),
+        min: form.querySelector('[name="minPrice"]'),
+        max: form.querySelector('[name="maxPrice"]'),
+        cards: Array.from(document.querySelectorAll("#cards > li")),
+        count: $("#result-count"),
+        category: $("#category-tag"),
+        empty: $("#empty"),
+        pager: $("#pager"),
+        clear: $("#f-clear"),
       };
 
+      // helpers
+      function setTypeInURL(type) {
+        const url = new URL(window.location.href);
+        if (type) url.searchParams.set("type", type);
+        else url.searchParams.delete("type");
+        history.replaceState(null, "", url.toString());
+      }
+      const cleanNum = (s) => Number(String(s || "").replace(/[^0-9]/g, "")) || 0;
+
+      // Map legacy availability -> canonical type ("for-rent" => "rent", etc.)
+      const mapAvailToType = (v) => {
+        const s = String(v || "").toLowerCase();
+        if (s === "for-sale" || s === "sale") return "sale";
+        if (s === "for-rent" || s === "rent") return "rent";
+        if (s.includes("short")) return "short-stays";
+        return "";
+      };
+
+      // seed fields from URL, but normalize availability before applying to the select
       const qs = new URLSearchParams(location.search);
-      const get = k => qs.get(k) || '';
-      const setIf = (el,k)=>{ const v=get(k); if(v) el.value=v; };
-      setIf(els.avail,'availability');
-      setIf(els.loc,'location'); if(!els.loc.value) setIf(els.loc,'q');
-      setIf(els.type,'type'); setIf(els.beds,'beds');
-      setIf(els.min,'minPrice'); setIf(els.max,'maxPrice');
+      const get = (k) => qs.get(k) || "";
 
-      const cleanNum = s => Number(String(s||'').replace(/[^0-9]/g,''))||0;
+      // availability/type
+      let typeParam = get("type");
+      if (!typeParam) {
+        const legacy = get("availability");
+        const mapped = mapAvailToType(legacy);
+        if (mapped) typeParam = mapped;
+      }
+      if (typeParam) els.avail.value = typeParam;
 
-      function state(){
+      // others
+      const setIf = (el, k) => { const v = get(k); if (v) el.value = v; };
+      setIf(els.loc, "location");
+      setIf(els.ptype, "ptype");
+      setIf(els.beds, "beds");
+      setIf(els.min, "minPrice");
+      setIf(els.max, "maxPrice");
+
+      function state() {
         return {
-          availability: (els.avail.value||''),
-          location: (els.loc.value||'').toLowerCase().trim(),
-          type: (els.type.value||''),
-          beds: (els.beds.value||''),
+          type: (els.avail.value || ""),         // "", "sale", "rent", "short-stays"
+          location: (els.loc.value || "").toLowerCase().trim(),
+          ptype: (els.ptype.value || ""),
+          beds: (els.beds.value || ""),
           min: cleanNum(els.min.value),
           max: cleanNum(els.max.value),
         };
       }
 
-      function syncURL(s){
-        const p = new URLSearchParams();
-        if (s.availability) p.set('availability', s.availability);
-        if (s.location)     p.set('location', s.location);
-        if (s.type)         p.set('type', s.type);
-        if (s.beds)         p.set('beds', s.beds);
-        if (s.min)          p.set('minPrice', String(s.min));
-        if (s.max)          p.set('maxPrice', String(s.max));
-        history.replaceState(null,'', p.toString()? `${location.pathname}?${p.toString()}`: location.pathname);
-      }
-
       const pageSize = 12;
 
-      function apply(){
+      function apply() {
         const s = state();
-        syncURL(s);
+        // persist URL without reload
+        setTypeInURL(s.type);
 
         let vis = [];
-        for(const li of els.cards){
-          const okAvail = !s.availability || li.dataset.avail === s.availability;
-          const okLoc   = !s.location || li.dataset.loc === s.location || (li.dataset.loc||'').includes(s.location);
-          const okType  = !s.type || li.dataset.type === s.type;
-          const beds    = Number(li.dataset.beds||0);
-          const okBeds  = !s.beds || (s.beds==='5+' ? beds>=5 : beds===Number(s.beds));
-          const price   = Number(li.dataset.price||0);
-          const okMin   = !s.min || price >= s.min;
-          const okMax   = !s.max || price <= s.max;
+        for (const li of els.cards) {
+          const okAvail = !s.type || li.dataset.avail === s.type;
+          const okLoc = !s.location || li.dataset.loc === s.location || (li.dataset.loc || "").includes(s.location);
+          const okType = !s.ptype || li.dataset.ptype === s.ptype;
+          const beds = Number(li.dataset.beds || 0);
+          const okBeds = !s.beds || (s.beds === "5+" ? beds >= 5 : beds === Number(s.beds));
+          const price = Number(li.dataset.price || 0);
+          const okMin = !s.min || price >= s.min;
+          const okMax = !s.max || price <= s.max;
 
           const show = okAvail && okLoc && okType && okBeds && okMin && okMax;
-          li.style.display = show ? '' : 'none';
+          li.style.display = show ? "" : "none";
           if (show) vis.push(li);
         }
 
+        // pagination
         const pages = Math.max(1, Math.ceil(vis.length / pageSize));
-        let page = Math.min(Math.max(1, Number(new URLSearchParams(location.hash.slice(1)).get('p')||'1')), pages);
-        vis.forEach((li,i)=>{ li.style.display = (i>=(page-1)*pageSize && i<page*pageSize) ? '' : 'none'; });
+        const hash = new URLSearchParams(location.hash.slice(1));
+        let page = Math.min(Math.max(1, Number(hash.get("p") || "1")), pages);
+        vis.forEach((li, i) => {
+          li.style.display = i >= (page - 1) * pageSize && i < page * pageSize ? "" : "none";
+        });
 
-        els.pager.innerHTML = '';
-        for(let i=1;i<=pages;i++){
-          const b = document.createElement('button');
-          b.className = 'px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50';
-          if (i===page) b.className = 'px-3 py-1.5 rounded-md bg-emerald-600 text-white text-sm font-semibold';
+        els.pager.innerHTML = "";
+        for (let i = 1; i <= pages; i++) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = i === page
+            ? "px-3 py-1.5 rounded-md bg-emerald-600 text-white text-sm font-semibold"
+            : "px-3 py-1.5 rounded-md border border-neutral-300 text-sm hover:bg-neutral-50";
           b.textContent = String(i);
-          b.onclick = ()=>{ location.hash = `p=${i}`; apply(); };
+          b.onclick = () => { location.hash = `p=${i}`; apply(); };
           els.pager.appendChild(b);
         }
 
-        els.count.textContent = `${vis.length} listing${vis.length===1?'':'s'}`;
-        els.empty.classList.toggle('hidden', vis.length>0);
+        // counters and tag
+        els.count.textContent = `${vis.length} listing${vis.length === 1 ? "" : "s"}`;
+        els.category.textContent = s.type ? `(category: ${s.type})` : "";
+        els.empty.classList.toggle("hidden", vis.length > 0);
       }
 
-      ['change','input'].forEach(ev=>{
-        ['avail','loc','type','beds','min','max'].forEach(k=>{
-          els[k].addEventListener(ev, apply);
-        });
+      els.avail.addEventListener("change", apply);
+      ["change", "input"].forEach((ev) => {
+        ["loc", "ptype", "beds", "min", "max"].forEach((k) => els[k].addEventListener(ev, apply));
       });
-      els.clear.addEventListener('click', ()=>{
-        ['avail','loc','type','beds','min','max'].forEach(k=> els[k].value='');
-        location.hash='';
+      els.clear.addEventListener("click", () => {
+        ["loc", "ptype", "beds", "min", "max"].forEach((k) => (els[k].value = ""));
+        // also reset availability to All
+        els.avail.value = "";
+        location.hash = "";
         apply();
       });
+      window.addEventListener("hashchange", apply);
 
-      window.addEventListener('hashchange', apply);
       apply();
     })();
   </script>

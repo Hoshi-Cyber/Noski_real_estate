@@ -1,21 +1,17 @@
 ---
-title: "Elegant 4BR Townhouse in Riverside"
-availability: "sale"
-location: "Riverside, Nairobi"
+title: Elegant 4BR Townhouse in Riverside
+availability: sale
+location: 'Riverside, Nairobi'
 price: 150000000
 bedrooms: 4
 bathrooms: 4
-type: "Townhouse"
-
-# Quick Facts
-lotSize: "Approx. 1/4 acre (community)"
-parking: "4+ vehicles"
-yearBuilt: "Unknown"
-tenure: "Leasehold"
-serviceCharge: "TBD"
-
-# Media
-heroImage: "/images/listings/elegant-4br-townhouse-riverside/hero.webp"
+type: Townhouse
+lotSize: Approx. 1/4 acre (community)
+parking: 4+ vehicles
+yearBuilt: Unknown
+tenure: Leasehold
+serviceCharge: TBD
+heroImage: /images/listings/elegant-4br-townhouse-riverside/hero.webp
 images:
   - /images/listings/elegant-4br-townhouse-riverside/hero.webp
   - /images/listings/elegant-4br-townhouse-riverside/1.webp
@@ -23,7 +19,6 @@ images:
   - /images/listings/elegant-4br-townhouse-riverside/3.webp
   - /images/listings/elegant-4br-townhouse-riverside/4.webp
   - /images/listings/elegant-4br-townhouse-riverside/5.webp
-
 amenities:
   - Spacious lounge and dining opening to terrace
   - Modern fitted kitchen with pantry & utility yard
@@ -35,15 +30,13 @@ amenities:
   - Secure gated community with 24/7 security & CCTV
   - Ample parking for 4+ vehicles
   - Landscaped gardens with mature trees
-
 neighborhoodHighlights:
-  - Prime Riverside location near CBD, Westlands, and Lavington
+  - 'Prime Riverside location near CBD, Westlands, and Lavington'
   - Easy access to UN offices and diplomatic residences
-  - Proximity to high-end malls like Westgate, Sarit Centre, and Yaya
-  - Close to international schools including Braeburn, French School & Peponi
+  - 'Proximity to high-end malls like Westgate, Sarit Centre, and Yaya'
+  - 'Close to international schools including Braeburn, French School & Peponi'
   - Near top hospitals such as Nairobi Hospital and Aga Khan
-  - Leafy, quiet environment with strong community presence
-
+  - 'Leafy, quiet environment with strong community presence'
 description: |
   This elegant 4-bedroom townhouse in Nairobi’s exclusive Riverside 
   neighborhood blends modern design with privacy and convenience. 
@@ -61,10 +54,10 @@ description: |
   close to Nairobi’s diplomatic and commercial hubs, as well as 
   leading schools, malls, and hospitals — making it a perfect fit 
   for high-net-worth homeowners and investors.
-
-# Badges
 isNew: false
 isReduced: false
 isFurnished: false
+slug: elegant-4br-townhouse-in-riverside
+address: 'Riverside, Nairobi'
 ---
 Luxury townhouse in Riverside with secure community living and prime Nairobi access.

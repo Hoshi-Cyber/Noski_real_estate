@@ -1,21 +1,17 @@
 ---
-title: "Embakasi 1BR Apartment"
-availability: "rent"
-location: "Embakasi, Nairobi"
+title: Embakasi 1BR Apartment
+availability: rent
+location: 'Embakasi, Nairobi'
 price: 40000
 bedrooms: 1
 bathrooms: 1
-type: "Apartment"
-
-# Quick Facts
-lotSize: "N/A (apartment unit)"
-parking: "1 car, dedicated slot"
-yearBuilt: "Unknown"
-tenure: "Leasehold"
-serviceCharge: "Included in rent"
-
-# Media
-heroImage: "/images/listings/embakasi-1br-apartment-rent/hero.webp"
+type: Apartment
+lotSize: N/A (apartment unit)
+parking: '1 car, dedicated slot'
+yearBuilt: Unknown
+tenure: Leasehold
+serviceCharge: Included in rent
+heroImage: /images/listings/embakasi-1br-apartment-rent/hero.webp
 images:
   - /images/listings/embakasi-1br-apartment-rent/hero.webp
   - /images/listings/embakasi-1br-apartment-rent/1.webp
@@ -23,7 +19,6 @@ images:
   - /images/listings/embakasi-1br-apartment-rent/3.webp
   - /images/listings/embakasi-1br-apartment-rent/4.webp
   - /images/listings/embakasi-1br-apartment-rent/5.webp
-
 amenities:
   - Secure parking with dedicated slots
   - Constant water supply with storage tanks
@@ -35,15 +30,13 @@ amenities:
   - Laundry area with drying space
   - Internet and TV connections ready
   - Gated compound with perimeter wall & 24/7 security
-
 neighborhoodHighlights:
   - Convenient access to JKIA and Nairobi CBD via Airport North Road
   - Near Embakasi railway station and major bus routes
-  - Proximity to Gateway Mall, Naivas supermarkets, and banks
-  - Easy reach to schools, daycare centers, and healthcare facilities
+  - 'Proximity to Gateway Mall, Naivas supermarkets, and banks'
+  - 'Easy reach to schools, daycare centers, and healthcare facilities'
   - Close to industrial area and key employment hubs
   - Growing residential neighborhood with vibrant community
-
 description: |
   This modern 1-bedroom apartment in Embakasi offers a practical layout 
   suited for young professionals, small families, or frequent travelers. 
@@ -56,10 +49,10 @@ description: |
 
   Located just minutes from JKIA, major highways, and shopping amenities, 
   this apartment delivers unmatched convenience at an affordable rent.
-
-# Badges
 isNew: false
 isReduced: false
 isFurnished: false
+slug: embakasi-1br-apartment
+address: 'Embakasi, Nairobi'
 ---
 Affordable Embakasi apartment with modern finishes and excellent transport access.

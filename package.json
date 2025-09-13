@@ -1,14 +1,19 @@
 {
-  "name": "severino-realty",
+  "name": "locate-properties-kenya",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "astro dev",
     "start": "npm run dev",
+    "prebuild": "tsx scripts/prebuild-validate.ts",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "validate": "npm run check && npm run build"
+    "validate": "npm run check && npm run build",
+    "validate:listings": "tsx scripts/prebuild-validate.ts",
+    "report:csv": "tsx scripts/report-to-csv.ts",
+    "listings:autofix": "tsx scripts/auto-fix-listings.ts",
+    "listings:fixdups": "tsx scripts/fix-duplicates.ts"
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
@@ -31,8 +36,11 @@
     "@astrojs/tailwind": "^6.0.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
+    "fast-glob": "^3.3.3",
     "globby": "^14.1.0",
+    "gray-matter": "^4.0.3",
     "sharp": "^0.34.3",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }
 }

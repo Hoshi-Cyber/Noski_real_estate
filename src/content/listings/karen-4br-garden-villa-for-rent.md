@@ -1,21 +1,17 @@
 ---
-title: "Karen 4BR Garden Villa"
-availability: "rent"
-location: "Karen, Nairobi"
+title: Karen 4BR Garden Villa
+availability: rent
+location: 'Karen, Nairobi'
 price: 220000
 bedrooms: 4
 bathrooms: 3
-type: "Villa"
-
-# Quick Facts
-lotSize: "Approx. 1/2 acre"
-parking: "4+ cars"
-yearBuilt: "Unknown"
-tenure: "Leasehold"
-serviceCharge: "TBD"
-
-# Media
-heroImage: "/images/listings/karen-4br-garden-villa-for-rent/hero.webp"
+type: Villa
+lotSize: Approx. 1/2 acre
+parking: 4+ cars
+yearBuilt: Unknown
+tenure: Leasehold
+serviceCharge: TBD
+heroImage: /images/listings/karen-4br-garden-villa-for-rent/hero.webp
 images:
   - /images/listings/karen-4br-garden-villa-for-rent/hero.webp
   - /images/listings/karen-4br-garden-villa-for-rent/1.webp
@@ -23,15 +19,23 @@ images:
   - /images/listings/karen-4br-garden-villa-for-rent/3.webp
   - /images/listings/karen-4br-garden-villa-for-rent/4.webp
   - /images/listings/karen-4br-garden-villa-for-rent/5.webp
+description: >
+  Premium 4-bedroom garden villa in leafy Karen offering privacy, space and
+  indoor–outdoor living.
 
-description: |
-  Premium 4-bedroom garden villa in leafy Karen offering privacy, space and indoor–outdoor living.
-  Set on a mature, landscaped compound, it pairs a fireplace lounge and dining room with a modern
-  fitted kitchen and pantry. A large verandah spills out to a private lawn—ideal for family time
-  and entertaining. The en-suite master includes a walk-in closet, while a detached DSQ and ample
-  parking add convenience. Reliable borehole water, backup power and secure gated access complete
+  Set on a mature, landscaped compound, it pairs a fireplace lounge and dining
+  room with a modern
+
+  fitted kitchen and pantry. A large verandah spills out to a private lawn—ideal
+  for family time
+
+  and entertaining. The en-suite master includes a walk-in closet, while a
+  detached DSQ and ample
+
+  parking add convenience. Reliable borehole water, backup power and secure
+  gated access complete
+
   a comfortable, high-quality rental.
-
 features:
   - En-suite master bedroom with walk-in closet
   - Spacious lounge with fireplace and separate dining
@@ -41,7 +45,6 @@ features:
   - Expansive mature garden with shaded trees
   - Ample parking for 4+ cars
   - Backup power and borehole water
-
 amenitiesCategories:
   Interior:
     - Lounge with fireplace
@@ -61,7 +64,6 @@ amenitiesCategories:
   Parking & Staff:
     - Ample parking for 4+ cars
     - Detached DSQ with separate access
-
 neighborhoodCategories:
   Shopping & Leisure:
     - The Hub Karen (nearby)
@@ -78,8 +80,7 @@ neighborhoodCategories:
     - Giraffe Centre
     - Karen Blixen Museum
   Community:
-    - Quiet, secure avenues with strong community presence
-
+    - 'Quiet, secure avenues with strong community presence'
 amenities:
   - Expansive mature garden with shaded trees
   - Spacious lounge with fireplace and dining area
@@ -91,17 +92,16 @@ amenities:
   - Ample parking for 4+ cars
   - Secure gated entry with perimeter wall and electric fence
   - Outdoor entertainment terrace and BBQ area
-
 neighborhoodHighlights:
   - Located in leafy Karen near malls such as The Hub and Galleria
   - Proximity to Karen Hospital and Nairobi Hospital branches
-  - Easy access to international schools: Brookhouse, Hillcrest, Banda
-  - Nearby attractions: Giraffe Centre, Karen Blixen Museum
-  - Quiet, secure avenues with strong community presence
-
-# Badges
+  - Easy access to international schools: 'Brookhouse, Hillcrest, Banda'
+  - Nearby attractions: 'Giraffe Centre, Karen Blixen Museum'
+  - 'Quiet, secure avenues with strong community presence'
 isNew: false
 isReduced: false
 isFurnished: false
+slug: karen-4br-garden-villa
+address: 'Karen, Nairobi'
 ---
 Elegant garden villa for rent in Karen, offering privacy, comfort, and convenience.

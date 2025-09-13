@@ -58,9 +58,9 @@ const secPremium = take(premium.sort((a,b)=> num(b.data.price)-num(a.data.price)
       <!-- Compact, single-row, scrollable on small screens -->
       <div class="-mx-1 max-w-full overflow-x-auto scrollbar-hide">
         <div class="flex gap-2 px-1">
-          <a href="/listings?availability=for-rent" class="btn-cta cta-fluid shrink-0 whitespace-nowrap">Browse all for rent</a>
-          <a href="/for-sale" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Sale</a>
-          <a href="/short-stays" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">Short Stays</a>
+          <a href="/listings?type=rent" class="btn-cta cta-fluid shrink-0 whitespace-nowrap">Browse all for rent</a>
+          <a href="/for-sale?availability=for-sale" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Sale</a>
+          <a href="/short-stays?availability=short-stays" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">Short Stays</a>
         </div>
       </div>
     </div>
@@ -69,7 +69,7 @@ const secPremium = take(premium.sort((a,b)=> num(b.data.price)-num(a.data.price)
       <>
         <header class="landing-head mb-3">
           <h2 class="landing-h2">Featured & New</h2>
-          <a href="/listings?availability=for-rent&sort=date_desc" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See more</a>
+          <a href="/listings?type=rent&sort=date_desc" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See more</a>
         </header>
         <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
           {secFeaturedNew.map(e => (<li><PropertyCard listing={e.data} slug={e.slug} /></li>))}
@@ -81,7 +81,7 @@ const secPremium = take(premium.sort((a,b)=> num(b.data.price)-num(a.data.price)
       <>
         <header class="landing-head mb-3">
           <h2 class="landing-h2">Affordable (≤ KSh 150k)</h2>
-          <a href="/listings?availability=for-rent" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all affordable</a>
+          <a href="/listings?type=rent" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all affordable</a>
         </header>
         <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
           {secAffordable.map(e => (<li><PropertyCard listing={e.data} slug={e.slug} /></li>))}
@@ -93,7 +93,7 @@ const secPremium = take(premium.sort((a,b)=> num(b.data.price)-num(a.data.price)
       <>
         <header class="landing-head mb-3">
           <h2 class="landing-h2">Premium (≥ KSh 250k)</h2>
-          <a href="/listings?availability=for-rent" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all premium</a>
+          <a href="/listings?type=rent" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all premium</a>
         </header>
         <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {secPremium.map(e => (<li><PropertyCard listing={e.data} slug={e.slug} /></li>))}
@@ -103,15 +103,21 @@ const secPremium = take(premium.sort((a,b)=> num(b.data.price)-num(a.data.price)
   </section>
 </MainLayout>
 
-<!-- Cosmetic: ensure URL shows ?availability=for-rent for share/back/forward context -->
+<!-- Cosmetic: keep landing URL clean with ?availability=for-rent (no legacy ?type on this page) -->
 <script is:inline>
   (function () {
     try {
       const u = new URL(window.location.href);
+      let changed = false;
       if (u.searchParams.get('availability') !== 'for-rent') {
         u.searchParams.set('availability', 'for-rent');
-        history.replaceState({}, '', u);
+        changed = true;
       }
+      if (u.searchParams.has('type')) {
+        u.searchParams.delete('type');
+        changed = true;
+      }
+      if (changed) history.replaceState({}, '', u);
     } catch {}
   })();
 </script>

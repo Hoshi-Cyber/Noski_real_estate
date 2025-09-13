@@ -1,21 +1,17 @@
 ---
-title: "Imara Daima 2BR (Master En-suite)"
-availability: "rent"
-location: "Imara Daima, Nairobi"
+title: Imara Daima 2BR (Master En-suite)
+availability: rent
+location: 'Imara Daima, Nairobi'
 price: 60000
 bedrooms: 2
 bathrooms: 2
-type: "Apartment"
-
-# Quick Facts
-lotSize: "N/A (apartment unit)"
-parking: "1 car, dedicated slot"
-yearBuilt: "Unknown"
-tenure: "Leasehold"
-serviceCharge: "Included in rent"
-
-# Media
-heroImage: "/images/listings/imara-daima-2br-master-en-suite-rent/hero.webp"
+type: Apartment
+lotSize: N/A (apartment unit)
+parking: '1 car, dedicated slot'
+yearBuilt: Unknown
+tenure: Leasehold
+serviceCharge: Included in rent
+heroImage: /images/listings/imara-daima-2br-master-en-suite-rent/hero.webp
 images:
   - /images/listings/imara-daima-2br-master-en-suite-rent/hero.webp
   - /images/listings/imara-daima-2br-master-en-suite-rent/1.webp
@@ -23,7 +19,6 @@ images:
   - /images/listings/imara-daima-2br-master-en-suite-rent/3.webp
   - /images/listings/imara-daima-2br-master-en-suite-rent/4.webp
   - /images/listings/imara-daima-2br-master-en-suite-rent/5.webp
-
 amenities:
   - Master en-suite bedroom with fitted wardrobes
   - Spacious living room with balcony access
@@ -33,17 +28,15 @@ amenities:
   - Laundry and drying yard
   - Internet and cable TV ready
   - Secure parking slots for residents
-  - Perimeter wall, electric fencing & 24/7 security
+  - 'Perimeter wall, electric fencing & 24/7 security'
   - Children’s play area and landscaped compound
-
 neighborhoodHighlights:
   - Located near Imara Daima Railway Station for easy city commuting
   - Quick access to Mombasa Road and Nairobi Expressway
-  - Close to Southfield Mall, Naivas, and other retail outlets
+  - 'Close to Southfield Mall, Naivas, and other retail outlets'
   - Proximity to JKIA and industrial area employment hubs
   - Nearby schools and health facilities including Nairobi West Hospital
-  - Vibrant, secure community with growing infrastructure
-
+  - 'Vibrant, secure community with growing infrastructure'
 description: |
   This modern 2-bedroom apartment in Imara Daima offers stylish living with 
   functionality. The master bedroom is en-suite, while the second bedroom and 
@@ -58,10 +51,10 @@ description: |
   With quick access to the Expressway, Mombasa Road, and JKIA, this property 
   is ideal for professionals and families seeking an accessible yet secure 
   rental option in Nairobi.
-
-# Badges
 isNew: false
 isReduced: false
 isFurnished: false
+slug: imara-daima-2br-master-en-suite
+address: 'Imara Daima, Nairobi'
 ---
 Modern Imara Daima apartment combining comfort, security, and connectivity.

@@ -47,7 +47,7 @@ const secLuxury = take(luxury.sort((a,b)=> num(b.data.price)-num(a.data.price)),
 ---
 
 <MainLayout
-  title="Properties for Sale – Severino Realty"
+  title="Properties for Sale – Locate Properties Kenya"
   description="Browse hand-picked properties for sale across Nairobi and beyond. Featured, budget, and luxury picks — with a link to the full search."
 >
   <section class="py-12 max-w-7xl mx-auto px-4">
@@ -58,9 +58,9 @@ const secLuxury = take(luxury.sort((a,b)=> num(b.data.price)-num(a.data.price)),
       <!-- Compact, single-row, scrollable on small screens -->
       <div class="-mx-1 max-w-full overflow-x-auto scrollbar-hide">
         <div class="flex gap-2 px-1">
-          <a href="/listings?availability=for-sale" class="btn-cta cta-fluid shrink-0 whitespace-nowrap">Browse all for sale</a>
-          <a href="/for-rent" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Rent</a>
-          <a href="/short-stays" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">Short Stays</a>
+          <a href="/listings?type=sale" class="btn-cta cta-fluid shrink-0 whitespace-nowrap">Browse all for sale</a>
+          <a href="/for-rent?availability=for-rent" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Rent</a>
+          <a href="/short-stays?availability=short-stays" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">Short Stays</a>
         </div>
       </div>
     </div>
@@ -70,7 +70,7 @@ const secLuxury = take(luxury.sort((a,b)=> num(b.data.price)-num(a.data.price)),
       <>
         <header class="landing-head mb-3">
           <h2 class="landing-h2">Featured & New</h2>
-          <a href="/listings?availability=for-sale&sort=date_desc" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See more</a>
+          <a href="/listings?type=sale&sort=date_desc" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See more</a>
         </header>
         <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
           {secFeaturedNew.map(e => (
@@ -85,7 +85,7 @@ const secLuxury = take(luxury.sort((a,b)=> num(b.data.price)-num(a.data.price)),
       <>
         <header class="landing-head mb-3">
           <h2 class="landing-h2">Budget Picks (≤ KSh 10M)</h2>
-          <a href="/listings?availability=for-sale" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all budget</a>
+          <a href="/listings?type=sale" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all budget</a>
         </header>
         <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
           {secBudget.map(e => (
@@ -100,7 +100,7 @@ const secLuxury = take(luxury.sort((a,b)=> num(b.data.price)-num(a.data.price)),
       <>
         <header class="landing-head mb-3">
           <h2 class="landing-h2">Luxury Collection (≥ KSh 40M)</h2>
-          <a href="/listings?availability=for-sale" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all luxury</a>
+          <a href="/listings?type=sale" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all luxury</a>
         </header>
         <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {secLuxury.map(e => (

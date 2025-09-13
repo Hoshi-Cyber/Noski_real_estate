@@ -29,9 +29,9 @@
         class="w-full p-2 text-sm outline-none" />
     </div>
 
-    <!-- Type -->
-    <label class="sr-only" for="hs-type">Type</label>
-    <select id="hs-type" name="type" class="rounded-md border border-neutral-300 p-2 text-sm">
+    <!-- Property type (rename to ptype to avoid clashing with availability "type") -->
+    <label class="sr-only" for="hs-ptype">Property type</label>
+    <select id="hs-ptype" name="ptype" class="rounded-md border border-neutral-300 p-2 text-sm">
       <option value="">Any</option>
       <option value="apartment">Apartment</option>
       <option value="bungalow">Bungalow</option>
@@ -71,24 +71,51 @@
 (() => {
   const form = document.getElementById('hero-search');
   const byName = (n) => form.querySelector(`[name="${n}"]`);
+
   const qs = new URLSearchParams(location.search);
   const get = (k) => qs.get(k) ?? '';
 
-  // Prefill from URL. Backward-compat: accept old ?q=
+  // Map canonical type -> legacy availability for prefill
+  const typeToAvailability = (t) => {
+    const s = String(t||'').toLowerCase();
+    if (s === 'rent') return 'for-rent';
+    if (s === 'sale') return 'for-sale';
+    if (s === 'short-stays') return 'short-stays';
+    return '';
+  };
+
+  // Prefill from URL (support legacy + canonical)
   const prefill = {
-    availability: get('availability'),
+    availability: get('availability') || typeToAvailability(get('type')),
     location: get('location') || get('q'),
     minPrice: get('minPrice'),
     maxPrice: get('maxPrice'),
-    type: get('type'),
+    ptype: get('ptype'),
     beds: get('beds'),
   };
   Object.entries(prefill).forEach(([k, v]) => { if (v) byName(k).value = v; });
 
-  // Normalize before submit:
-  // - location -> trimmed lowercase (to match dataset comparisons)
-  // - prices -> digits only
-  // - drop empty params from URL
+  // Ensure a hidden canonical "type" (rent|sale|short-stays) accompanies the legacy availability
+  const ensureHiddenType = () => {
+    let hid = form.querySelector('input[name="type"][type="hidden"]');
+    if (!hid) {
+      hid = document.createElement('input');
+      hid.type = 'hidden';
+      hid.name = 'type';
+      form.appendChild(hid);
+    }
+    return hid;
+  };
+
+  const availabilityToType = (v) => {
+    const s = String(v||'').toLowerCase();
+    if (s.includes('rent')) return 'rent';
+    if (s.includes('sale')) return 'sale';
+    if (s.includes('short')) return 'short-stays';
+    return '';
+  };
+
+  // Normalize before submit
   form.addEventListener('submit', () => {
     const stripNum = (s) => (s || '').toString().replace(/[^0-9]/g, '');
     const loc = (byName('location').value || '').trim().toLowerCase();
@@ -97,9 +124,14 @@
     byName('minPrice').value = stripNum(byName('minPrice').value);
     byName('maxPrice').value = stripNum(byName('maxPrice').value);
 
-    // Disable empty fields so they don't appear in the querystring
+    // canonical type from availability
+    const canonicalType = availabilityToType(byName('availability').value);
+    const hidType = ensureHiddenType();
+    hidType.value = canonicalType;
+
+    // Disable empty fields (but keep hidden type if present)
     Array.from(form.elements).forEach(el => {
-      if (el.name && !el.value) el.disabled = true;
+      if (el.name && !el.value && !(el.name === 'type' && canonicalType)) el.disabled = true;
     });
   });
 })();

@@ -1,33 +1,27 @@
 ---
-title: "Runda 5BR Luxury Mansion"
-slug: "runda-5br-luxury-mansion-sale"
-availability: "sale"
-location: "Runda, Nairobi"
+title: Runda 5BR Luxury Mansion
+slug: runda-5br-luxury-mansion-sale
+availability: sale
+location: 'Runda, Nairobi'
 price: 180000000
 bedrooms: 5
 bathrooms: 5
-type: "Mansion"
-
-# Quick Facts
-lotSize: "Approx. 1/2 acre landscaped"
-parking: "6+ cars inside compound"
-yearBuilt: "Unknown"
-tenure: "Freehold"
-serviceCharge: "N/A"
-
-# Media
-heroImage: "/images/listings/runda-5br-luxury-mansion-sale/hero.webp"
+type: Mansion
+lotSize: Approx. 1/2 acre landscaped
+parking: 6+ cars inside compound
+yearBuilt: Unknown
+tenure: Freehold
+serviceCharge: N/A
+heroImage: /images/listings/runda-5br-luxury-mansion-sale/hero.webp
 images:
   - /images/listings/runda-5br-luxury-mansion-sale/hero.webp
   - /images/listings/runda-5br-luxury-mansion-sale/1.webp
   - /images/listings/runda-5br-luxury-mansion-sale/2.webp
   - /images/listings/runda-5br-luxury-mansion-sale/3.webp
-
 description: >
   Runda 5BR Luxury Mansion designed for modern comfort and convenience with
   spacious interiors, premium finishes and secure gated living. Suits homeowners
   or investors seeking a blue-chip address.
-
 features:
   - Spacious lounge and dining area
   - Modern fitted kitchen with pantry
@@ -37,22 +31,20 @@ features:
   - Internet and cable TV ready
   - Landscaped outdoor spaces
   - Parking for multiple cars
-
 amenitiesCategories:
-  "Interior":
+  Interior:
     - Bright lounge and dining
     - Built-in wardrobes
     - Tiled floors
-  "Kitchen & Utility":
+  Kitchen & Utility:
     - Modern fitted kitchen
     - Pantry and laundry
-  "Connectivity":
+  Connectivity:
     - Internet and TV ready
-  "Security":
+  Security:
     - Gated compound with security
-  "Parking":
+  Parking:
     - Multiple parking slots
-
 amenities:
   - Spacious lounge
   - Built-in wardrobes
@@ -62,26 +54,23 @@ amenities:
   - Backup water and power
   - Internet ready
   - Parking
-
 neighborhoodCategories:
-  "Education":
+  Education:
     - Local schools and international institutions
-  "Healthcare":
+  Healthcare:
     - Nearby hospitals and clinics
-  "Shopping":
-    - Malls, markets, and supermarkets
-  "Transport":
+  Shopping:
+    - 'Malls, markets, and supermarkets'
+  Transport:
     - Good road network and public transport
-
 neighborhoodHighlights:
   - Prime location with shopping and schools nearby
   - Strong community presence
   - Reliable transport connections
   - Secure and serene environment
-
-# Badges
 isNew: false
 isReduced: false
 isFurnished: false
+address: 'Runda, Nairobi'
 ---
 Luxury Runda mansion offering grandeur, security, and exclusivity.

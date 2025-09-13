@@ -52,9 +52,9 @@ const secCoast = take(coastals, 4);
       <!-- Compact, single-row, scrollable on small screens -->
       <div class="-mx-1 max-w-full overflow-x-auto scrollbar-hide">
         <div class="flex gap-2 px-1">
-          <a href="/listings?availability=short-stays" class="btn-cta cta-fluid shrink-0 whitespace-nowrap">Browse all short stays</a>
-          <a href="/for-sale" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Sale</a>
-          <a href="/for-rent" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Rent</a>
+          <a href="/listings?type=short-stays" class="btn-cta cta-fluid shrink-0 whitespace-nowrap">Browse all short stays</a>
+          <a href="/for-sale?availability=for-sale" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Sale</a>
+          <a href="/for-rent?availability=for-rent" class="btn-outline cta-fluid shrink-0 whitespace-nowrap">For Rent</a>
         </div>
       </div>
     </div>
@@ -63,7 +63,7 @@ const secCoast = take(coastals, 4);
       <>
         <header class="landing-head mb-3">
           <h2 class="landing-h2">New this month</h2>
-          <a href="/listings?availability=short-stays&sort=date_desc" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See more</a>
+          <a href="/listings?type=short-stays&sort=date_desc" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See more</a>
         </header>
         <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
           {secNew.map(e => (<li><PropertyCard listing={e.data} slug={e.slug} /></li>))}
@@ -75,7 +75,7 @@ const secCoast = take(coastals, 4);
       <>
         <header class="landing-head mb-3">
           <h2 class="landing-h2">Great for groups (3+ beds)</h2>
-          <a href="/listings?availability=short-stays" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all group stays</a>
+          <a href="/listings?type=short-stays" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all group stays</a>
         </header>
         <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
           {secGroup.map(e => (<li><PropertyCard listing={e.data} slug={e.slug} /></li>))}
@@ -87,7 +87,7 @@ const secCoast = take(coastals, 4);
       <>
         <header class="landing-head mb-3">
           <h2 class="landing-h2">Beach & coastal</h2>
-          <a href="/listings?availability=short-stays" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all coastal stays</a>
+          <a href="/listings?type=short-stays" class="btn-subtle cta-fluid shrink-0 whitespace-nowrap">See all coastal stays</a>
         </header>
         <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {secCoast.map(e => (<li><PropertyCard listing={e.data} slug={e.slug} /></li>))}
@@ -97,15 +97,21 @@ const secCoast = take(coastals, 4);
   </section>
 </MainLayout>
 
-<!-- Cosmetic: ensure URL shows ?availability=short-stays for share/back/forward context -->
+<!-- Cosmetic: keep landing URL clean with ?availability=short-stays (no legacy ?type here) -->
 <script is:inline>
   (function () {
     try {
       const u = new URL(window.location.href);
+      let changed = false;
       if (u.searchParams.get('availability') !== 'short-stays') {
         u.searchParams.set('availability', 'short-stays');
-        history.replaceState({}, '', u);
+        changed = true;
       }
+      if (u.searchParams.has('type')) {
+        u.searchParams.delete('type');
+        changed = true;
+      }
+      if (changed) history.replaceState({}, '', u);
     } catch {}
   })();
 </script>

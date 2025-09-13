@@ -26,14 +26,21 @@ const urlNullish = urlish.optional().nullable();
    Listings (STRICT schema per audit)
    Note: Do NOT define a 'slug' field. Astro reserves it.
 --------------------------------- */
-const availabilityEnum = z.enum(['sale', 'rent', 'short-stay']);
+const availabilityCanonical = z.enum(['sale', 'rent', 'short-stays']);
+const availabilitySchema = z.preprocess((v) => {
+  const s = String(v ?? '').toLowerCase().trim().replace(/\s+/g, '-');
+  if (s === 'for-sale') return 'sale';
+  if (s === 'for-rent') return 'rent';
+  if (s === 'short-stay') return 'short-stays';
+  return s;
+}, availabilityCanonical);
 
 const listingsSchema = z.object({
   /* Core identity */
   title: z.string().min(3),
 
   /* Classifiers */
-  availability: availabilityEnum, // sale|rent|short-stay
+  availability: availabilitySchema, // sale | rent | short-stays
   type: z.string().min(2).describe('e.g., apartment, house, villa, studio, commercial'),
   location: z.string().min(2),
 

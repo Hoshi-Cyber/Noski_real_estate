@@ -1,32 +1,27 @@
 ---
-title: "Kileleshwa 2BR Luxury Apartment"
-availability: "sale"
-location: "Kileleshwa, Nairobi"
+title: Kileleshwa 2BR Luxury Apartment
+availability: sale
+location: 'Kileleshwa, Nairobi'
 price: 20000000
 bedrooms: 2
 bathrooms: 2
-type: "Apartment"
-
-# Quick Facts
-lotSize: "N/A (apartment unit)"
-parking: "2 cars per unit + visitors"
-yearBuilt: "Unknown"
-tenure: "Leasehold"
-serviceCharge: "TBD"
-
-# Media
-heroImage: "/images/listings/kileleshwa-2br-luxury-apartment-sale/hero.webp"
+type: Apartment
+lotSize: N/A (apartment unit)
+parking: 2 cars per unit + visitors
+yearBuilt: Unknown
+tenure: Leasehold
+serviceCharge: TBD
+heroImage: /images/listings/kileleshwa-2br-luxury-apartment-sale/hero.webp
 images:
   - /images/listings/kileleshwa-2br-luxury-apartment-sale/hero.webp
   - /images/listings/kileleshwa-2br-luxury-apartment-sale/1.webp
   - /images/listings/kileleshwa-2br-luxury-apartment-sale/2.webp
   - /images/listings/kileleshwa-2br-luxury-apartment-sale/3.webp
-
 description: >
-  Kileleshwa 2BR Luxury Apartment located in Kileleshwa, Nairobi. Designed with modern comfort and convenience,
-  featuring spacious interiors, secure gated living, and premium finishes. Perfect for homeowners or
-  investors seeking high-value property in a prime location.
-
+  Kileleshwa 2BR Luxury Apartment located in Kileleshwa, Nairobi. Designed with
+  modern comfort and convenience, featuring spacious interiors, secure gated
+  living, and premium finishes. Perfect for homeowners or investors seeking
+  high-value property in a prime location.
 features:
   - Spacious lounge and dining area
   - Modern fitted kitchen with pantry
@@ -36,22 +31,20 @@ features:
   - Internet and cable TV ready
   - Landscaped outdoor spaces
   - Parking for multiple cars
-
 amenitiesCategories:
-  "Interior":
+  Interior:
     - Bright lounge and dining
     - Built-in wardrobes
     - Tiled floors
-  "Kitchen & Utility":
+  Kitchen & Utility:
     - Modern fitted kitchen
     - Pantry and laundry
-  "Connectivity":
+  Connectivity:
     - Internet and TV ready
-  "Security":
+  Security:
     - Gated compound with security
-  "Parking":
+  Parking:
     - Multiple parking slots
-
 amenities:
   - Spacious lounge
   - Built-in wardrobes
@@ -61,25 +54,24 @@ amenities:
   - Backup water and power
   - Internet ready
   - Parking
-
 neighborhoodCategories:
-  "Education":
+  Education:
     - Local schools and international institutions
-  "Healthcare":
+  Healthcare:
     - Nearby hospitals and clinics
-  "Shopping":
-    - Malls, markets, and supermarkets
-  "Transport":
+  Shopping:
+    - 'Malls, markets, and supermarkets'
+  Transport:
     - Good road network and public transport
-
 neighborhoodHighlights:
   - Prime location with shopping and schools nearby
   - Strong community presence
   - Reliable transport connections
   - Secure and serene environment
-
-# Badges
 isNew: false
 isReduced: false
 isFurnished: false
+slug: kileleshwa-2br-luxury-apartment
+address: 'Kileleshwa, Nairobi'
 ---
+
