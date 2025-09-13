@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withV } from '../../../lib/assets';
 import InquiryForm from '../../../components/forms/InquiryForm.astro';
+import GalleryRail from '../../../components/GalleryRail.astro';
 
 export const prerender = true;
 
@@ -100,36 +101,39 @@ const intersectCount = (a: any[], b: any[]) => {
   const setB = new Set((b || []).map((x) => String(x).toLowerCase()));
   return (a || []).reduce((acc, v) => acc + (setB.has(String(v).toLowerCase()) ? 1 : 0), 0);
 };
+const cityOf = (loc?: string) => (loc || '').split(',')[0].trim().toLowerCase();
 
-/* Related listings */
+/* Related listings (stricter) */
 const pool = notFound ? [] : all.filter(
   (e) => e.slug !== slug && norm(e.data.availability || '') === norm(data?.availability || '')
 );
 
 function score(candidate: any, current: any) {
   let s = 0;
-  if ((candidate.location || '').toLowerCase() === (current.location || '').toLowerCase()) s += 40;
+  if (cityOf(candidate.location) && cityOf(candidate.location) === cityOf(current.location)) s += 40;
   if ((candidate.type || '').toLowerCase() === (current.type || '').toLowerCase()) s += 20;
   const cb = typeof candidate.bedrooms === 'number' ? candidate.bedrooms : undefined;
   const tb = typeof current.bedrooms === 'number' ? current.bedrooms : undefined;
-  if (typeof cb === 'number' && typeof tb === 'number' && Math.abs(cb - tb) <= 1) s += 15;
+  if (typeof cb === 'number' && typeof tb === 'number' && Math.abs(cb - tb) <= 1) s += 12;
   const cp = typeof candidate.price === 'number' ? candidate.price : undefined;
   const tp = typeof current.price === 'number' ? current.price : undefined;
   if (typeof cp === 'number' && typeof tp === 'number') {
-    if (cp >= tp * 0.8 && cp <= tp * 1.2) s += 15;
+    if (cp >= tp * 0.85 && cp <= tp * 1.15) s += 12;
   }
   if (intersectCount(arr(candidate.amenities), arr(current.amenities)) >= 2) s += 10;
   const cn = arr(candidate.neighborhoodHighlights || candidate.neighborhood || candidate.nearby);
   const tn = arr(current.neighborhoodHighlights || current.neighborhood || current.nearby);
-  if (intersectCount(cn, tn) > 0) s += 5;
+  if (intersectCount(cn, tn) > 0) s += 6;
   return s;
 }
 
-const related = pool
+const relatedPool = pool
   .map((e) => ({ e, s: score(e.data, data) }))
+  .filter((x) => x.s >= 50)
   .sort((a, b) => b.s - a.s || (b.e.data?.date || 0) - (a.e.data?.date || 0))
-  .slice(0, 4)
-  .map((x) => x.e);
+  .slice(0, 4);
+
+const related = relatedPool.map((x) => x.e);
 
 /* Optional rich media */
 const videoUrl = data?.videoUrl as string | undefined;
@@ -165,7 +169,7 @@ const share = {
   sms:`sms:?&body=${enc((data?.title || '') + ' ' + canonicalUrl)}`
 };
 
-/* JSON-LD + breadcrumb (All Listings) */
+/* JSON-LD + breadcrumb */
 const offerAvailability =
   avail.includes('rent') || avail.includes('sale')
     ? 'https://schema.org/InStock'
@@ -217,7 +221,7 @@ const breadcrumbLD = {
   ].filter(Boolean)
 };
 
-/* CTAs: WhatsApp preserved */
+/* WhatsApp */
 const BUSINESS_PHONE = import.meta.env.PUBLIC_BUSINESS_PHONE || '';
 const waText = `Hello, I'm interested in ${data?.title || 'the listing'} – ${canonicalUrl}`;
 const waHref  = BUSINESS_PHONE ? `https://wa.me/${BUSINESS_PHONE.replace(/\D/g,'')}?text=${enc(waText)}` : '';
@@ -235,7 +239,7 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
 ---
 
 <MainLayout
-  title={notFound ? 'Listing Not Found – Severino Realty' : `${data.title} – Severino Realty`}
+  title={notFound ? 'Listing Not Found – Locate Properties Kenya' : `${data.title} – Locate Properties Kenya`}
   description={notFound ? 'We could not find the property you are looking for.' : `${data.title} in ${data.location}`}
   seoImage={images[0] || '/images/placeholder.webp'}
 >
@@ -256,54 +260,54 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
   ) : (
     <>
       <!-- BREADCRUMB -->
-      <nav class="max-w-6xl mx-auto px-4 py-3 text-sm">
-        <ol class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-neutral-50 ring-1 ring-neutral-200 px-3 py-2">
-          <li><a href="/" class="link-decor text-neutral-700 hover:text-cta">Home</a></li>
-          <li class="text-neutral-400">/</li>
-          <li><a href="/listings" class="link-decor text-neutral-700 hover:text-cta">All Listings</a></li>
-          <li class="text-neutral-400">/</li>
-          <li><a href={listHref} class="link-decor text-neutral-700 hover:text-cta capitalize">{isSale ? 'For Sale' : isRent ? 'For Rent' : 'Short Stays'}</a></li>
-          <li class="text-neutral-400">/</li>
-          <li class="text-neutral-800">{data.title}</li>
+      <nav class="breadcrumb">
+        <ol class="breadcrumb-ol">
+          <li><a href="/" class="link-decor">Home</a></li>
+          <li class="breadcrumb-sep">/</li>
+          <li><a href="/listings" class="link-decor">All Listings</a></li>
+          <li class="breadcrumb-sep">/</li>
+          <li><a href={listHref} class="link-decor capitalize">{isSale ? 'For Sale' : isRent ? 'For Rent' : 'Short Stays'}</a></li>
+          <li class="breadcrumb-sep">/</li>
+          <li class="breadcrumb-current">{data.title}</li>
         </ol>
       </nav>
 
-      <!-- HERO / CAROUSEL -->
+      <!-- HERO / CAROUSEL (centered within content) -->
       <section class="relative">
-        <div id="carousel" class="relative aspect-[16/9] max-h-[70vh] overflow-hidden bg-black" aria-label="Property images" role="region">
-          {images.map((src, idx) => (
-            <img
-              src={src}
-              alt={data.title}
-              class="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
-              style={`opacity:${idx === 0 ? '1' : '0'}`}
-              loading={idx === 0 ? 'eager' : 'lazy'}
-            />
-          ))}
-
-          <button id="prev" class="carousel-btn absolute left-3 top-1/2 -translate-y-1/2" aria-label="Previous image">‹</button>
-          <button id="next" class="carousel-btn absolute right-3 top-1/2 -translate-y-1/2" aria-label="Next image">›</button>
-
-          <div id="dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2" aria-label="Select image">
-            {images.map((_, i) => (
-              <button class={`h-2.5 w-2.5 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/60'}`} aria-label={`Go to image ${i+1}`}></button>
+        <div class="max-w-6xl mx-auto px-4">
+          <div id="carousel" class="gallery-hero relative aspect-[16/9] max-h-[70vh] overflow-hidden" aria-label="Property images" role="region">
+            {images.map((src, idx) => (
+              <img
+                src={src}
+                alt={data.title}
+                class={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700 ${idx === 0 ? 'opacity-100' : 'opacity-0'}`}
+                loading={idx === 0 ? 'eager' : 'lazy'}
+              />
             ))}
-          </div>
 
-          <div id="count" class="absolute bottom-3 right-3 text-xs text-white/90 bg-black/40 px-2 py-1 rounded">
-            1 / {images.length}
-          </div>
+            <button id="prev" class="carousel-btn gallery-arrow left-3" aria-label="Previous image">‹</button>
+            <button id="next" class="carousel-btn gallery-arrow right-3" aria-label="Next image">›</button>
 
-          <div id="swipe-hint" class="absolute bottom-14 left-1/2 -translate-x-1/2 text-[11px] text-white/90 bg-black/40 px-2 py-1 rounded pointer-events-none">
-            ‹ › swipe
-          </div>
+            <div id="dots" class="gallery-dots" aria-label="Select image">
+              {images.map((_, i) => (
+                <button class={`dot ${i === 0 ? 'is-active' : ''}`} aria-label={`Go to image ${i+1}`}></button>
+              ))}
+            </div>
 
-          <button id="zoom-open" class="absolute inset-0" aria-label="Open image in full-screen"></button>
+            <div id="count" class="gallery-count">1 / {images.length}</div>
+
+            <div id="swipe-hint" class="gallery-hint">‹ › swipe</div>
+
+            <button id="zoom-open" class="absolute inset-0" aria-label="Open image in full-screen"></button>
+          </div>
         </div>
+
+        <!-- THUMBNAIL RAIL (component) -->
+        <GalleryRail images={images} alt={data.title} />
       </section>
 
       <!-- HEADER / PRIMARY FACTS + CTAs -->
-      <section class="max-w-6xl mx-auto px-4 py-8">
+      <section class="max-w-6xl mx-auto px-4 py-6">
         <div class="flex flex-wrap items-start gap-3">
           <span class={`text-xs text-white px-2 py-1 rounded ${badgeClass}`} aria-label="Availability">{data.availability}</span>
           <h1 class="text-2xl md:text-3xl font-semibold">{data.title}</h1>
@@ -314,215 +318,217 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
           <span class="text-xl font-bold text-cta">{priceText}</span>
           {data.area && <span class="fact-label">{data.area}</span>}
 
-          <!-- Desktop/tablet: Enquire + WhatsApp -->
           <a
             href="#"
             data-inquiry-trigger
             data-context={inquiryContext}
             data-id={listingId}
             data-title={listingTitle}
-            class="ml-auto hidden sm:inline-flex bg-cta text-white px-5 py-2 rounded-md"
+            class="ml-auto btn-cta cta-fluid rounded-md"
             aria-label={enquireLabel}
           >
             {enquireLabel}
           </a>
-          <a href={waUiHref} class="hidden sm:inline-flex btn-wa px-4 py-2 rounded-md" aria-label="Chat on WhatsApp" data-track="wa_click">
-            WhatsApp
-          </a>
 
-          <!-- Mobile: Enquire + WhatsApp -->
-          <div class="w-full sm:hidden flex items-center gap-2 mt-2">
-            <a
-              href="#"
-              data-inquiry-trigger
-              data-context={inquiryContext}
-              data-id={listingId}
-              data-title={listingTitle}
-              class="flex-1 bg-primary text-white px-4 py-2 rounded-md"
-              aria-label={enquireLabel}
-            >
-              {enquireLabel}
-            </a>
-            <a href={waUiHref} aria-label="WhatsApp" class="inline-flex items-center justify-center w-10 h-10 rounded-full text-white shadow focus:outline-none focus:ring-2 focus:ring-[#25D366]" style="background:#25D366" data-track="wa_click">
-              <svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M19.11 17.41c-.27-.14-1.57-.77-1.82-.85-.24-.09-.42-.14-.6.14-.17.27-.68.85-.83 1.02-.15.17-.31.2-.58.07-.27-.14-1.14-.42-2.18-1.34-.8-.71-1.34-1.58-1.5-1.85-.16-.27-.02-.42.12-.56.12-.12.27-.31.4-.46.14-.15.18-.25.27-.42.09-.17.05-.31-.02-.45-.07-.14-.6-1.44-.82-1.97-.22-.53-.44-.46-.6-.46-.16 0-.34-.02-.52-.02-.18 0-.45.07-.68.31-.24.24-.89.87-.89 2.11 0 1.24.91 2.44 1.04 2.61.12.17 1.79 2.73 4.33 3.82.61.26 1.08.42 1.45.54.61.19 1.17.16 1.61.1.49-.07 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.11-.24-.18-.51-.32z"/><path d="M26.7 5.3C24.1 2.7 20.65 1.3 17 1.3 9.94 1.3 4.3 6.94 4.3 14c0 2.25.59 4.45 1.71 6.39L4 28l7.79-2c1.84 1 3.92 1.52 6.04 1.52 7.06 0 12.7-5.64 12.7-12.7 0-3.38-1.32-6.56-3.83-9.08zM17.83 25.3c-1.87 0-3.69-.5-5.28-1.45l-.38-.23-4.63 1.19 1.24-4.51-.25-.38C7.43 18.2 6.9 16.13 6.9 14 6.9 8.49 11.49 3.9 17 3.9c3.09 0 6 .1 8.2 2.31 2.2 2.2 3.5 5.12 3.5 8.2 0 6.51-4.59 11.9-10.87 10.89z"/></svg>
-            </a>
-          </div>
+          <!-- WhatsApp (desktop button / mobile handled by sticky bar) -->
+          <a href={waUiHref} class="hidden md:inline-flex btn-wa cta-fluid rounded-md" aria-label="Chat on WhatsApp" data-track="wa_click">
+            <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M19.11 17.41c-.27-.14-1.57-.77-1.82-.85-.24-.09-.42-.14-.6.14-.17.27-.68.85-.83 1.02-.15.17-.31.2-.58.07-.27-.14-1.14-.42-2.18-1.34-.8-.71-1.34-1.58-1.5-1.85-.16-.27-.02-.42.12-.56.12-.12.27-.31.4-.46.14-.15.18-.25.27-.42.09-.17.05-.31-.02-.45-.07-.14-.6-1.44-.82-1.97-.22-.53-.44-.46-.6-.46-.16 0-.34-.02-.52-.02-.18 0-.45.07-.68.31-.24.24-.89.87-.89 2.11 0 1.24.91 2.44 1.04 2.61.12.17 1.79 2.73 4.33 3.82.61.26 1.08.42 1.45.54.61.19 1.17.16 1.61.1.49-.07 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.11-.24-.18-.51-.32z"/></svg>
+            <span>WhatsApp</span>
+          </a>
         </div>
 
         <!-- SHARE -->
-        <div class="mt-4 share-bar" aria-label="Share this listing">
-          <span class="share-label">Share:</span>
-          <div class="relative inline-block">
-            <button id="share-trigger" class="share-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="share-pop">Share</button>
-            <div id="share-pop" class="hidden absolute left-0 mt-2 w-56 bg-white ring-1 ring-neutral-200 rounded-md shadow-lg p-2 z-20" role="menu" aria-label="Share options">
-              <div class="grid grid-cols-2 gap-2">
-                <a class="share-btn justify-center" href={share.fb} target="_blank" rel="noopener">Facebook</a>
-                <a class="share-btn justify-center" href={share.x}  target="_blank" rel="noopener">X</a>
-                <a class="share-btn justify-center" href={share.li} target="_blank" rel="noopener">LinkedIn</a>
-                <a class="share-btn justify-center" href={share.wa} target="_blank" rel="noopener">WhatsApp</a>
-                <a class="share-btn justify-center" href={share.em}>Email</a>
-                <a class="share-btn justify-center" href={share.sms}>Text</a>
-              </div>
-              <button id="share-copy" class="share-btn w-full mt-2" type="button">Copy link</button>
+        <div class="share-rail" role="group" aria-label="Share this listing">
+          <span class="share-title">Share this listing</span>
+          <div class="share-icons">
+            <a class="share-btn share-btn-icon" href={share.fb} target="_blank" rel="noopener" aria-label="Share on Facebook" title="Facebook">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.87v-6.99H7.9V12h2.54V9.8c0-2.5 1.5-3.89 3.79-3.89 1.1 0 2.25.2 2.25.2v2.48h-1.27c-1.25 0-1.64.78-1.64 1.57V12h2.8l-.45 2.88h-2.35v6.99A10 10 0 0 0 22 12Z"/></svg>
+            </a>
+            <a class="share-btn share-btn-icon" href={share.x} target="_blank" rel="noopener" aria-label="Share on X" title="X">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h4.6l5.27 7.64L18.4 3H21l-7.24 9.88L21 21h-4.6l-5.45-7.9L5.6 21H3l7.57-10.12L3 3Z"/></svg>
+            </a>
+            <a class="share-btn share-btn-icon" href={share.wa} target="_blank" rel="noopener" aria-label="Share on WhatsApp" title="WhatsApp">
+              <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M19.11 17.41c-.27-.14-1.57-.77-1.82-.85-.24-.09-.42-.14-.6.14-.17.27-.68.85-.83 1.02-.15.17-.31.2-.58.07-.27-.14-1.14-.42-2.18-1.34-.8-.71-1.34-1.58-1.5-1.85-.16-.27-.02-.42.12-.56.12-.12.27-.31.4-.46.14-.15.18-.25.27-.42.09-.17.05-.31-.02-.45-.07-.14-.6-1.44-.82-1.97-.22-.53-.44-.46-.6-.46-.16 0-.34-.02-.52-.02-.18 0-.45.07-.68.31-.24.24-.89.87-.89 2.11 0 1.24.91 2.44 1.04 2.61.12.17 1.79 2.73 4.33 3.82.61.26 1.08.42 1.45.54.61.19 1.17.16 1.61.1.49-.07 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.11-.24-.18-.51-.32z"/></svg>
+            </a>
+            <a class="share-btn share-btn-icon" href={share.li} target="_blank" rel="noopener" aria-label="Share on LinkedIn" title="LinkedIn">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.94 21H3.56V8.51h3.38V21ZM5.25 6.99a1.97 1.97 0 1 1 0-3.94 1.97 1.97 0 0 1 0 3.94ZM21 21h-3.36v-6.09c0-1.45-.03-3.31-2.02-3.31-2.02 0-2.33 1.58-2.33 3.21V21h-3.36V8.51h3.22v1.7h.05c.45-.85 1.54-1.74 3.18-1.74 3.4 0 4.03 2.24 4.03 5.14V21Z"/></svg>
+            </a>
+            <a class="share-btn share-btn-icon" href={share.em} aria-label="Share by Email" title="Email">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5L4 8V6l8 5 8-5v2Z"/></svg>
+            </a>
+            <a class="share-btn share-btn-icon" href={share.sms} aria-label="Share via SMS" title="SMS">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/></svg>
+            </a>
+            <button id="share-copy" class="share-btn share-btn-icon" type="button" aria-label="Copy link" title="Copy link">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>
+            </button>
+            <button id="share-trigger" class="share-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="share-pop" title="More">
+              More
+            </button>
+          </div>
+
+          <div id="share-pop" class="hidden popover z-30" role="menu" aria-label="More share options">
+            <div class="popover-arrow" aria-hidden="true"></div>
+            <div class="grid grid-cols-2 gap-2">
+              <a class="share-btn justify-center" href={share.li} target="_blank" rel="noopener">LinkedIn</a>
+              <a class="share-btn justify-center" href={share.em}>Email</a>
+              <a class="share-btn justify-center" href={share.sms}>Text</a>
             </div>
           </div>
         </div>
+
+        <!-- QUICK FACTS -->
+        <div class="mt-6 card p-4">
+          <h3 class="font-semibold mb-3">Quick Facts</h3>
+          <dl class="facts-grid">
+            <div><dt>{isRent ? 'Monthly Rent' : 'Price'}</dt><dd>{priceText}</dd></div>
+            <div><dt>Type</dt><dd>{data.type ?? '—'}</dd></div>
+            <div><dt>Bedrooms</dt><dd>{data.bedrooms ?? '—'}</dd></div>
+            <div><dt>Bathrooms</dt><dd>{data.bathrooms ?? '—'}</dd></div>
+            {data.parking && (<div><dt>Parking</dt><dd>{data.parking}</dd></div>)}
+            {data.location && (<div><dt>Location</dt><dd>{data.location}</dd></div>)}
+            {data.condition && (<div><dt>Condition</dt><dd>{data.condition}</dd></div>)}
+            {data.serviceCharge && (<div><dt>Service Charge</dt><dd>{fmtPrice(data.serviceCharge)}/mo</dd></div>)}
+            {data.titleStatus && (<div><dt>Title Status</dt><dd>{data.titleStatus}</dd></div>)}
+            {isSale && data.tenure && (<div><dt>Ownership</dt><dd>{data.tenure}</dd></div>)}
+            {data.floor && (<div><dt>Floor</dt><dd>{data.floor}</dd></div>)}
+            {isRent && data.deposit && (<div><dt>Deposit</dt><dd>{fmtPrice(data.deposit)}</dd></div>)}
+            {isRent && (data.utilitiesIncluded !== undefined) && (
+              <div><dt>Utilities</dt><dd>{data.utilitiesIncluded ? 'Included' : 'Pay as per use'}</dd></div>
+            )}
+            {data.furnishing && (<div><dt>Furnishing</dt><dd>{data.furnishing}</dd></div>)}
+            {data.internet && (<div><dt>Internet</dt><dd>{data.internet}</dd></div>)}
+            {data.security && (<div><dt>Security</dt><dd>{data.security}</dd></div>)}
+            {data.availabilityDate && (<div><dt>Available</dt><dd>{data.availabilityDate}</dd></div>)}
+            {data.petsAllowed !== undefined && (<div><dt>Pets</dt><dd>{data.petsAllowed ? 'Allowed' : 'Not allowed'}</dd></div>)}
+            {data.ref && (<div><dt>Ref ID</dt><dd>{data.ref}</dd></div>)}
+            {grossYield && (<div><dt>Est. Gross Yield</dt><dd>{grossYield.toFixed(1)}%</dd></div>)}
+          </dl>
+        </div>
       </section>
 
-      <!-- DETAILS GRID -->
-      <section class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8 pb-24 md:pb-10">
-        <article class="md:col-span-2 space-y-6">
-          {fullDesc && (
-            <div class="card p-4 space-y-2">
-              <h2 class="text-lg font-semibold">Property Description</h2>
-              <p class="leading-relaxed text-neutral-800">{shortDesc}</p>
-            </div>
-          )}
+      <!-- DETAILS STACK -->
+      <section class="max-w-6xl mx-auto px-4 space-y-6 pb-24 md:pb-10">
+        {fullDesc && (
+          <div class="card p-5 section-block">
+            <h2 class="text-lg font-semibold">Property Description</h2>
+            <p class="leading-relaxed text-neutral-800">{shortDesc}</p>
+          </div>
+        )}
 
-          {features.length > 0 && (
-            <div class="card p-4 space-y-2">
-              <h2 class="text-lg font-semibold">Key Features</h2>
-              <ul class="grid md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-5">
-                {features.slice(0, 8).map((f) => <li>{f}</li>)}
-              </ul>
-            </div>
-          )}
-
-          {(amenitiesCategories && Object.keys(amenitiesCategories).length > 0) ? (
-            <div class="card p-4 space-y-3">
-              <h2 class="text-lg font-semibold">Amenities</h2>
-              <div class="grid md:grid-cols-2 gap-6">
-                {Object.entries(amenitiesCategories).map(([cat, items]) => (
-                  <div>
-                    <h3 class="text-sm text-primary mb-1">{cat}</h3>
-                    <ul class="list-disc pl-5 space-y-1">
-                      {items.map((x) => <li>{x}</li>)}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            amenitiesArr.length > 0 && (
-              <div class="card p-4 space-y-2">
-                <h2 class="text-lg font-semibold">Amenities</h2>
-                <ul class="grid md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-5">
-                  {amenitiesArr.map((a) => <li>{a}</li>)}
-                </ul>
-              </div>
-            )
-          )}
-
-          {(neighborhoodCategories && Object.keys(neighborhoodCategories).length > 0) ? (
-            <div class="card p-4 space-y-3">
-              <h2 class="text-lg font-semibold">Neighborhood Highlights</h2>
-              <div class="grid md:grid-cols-3 gap-6">
-                {Object.entries(neighborhoodCategories).map(([cat, items]) => (
-                  <div>
-                    <h3 class="text-sm text-primary mb-1">{cat}</h3>
-                    <ul class="list-disc pl-5 space-y-1">
-                      {items.slice(0, 8).map((x) => <li>{x}</li>)}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            neighborhood.length > 0 && (
-              <div class="card p-4 space-y-2">
-                <h2 class="text-lg font-semibold">Neighborhood Highlights</h2>
-                <ul class="grid md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-5">
-                  {neighborhood.slice(0, 8).map((x) => <li>{x}</li>)}
-                </ul>
-              </div>
-            )
-          )}
-
-          {(data?.deposit || data?.serviceCharge || data?.utilitiesIncluded !== undefined || data?.petsAllowed !== undefined) && (
-            <div class="card p-4 space-y-2">
-              <h2 class="text-lg font-semibold">Fees & Policies</h2>
-              <ul class="list-disc pl-5 space-y-1 text-neutral-800">
-                {data?.deposit && <li>Deposit: {fmtPrice(data.deposit)}</li>}
-                {data?.serviceCharge && <li>Service Charge: {fmtPrice(data.serviceCharge)}/mo</li>}
-                {data?.utilitiesIncluded !== undefined && <li>Utilities: {data.utilitiesIncluded ? 'Included' : 'Pay as per use'}</li>}
-                {data?.petsAllowed !== undefined && <li>Pets: {data.petsAllowed ? 'Allowed' : 'Not allowed'}</li>}
-              </ul>
-            </div>
-          )}
-
-          {Array.isArray(data?.floorPlans) && data.floorPlans.length > 0 && (
-            <div class="card p-4 space-y-2">
-              <h2 class="text-lg font-semibold">Documents</h2>
-              <ul class="list-disc pl-5 space-y-1">
-                {data.floorPlans.map((f: string) => (
-                  <li><a href={withV(f)} class="text-primary underline" target="_blank" rel="noopener">Floor plan</a></li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {videoUrl && (
-            <div class="aspect-video w-full card p-0">
-              {isYouTube ? (
-                <iframe
-                  src={`https://www.youtube.com/embed/${videoUrl.split('v=')[1] || ''}`}
-                  class="h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                  loading="lazy"
-                  title="Listing video"
-                />
-              ) : isVimeo ? (
-                <iframe
-                  src={videoUrl.replace('vimeo.com', 'player.vimeo.com/video')}
-                  class="h-full w-full"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowfullscreen
-                  loading="lazy"
-                  title="Listing video"
-                />
-              ) : (
-                <video controls class="h-full w-full">
-                  <source src={videoUrl} />
-                </video>
-              )}
-            </div>
-          )}
-        </article>
-
-        <aside class="space-y-4">
-          <div class="rounded-xl border p-4 card">
-            <h3 class="font-semibold mb-2">Quick Facts</h3>
-            <ul class="space-y-1 text-sm text-neutral-700">
-              <li><strong>{isRent ? 'Monthly Rent' : 'Price'}:</strong> {priceText}</li>
-              <li><strong>Type:</strong> {data.type ?? '—'}</li>
-              <li><strong>Bedrooms:</strong> {data.bedrooms ?? '—'}</li>
-              <li><strong>Bathrooms:</strong> {data.bathrooms ?? '—'}</li>
-              {data.parking && <li><strong>Parking:</strong> {data.parking}</li>}
-              {data.location && <li><strong>Location:</strong> {data.location}</li>}
-              {data.condition && <li><strong>Condition:</strong> {data.condition}</li>}
-              {data.serviceCharge && <li><strong>Service Charge:</strong> {fmtPrice(data.serviceCharge)}/mo</li>}
-              {data.titleStatus && <li><strong>Title Status:</strong> {data.titleStatus}</li>}
-              {isSale && data.tenure && <li><strong>Tenure:</strong> {data.tenure}{data.tenureYears ? ` (${data.tenureYears} yrs)` : ''}</li>}
-              {data.floor && <li><strong>Floor:</strong> {data.floor}</li>}
-              {isRent && data.deposit && <li><strong>Deposit:</strong> {fmtPrice(data.deposit)}</li>}
-              {isRent && (data.utilitiesIncluded !== undefined) && (
-                <li><strong>Utilities:</strong> {data.utilitiesIncluded ? 'Included' : 'Pay as per use'}</li>
-              )}
-              {data.furnishing && <li><strong>Furnishing:</strong> {data.furnishing}</li>}
-              {data.internet && <li><strong>Internet:</strong> {data.internet}</li>}
-              {data.security && <li><strong>Security:</strong> {data.security}</li>}
-              {data.availabilityDate && <li><strong>Available:</strong> {data.availabilityDate}</li>}
-              {data.petsAllowed !== undefined && <li><strong>Pets:</strong> {data.petsAllowed ? 'Allowed' : 'Not allowed'}</li>}
-              {data.ref && <li><strong>Ref ID:</strong> {data.ref}</li>}
-              {grossYield && <li><strong>Est. Gross Yield:</strong> {grossYield.toFixed(1)}%</li>}
+        {features.length > 0 && (
+          <div class="card p-5 section-block">
+            <h2 class="text-lg font-semibold">Key Features</h2>
+            <ul class="grid md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-5">
+              {features.slice(0, 8).map((f) => <li>{f}</li>)}
             </ul>
           </div>
-        </aside>
+        )}
+
+        {(amenitiesCategories && Object.keys(amenitiesCategories).length > 0) ? (
+          <div class="card p-5 section-block">
+            <h2 class="text-lg font-semibold">Amenities</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+              {Object.entries(amenitiesCategories).map(([cat, items]) => (
+                <div>
+                  <h3 class="text-sm text-primary mb-1">{cat}</h3>
+                  <ul class="list-disc pl-5 space-y-1">
+                    {items.map((x) => <li>{x}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          amenitiesArr.length > 0 && (
+            <div class="card p-5 section-block">
+              <h2 class="text-lg font-semibold">Amenities</h2>
+              <ul class="grid md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-5">
+                {amenitiesArr.map((a) => <li>{a}</li>)}
+              </ul>
+            </div>
+          )
+        )}
+
+        {(neighborhoodCategories && Object.keys(neighborhoodCategories).length > 0) ? (
+          <div class="card p-5 section-block">
+            <h2 class="text-lg font-semibold">Neighborhood Highlights</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+              {Object.entries(neighborhoodCategories).map(([cat, items]) => (
+                <div>
+                  <h3 class="text-sm text-primary mb-1">{cat}</h3>
+                  <ul class="list-disc pl-5 space-y-1">
+                    {items.slice(0, 8).map((x) => <li>{x}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          neighborhood.length > 0 && (
+            <div class="card p-5 section-block">
+              <h2 class="text-lg font-semibold">Neighborhood Highlights</h2>
+              <ul class="grid md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-5">
+                {neighborhood.slice(0, 8).map((x) => <li>{x}</li>)}
+              </ul>
+            </div>
+          )
+        )}
+
+        {(data?.deposit || data?.serviceCharge || data?.utilitiesIncluded !== undefined || data?.petsAllowed !== undefined) && (
+          <div class="card p-5 section-block">
+            <h2 class="text-lg font-semibold">Fees & Policies</h2>
+            <ul class="list-disc pl-5 space-y-1 text-neutral-800">
+              {data?.deposit && <li>Deposit: {fmtPrice(data.deposit)}</li>}
+              {data?.serviceCharge && <li>Service Charge: {fmtPrice(data.serviceCharge)}/mo</li>}
+              {data?.utilitiesIncluded !== undefined && <li>Utilities: {data.utilitiesIncluded ? 'Included' : 'Pay as per use'}</li>}
+              {data?.petsAllowed !== undefined && <li>Pets: {data.petsAllowed ? 'Allowed' : 'Not allowed'}</li>}
+            </ul>
+          </div>
+        )}
+
+        {Array.isArray(data?.floorPlans) && data.floorPlans.length > 0 && (
+          <div class="card p-5 section-block">
+            <h2 class="text-lg font-semibold">Documents</h2>
+            <ul class="list-disc pl-5 space-y-1">
+              {data.floorPlans.map((f: string) => (
+                <li><a href={withV(f)} class="link-decor" target="_blank" rel="noopener">Floor plan</a></li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {videoUrl && (
+          <div class="aspect-video w-full card p-0 section-block">
+            {isYouTube ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${videoUrl.split('v=')[1] || ''}`}
+                class="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy"
+                title="Listing video"
+              />
+            ) : isVimeo ? (
+              <iframe
+                src={videoUrl.replace('vimeo.com', 'player.vimeo.com/video')}
+                class="h-full w-full"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+                loading="lazy"
+                title="Listing video"
+              />
+            ) : (
+              <video controls class="h-full w-full">
+                <source src={videoUrl} />
+              </video>
+            )}
+          </div>
+        )}
       </section>
 
       <!-- RELATED -->
-      {related.length > 0 && (
+      {related.length >= 2 && (
         <section class="max-w-6xl mx-auto px-4 pb-16">
           <h2 class="text-xl font-semibold mb-4">You Might Also Like</h2>
           <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -531,8 +537,8 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
               const img = (e.data.heroImage || e.data.images?.[0] || '/images/placeholder.webp');
               const price = fmtPrice(e.data.price);
               return (
-                <a href={href} class="block rounded-xl overflow-hidden border hover:shadow focus:outline-none focus:ring-2 focus:ring-cta">
-                  <img src={withV(img)} alt={e.data.title} class="h-40 w-full object-cover" loading="lazy" />
+                <a href={href} class="rel-card rel-card--compact focus:outline-none focus:ring-2 focus:ring-cta">
+                  <img src={withV(img)} alt={e.data.title} class="post-media" loading="lazy" />
                   <div class="p-3 space-y-0.5">
                     <p class="text-sm font-semibold">{price}</p>
                     <p class="text-xs text-neutral-700">
@@ -547,43 +553,11 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
           </div>
         </section>
       )}
-
-      <!-- MOBILE STICKY CTA BAR -->
-      <div class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t safe-bottom">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-          <div class="flex-1 min-w-0">
-            <div class="text-sm text-neutral-700 truncate">{data.title}</div>
-            <div class="text-base font-semibold">{priceText}</div>
-          </div>
-          <a
-            href="#"
-            data-inquiry-trigger
-            data-context={inquiryContext}
-            data-id={listingId}
-            data-title={listingTitle}
-            class="btn-cta rounded-md px-3 py-2"
-            aria-label={enquireLabel}
-          >
-            {enquireLabel}
-          </a>
-          <a href={waUiHref} aria-label="WhatsApp" class="inline-flex items-center justify-center w-10 h-10 rounded-full text-white shadow focus:outline-none focus:ring-2 focus:ring-[#25D366]" style="background:#25D366" data-track="wa_click">
-            <svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M19.11 17.41c-.27-.14-1.57-.77-1.82-.85-.24-.09-.42-.14-.6.14-.17.27-.68.85-.83 1.02-.15.17-.31.2-.58.07-.27-.14-1.14-.42-2.18-1.34-.8-.71-1.34-1.58-1.5-1.85-.16-.27-.02-.42.12-.56.12-.12.27-.31.4-.46.14-.15.18-.25.27-.42.09-.17.05-.31-.02-.45-.07-.14-.6-1.44-.82-1.97-.22-.53-.44-.46-.6-.46-.16 0-.34-.02-.52-.02-.18 0-.45.07-.68.31-.24.24-.89.87-.89 2.11 0 1.24.91 2.44 1.04 2.61.12.17 1.79 2.73 4.33 3.82.61.26 1.08.42 1.45.54.61.19 1.17.16 1.61.1.49-.07 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.11-.24-.18-.51-.32z"/><path d="M26.7 5.3C24.1 2.7 20.65 1.3 17 1.3 9.94 1.3 4.3 6.94 4.3 14c0 2.25.59 4.45 1.71 6.39L4 28l7.79-2c1.84 1 3.92 1.52 6.04 1.52 7.06 0 12.7-5.64 12.7-12.7 0-3.38-1.32-6.56-3.83-9.08zM17.83 25.3c-1.87 0-3.69-.5-5.28-1.45l-.38-.23-4.63 1.19 1.24-4.51-.25-.38C7.43 18.2 6.9 16.13 6.9 14 6.9 8.49 11.49 3.9 17 3.9c3.09 0 6 .1 8.2 2.31 2.2 2.2 3.5 5.12 3.5 8.2 0 6.51-4.59 11.9-10.87 10.89z"/></svg>
-          </a>
-        </div>
-      </div>
-
-      <!-- INQUIRY MODAL -->
-      <dialog id="inquiry-modal" class="rounded-2xl p-0 backdrop:bg-black/40">
-        <div class="relative max-w-2xl">
-          <button data-action="close" class="absolute right-2 top-2 rounded-md px-2 py-1 text-sm">Close</button>
-          <InquiryForm context={inquiryContext} listingId={listingId} listingTitle={listingTitle} />
-        </div>
-      </dialog>
     </>
   )}
 </MainLayout>
 
-<!-- Carousel + Share + Inquiry opener -->
+<!-- Carousel + Thumbs + Share + Inquiry opener -->
 <script is:inline>
 (function(){
   /* -------- Carousel -------- */
@@ -598,20 +572,52 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
     const zoomOpen = document.getElementById('zoom-open');
     const swipeHint = document.getElementById('swipe-hint');
 
-    let i = 0, t;
+    // Thumbnails
+    const rail = document.getElementById('thumb-rail');
+    const thumbs = rail ? Array.from(rail.querySelectorAll('button[data-idx]')) : [];
+
+    let i = 0, t, resumeT;
+    const AUTOSLIDE = 5500;
+    const USER_PAUSE = 10000;
+
     const updateCount = () => { if (count) count.textContent = (i+1) + ' / ' + slides.length; };
+    const updateThumbs = () => {
+      thumbs.forEach((b, idx) => {
+        b.setAttribute('aria-selected', String(idx === i));
+        b.classList.toggle('ring-emerald-600', idx === i);
+        b.classList.toggle('ring-transparent', idx !== i);
+      });
+      const sel = thumbs[i];
+      if (sel && sel.scrollIntoView) sel.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    };
     const show = (n) => {
       i = (n + slides.length) % slides.length;
-      slides.forEach((img, idx) => img.style.opacity = idx === i ? '1' : '0');
-      dots.forEach((d, idx) => d.className = 'h-2.5 w-2.5 rounded-full ' + (idx===i ? 'bg-white' : 'bg-white/60'));
+      slides.forEach((img, idx) => img.classList.toggle('opacity-100', idx === i));
+      slides.forEach((img, idx) => img.classList.toggle('opacity-0', idx !== i));
+      dots.forEach((d, idx) => d.className = 'dot ' + (idx===i ? 'is-active' : ''));
       updateCount();
+      updateThumbs();
     };
-    const start = () => { stop(); t = setInterval(()=>show(i+1), 4500); };
-    const stop  = () => { if (t) clearInterval(t); };
+    const stop  = () => { if (t) clearInterval(t); t = null; };
+    const start = () => { stop(); t = setInterval(()=>show(i+1), AUTOSLIDE); };
+    const pauseUser = () => { stop(); if (resumeT) clearTimeout(resumeT); resumeT = setTimeout(start, USER_PAUSE); };
 
-    prev && prev.addEventListener('click', () => { show(i-1); start(); });
-    next && next.addEventListener('click', () => { show(i+1); start(); });
-    dots.forEach((d, idx) => d.addEventListener('click', () => { show(idx); start(); }));
+    prev && prev.addEventListener('click', () => { show(i-1); pauseUser(); });
+    next && next.addEventListener('click', () => { show(i+1); pauseUser(); });
+    dots.forEach((d, idx) => d.addEventListener('click', () => { show(idx); pauseUser(); }));
+    thumbs.forEach((btn) => btn.addEventListener('click', () => { const idx = Number(btn.dataset.idx||0); show(idx); pauseUser(); }));
+
+    // Hover / focus pause
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', start);
+
+    // Pause when offscreen
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e => { if (e.isIntersecting) start(); else stop(); });
+    }, { threshold: 0.25 });
+    io.observe(root);
 
     let sx=0;
     root.addEventListener('touchstart', e=>{ sx = e.touches[0].clientX; stop(); }, {passive:true});
@@ -623,8 +629,8 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
 
     document.addEventListener('keydown', (e)=>{
       if (document.activeElement && /input|textarea|select/i.test(document.activeElement.tagName)) return;
-      if (e.key === 'ArrowLeft') { show(i-1); start(); }
-      if (e.key === 'ArrowRight') { show(i+1); start(); }
+      if (e.key === 'ArrowLeft') { show(i-1); pauseUser(); }
+      if (e.key === 'ArrowRight') { show(i+1); pauseUser(); }
     });
 
     const hideHint = () => { if (swipeHint) swipeHint.style.display = 'none'; };
@@ -637,7 +643,6 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
     const lbPrev = document.getElementById('lightbox-prev');
     const lbNext = document.getElementById('lightbox-next');
     const lbClose = document.getElementById('lightbox-close');
-    const lbBackdrop = document.querySelector('[data-lightbox-close]');
 
     const lbShow = (n) => {
       i = (n + slides.length) % slides.length;
@@ -645,12 +650,14 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
         lbImg.setAttribute('src', slides[i].getAttribute('src') || '');
         lb.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        stop();
       }
     };
     const lbHide = () => {
       if (lb) {
         lb.classList.add('hidden');
         document.body.style.overflow = '';
+        start();
       }
     };
 
@@ -658,7 +665,7 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
     lbPrev && lbPrev.addEventListener('click', () => lbShow(i-1));
     lbNext && lbNext.addEventListener('click', () => lbShow(i+1));
     lbClose && lbClose.addEventListener('click', lbHide);
-    lbBackdrop && lbBackdrop.addEventListener('click', lbHide);
+    lb && lb.addEventListener('click', (e)=>{ if (e.target === lb) lbHide(); });
     document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lbHide(); });
 
     updateCount();
@@ -666,7 +673,7 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
     start();
   }
 
-  /* -------- Share: native vs popover -------- */
+  /* -------- Share: native vs popover + copy -------- */
   const shareTrigger = document.getElementById('share-trigger');
   const sharePop = document.getElementById('share-pop');
   const copyBtn = document.getElementById('share-copy');
@@ -693,29 +700,44 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
   }
 
   if (copyBtn) {
+    const copyFallback = (text) => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch {}
+      document.body.removeChild(ta);
+    };
     copyBtn.addEventListener('click', async () => {
+      const url = window.location.href;
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          copyFallback(url);
+        }
+        copyBtn.setAttribute('aria-live','polite');
         copyBtn.textContent = 'Copied';
-        setTimeout(()=>copyBtn.textContent='Copy link', 1500);
+        setTimeout(()=>copyBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>', 1500);
       } catch {}
     });
   }
 
-  /* -------- Inquiry modal: open/close (uses reusable InquiryForm component) -------- */
+  /* -------- Inquiry modal -------- */
   const modal = document.getElementById('inquiry-modal');
   const closeBtn = modal?.querySelector('[data-action="close"]');
   const triggers = Array.from(document.querySelectorAll('[data-inquiry-trigger]'));
 
   const openModal = () => {
     if (!modal) return;
-    if (typeof modal.showModal === 'function') {
-      modal.showModal();
+    if (typeof (modal).showModal === 'function') {
+      (modal).showModal();
     } else {
-      // Fallback for very old browsers
       modal.setAttribute('open', '');
     }
-    // focus first input in the form
     setTimeout(() => {
       const first = modal.querySelector('#inquiry-form input, #inquiry-form textarea, #inquiry-form select');
       first && first.focus();
@@ -724,8 +746,8 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
 
   const closeModal = () => {
     if (!modal) return;
-    if (typeof modal.close === 'function') {
-      modal.close();
+    if (typeof (modal).close === 'function') {
+      (modal).close();
     } else {
       modal.removeAttribute('open');
     }
@@ -733,7 +755,7 @@ const shortDesc = sentences.slice(0, descCount).join(' ');
 
   triggers.forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); openModal(); }));
   closeBtn && closeBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
-  modal && modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); }); // click backdrop
+  modal && modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 })();
 </script>
 

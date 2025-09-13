@@ -21,20 +21,24 @@ const num = (x: unknown) => Number(String(x ?? "").replace(/[^0-9]/g, "")) || 0;
 const cardImg = (e: any) =>
   (e?.data?.imagesFolder ? `${e.data.imagesFolder}/1.webp` : "/images/placeholder.webp");
 
-// read URL (?type=... or legacy ?availability=for-rent) but DO NOT filter server-side
-const rawParam = (Astro.url.searchParams.get("type") ?? Astro.url.searchParams.get("availability") ?? "").toString();
-const parsed = canonAvail(rawParam);
-// Default is "ALL" (no type preselected)
-const activeType: ListingType | "" = (LISTING_TYPES as readonly string[]).includes(parsed)
-  ? (parsed as ListingType)
+// ---- URL param: ONLY `type` is honored (sale|rent|short-stays). No legacy `availability` support.
+const rawType = (Astro.url.searchParams.get("type") ?? "").toString().toLowerCase();
+const activeType: ListingType | "" = (LISTING_TYPES as readonly string[]).includes(rawType)
+  ? (rawType as ListingType)
   : "";
 
-// data: render ALL listings; client filters by type
-const all = await getCollection("listings");
+// ---- Data: render ALL listings, but ensure NO DUPLICATES by slug before sending to client
+const allEntries = await getCollection("listings");
+const seenSlugs = new Set<string>();
+const unique = allEntries.filter((e) => {
+  if (seenSlugs.has(e.slug)) return false;
+  seenSlugs.add(e.slug);
+  return true;
+});
 
-// facet options are from ALL listings (richer UX)
-const allLocations = Array.from(new Set(all.map((e) => areaOf(e.data.location)).filter(Boolean))).sort();
-const allTypesCanon = Array.from(new Set(all.map((e) => canonType(e.data.type)).filter(Boolean))).sort();
+// facet options from ALL unique listings (richer UX)
+const allLocations = Array.from(new Set(unique.map((e) => areaOf(e.data.location)).filter(Boolean))).sort();
+const allTypesCanon = Array.from(new Set(unique.map((e) => canonType(e.data.type)).filter(Boolean))).sort();
 ---
 
 <MainLayout title="All Listings – Locate Properties Kenya">
@@ -129,10 +133,10 @@ const allTypesCanon = Array.from(new Set(all.map((e) => canonType(e.data.type)).
       <span id="category-tag" class="ml-2 opacity-70"></span>
     </div>
 
-    <!-- Cards: ALL listings; filtered on client -->
+    <!-- Cards: ALL unique listings; filtered on client -->
     <ul id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {all.map((e) => {
-        const d = e.data;
+      {unique.map((e) => {
+        const d = e.data; // includes badge flags (isNew, isReduced, isFurnished, etc.)
         const beds = Number(d.bedrooms) || 0;
         return (
           <li
@@ -180,26 +184,11 @@ const allTypesCanon = Array.from(new Set(all.map((e) => canonType(e.data.type)).
       }
       const cleanNum = (s) => Number(String(s || "").replace(/[^0-9]/g, "")) || 0;
 
-      // Map legacy availability -> canonical type ("for-rent" => "rent", etc.)
-      const mapAvailToType = (v) => {
-        const s = String(v || "").toLowerCase();
-        if (s === "for-sale" || s === "sale") return "sale";
-        if (s === "for-rent" || s === "rent") return "rent";
-        if (s.includes("short")) return "short-stays";
-        return "";
-      };
-
-      // seed fields from URL, but normalize availability before applying to the select
+      // ---- Seed strictly from ?type (no legacy availability)
       const qs = new URLSearchParams(location.search);
       const get = (k) => qs.get(k) || "";
 
-      // availability/type
-      let typeParam = get("type");
-      if (!typeParam) {
-        const legacy = get("availability");
-        const mapped = mapAvailToType(legacy);
-        if (mapped) typeParam = mapped;
-      }
+      const typeParam = get("type");
       if (typeParam) els.avail.value = typeParam;
 
       // others
@@ -225,7 +214,7 @@ const allTypesCanon = Array.from(new Set(all.map((e) => canonType(e.data.type)).
 
       function apply() {
         const s = state();
-        // persist URL without reload
+        // persist URL without reload (only `type`)
         setTypeInURL(s.type);
 
         let vis = [];

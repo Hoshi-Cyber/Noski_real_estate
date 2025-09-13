@@ -1,6 +1,6 @@
 <form id="hero-search" action="/listings" method="get"
   class="mt-6 rounded-xl border border-neutral-200 bg-white/90 backdrop-blur p-3 sm:p-4 shadow-sm">
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
     <!-- Availability -->
     <label class="sr-only" for="hs-avail">Availability</label>
     <select id="hs-avail" name="availability" class="rounded-md border border-neutral-300 p-2 text-sm">
@@ -15,21 +15,18 @@
     <input id="hs-location" name="location" type="search" inputmode="search" placeholder="e.g. Karen"
       class="rounded-md border border-neutral-300 p-2 text-sm" />
 
-    <!-- Min price -->
-    <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden">
-      <span class="px-2 text-xs text-neutral-500">KES</span>
-      <input name="minPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Min"
-        class="w-full p-2 text-sm outline-none" />
+    <!-- Price range (consolidated with single KES prefix) -->
+    <label class="sr-only" for="hs-min">Price range</label>
+    <div class="flex items-stretch rounded-md border border-neutral-300 overflow-hidden">
+      <span class="px-2 flex items-center text-xs text-neutral-500 select-none" aria-hidden="true">KES</span>
+      <input id="hs-min" name="minPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Min"
+        class="w-full p-2 text-sm outline-none border-0 border-l border-neutral-200" />
+      <span class="px-2 flex items-center text-neutral-400 select-none" aria-hidden="true">–</span>
+      <input id="hs-max" name="maxPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Max"
+        class="w-full p-2 text-sm outline-none border-0 border-l border-neutral-200" />
     </div>
 
-    <!-- Max price -->
-    <div class="flex items-center rounded-md border border-neutral-300 overflow-hidden">
-      <span class="px-2 text-xs text-neutral-500">KES</span>
-      <input name="maxPrice" inputmode="numeric" pattern="[0-9,]*" placeholder="Max"
-        class="w-full p-2 text-sm outline-none" />
-    </div>
-
-    <!-- Property type (rename to ptype to avoid clashing with availability "type") -->
+    <!-- Property type (uses ptype to avoid clashing with availability "type") -->
     <label class="sr-only" for="hs-ptype">Property type</label>
     <select id="hs-ptype" name="ptype" class="rounded-md border border-neutral-300 p-2 text-sm">
       <option value="">Any</option>
@@ -47,9 +44,9 @@
     </select>
 
     <!-- Beds -->
-    <label class="sr-only" for="hs-beds">Beds</label>
+    <label class="sr-only" for="hs-beds">Bedrooms</label>
     <select id="hs-beds" name="beds" class="rounded-md border border-neutral-300 p-2 text-sm">
-      <option value="">Beds</option>
+      <option value="">Any Beds</option>
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>

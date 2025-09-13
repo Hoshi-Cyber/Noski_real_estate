@@ -1,0 +1,36 @@
+---
+export interface Props {
+  images: string[];
+  alt?: string;
+}
+const { images = [], alt = "" } = Astro.props;
+---
+
+<!-- Thumbnail rail (scrollable, keyboard-focusable) -->
+<div
+  id="thumb-rail"
+  class="thumb-rail max-w-6xl mx-auto px-4 py-3 overflow-x-auto scrollbar-hide"
+  role="listbox"
+  aria-label="Select image"
+>
+  <div class="flex gap-2">
+    {images.map((src, idx) => (
+      <button
+        data-idx={idx}
+        class={`thumb-btn relative h-16 w-24 rounded overflow-hidden ring-2 ${
+          idx === 0 ? "ring-emerald-600" : "ring-transparent"
+        } focus:outline-none focus-visible:ring-2 focus-visible:ring-cta`}
+        aria-label={`Image ${idx + 1}`}
+        aria-selected={idx === 0}
+        role="option"
+      >
+        <img
+          src={src}
+          alt={alt}
+          class="h-full w-full object-cover pointer-events-none"
+          loading="lazy"
+        />
+      </button>
+    ))}
+  </div>
+</div>

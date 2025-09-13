@@ -1,0 +1,173 @@
+---
+/**
+ * Reusable Related Listings section (SSR only – no client JS).
+ * Strategy:
+ *  - Strict filter: same availability + same city/county.
+ *  - Weighted scoring (max 100):
+ *      location (40)
+ *      type match (20)
+ *      ±1 bedroom (12)
+ *      price within 15% (12)  // tighten to 10% by adjusting threshold below
+ *      ≥2 matching amenities (10)
+ *      nearby overlap (6)
+ *  - Show up to 4. If fewer than 2, either hide or show fallback.
+ * Styling:
+ *  - Uses existing card + ring styles; responsive grid.
+ */
+
+import { withV } from '../lib/assets';
+
+export interface ListingEntry {
+  slug: string;
+  data: any;
+}
+
+export interface Props {
+  current: ListingEntry;          // The current listing (slug + data)
+  all: ListingEntry[];            // Pool of all listings
+  limit?: number;                 // default 4
+  minToShow?: number;             // default 2
+  showFallback?: boolean;         // default true
+}
+
+const {
+  current,
+  all = [],
+  limit = 4,
+  minToShow = 2,
+  showFallback = true
+} = Astro.props;
+
+const norm = (s: string = "") => s.toLowerCase().trim().replace(/\s+/g, " ");
+const getAvail = (x: any) => norm(x?.availability || "");
+const sameAvail = (a: any, b: any) => (getAvail(a) === getAvail(b));
+
+const cityTokens = (loc?: string) => {
+  const raw = String(loc || "").toLowerCase();
+  const pieces = raw.split(",").map(s => s.trim()).filter(Boolean);
+  // city = first piece; county = second piece (best-effort)
+  const [city, county] = [pieces[0] || "", pieces[1] || ""];
+  return { city, county };
+};
+const sameCityCounty = (aLoc?: string, bLoc?: string) => {
+  const A = cityTokens(aLoc);
+  const B = cityTokens(bLoc);
+  // Treat same if both city equal OR both county equal (loose match)
+  return (A.city && A.city === B.city) || (A.county && A.county === B.county);
+};
+
+const arr = (x: any) => Array.isArray(x) ? x : [];
+const lcSet = (xs: any[]) => new Set(arr(xs).map(v => String(v).toLowerCase()));
+
+const bedScore = (cand: any, cur: any) => {
+  const cb = typeof cand?.bedrooms === 'number' ? cand.bedrooms : undefined;
+  const tb = typeof cur?.bedrooms === 'number' ? cur.bedrooms : undefined;
+  return (typeof cb === 'number' && typeof tb === 'number' && Math.abs(cb - tb) <= 1) ? 12 : 0;
+};
+
+const priceScore = (cand: any, cur: any) => {
+  const cp = typeof cand?.price === 'number' ? cand.price : undefined;
+  const tp = typeof cur?.price === 'number' ? cur.price : undefined;
+  if (typeof cp !== 'number' || typeof tp !== 'number') return 0;
+  const diff = Math.abs(cp - tp) / tp; // relative diff
+  // Full points if within 15%. Tighten to 10% by changing 0.15 → 0.10
+  return diff <= 0.15 ? 12 : 0;
+};
+
+const amenityScore = (cand: any, cur: any) => {
+  const A = lcSet(cand?.amenities);
+  const B = lcSet(cur?.amenities);
+  let common = 0; B.forEach(v => { if (A.has(v)) common++; });
+  return common >= 2 ? 10 : 0;
+};
+
+const nearbyScore = (cand: any, cur: any) => {
+  const cNear = lcSet(cand?.neighborhoodHighlights || cand?.neighborhood || cand?.nearby);
+  const tNear = lcSet(cur?.neighborhoodHighlights || cur?.neighborhood || cur?.nearby);
+  let common = 0; tNear.forEach(v => { if (cNear.has(v)) common++; });
+  return common > 0 ? 6 : 0;
+};
+
+const typeScore = (cand: any, cur: any) =>
+  (norm(cand?.type) && norm(cand?.type) === norm(cur?.type)) ? 20 : 0;
+
+const locationScore = (cand: any, cur: any) =>
+  sameCityCounty(cand?.location, cur?.location) ? 40 : 0;
+
+// Strict eligibility before scoring
+const eligible = all.filter(e =>
+  e.slug !== current.slug &&
+  sameAvail(e.data, current.data) &&
+  sameCityCounty(e.data?.location, current.data?.location)
+);
+
+const scored = eligible
+  .map(e => ({
+    e,
+    s:
+      locationScore(e.data, current.data) +
+      typeScore(e.data, current.data) +
+      bedScore(e.data, current.data) +
+      priceScore(e.data, current.data) +
+      amenityScore(e.data, current.data) +
+      nearbyScore(e.data, current.data)
+  }))
+  .filter(x => x.s > 0)
+  .sort((a, b) => b.s - a.s || ((b.e.data?.date || 0) - (a.e.data?.date || 0)))
+  .slice(0, limit);
+
+const related = scored.map(x => x.e);
+const showSection = related.length >= minToShow;
+
+const avail = getAvail(current.data);
+const listHref =
+  avail.includes('rent') ? '/for-rent' :
+  avail.includes('sale') ? '/for-sale' : '/short-stays';
+
+const cityLabel = cityTokens(current.data?.location).city || current.data?.location || '';
+const cityQuery = cityLabel ? `?q=${encodeURIComponent(cityLabel)}` : '';
+const fallbackHref = `${listHref}${cityQuery}`;
+---
+
+{showSection ? (
+  <section class="max-w-6xl mx-auto px-4 pb-16">
+    <h2 class="landing-h2 mb-4">You Might Also Like</h2>
+
+    <!-- Responsive grid: 1 / 2 / 3 / 4 -->
+    <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+      {related.map((item) => {
+        const href  = `/properties/${getAvail(item.data).replace(/\s+/g,'-')}/${item.slug}`;
+        const img   = (item.data.heroImage || item.data.images?.[0] || '/images/placeholder.webp');
+        const price = typeof item.data.price === 'number' ? `KSh ${item.data.price.toLocaleString()}` : 'N/A';
+        return (
+          <a href={href} class="rel-card rel-card--compact focus:outline-none focus:ring-2 focus:ring-cta">
+            <div class="post-card--rich">
+              <div class="post-media-wrap">
+                <img src={withV(img)} alt={item.data.title} class="post-media" loading="lazy" />
+              </div>
+              <div class="post-body">
+                <div class="post-meta flex items-center justify-between">
+                  <span class="text-sm font-semibold text-neutral-900">{price}</span>
+                  <span class="pill pill-slate">{(item.data.bedrooms ?? '—')} bd • {(item.data.bathrooms ?? '—')} ba</span>
+                </div>
+                <h3 class="post-title mt-1">{item.data.title}</h3>
+                <p class="post-desc">{item.data.location}</p>
+              </div>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+) : (
+  showFallback && (
+    <section class="max-w-6xl mx-auto px-4 pb-12">
+      <div class="card p-4 flex items-center justify-between gap-3">
+        <p class="text-sm text-neutral-700">
+          We couldn’t find enough closely related homes in <span class="font-semibold">{cityLabel}</span>.
+        </p>
+        <a href={fallbackHref} class="btn-outline cta-fluid">See all in {cityLabel || 'this area'}</a>
+      </div>
+    </section>
+  )
+)}
